@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JVM 한눈에 — 실습</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/lab.css"></head><body>
+<div class="container">
+
+<div class="header"><div class="badge">▣ LAB · SPRING</div><h1>자바 컴파일·실행 직접 보기</h1><p class="subtitle">JVM 한눈에 — 실습 / 소요 시간: 약 15분</p></div>
+
+<div class="minimap"><div class="minimap-title">📍 지금 어디를 만지고 있나요?</div><div class="flow">
+<div class="box">브라우저</div><span class="arrow">→</span>
+<div class="box">Tomcat</div><span class="arrow">→</span>
+<div class="box active">JVM</div><span class="arrow">→</span>
+<div class="box">Controller</div><span class="arrow">→</span>
+<div class="box">DB</div></div></div>
+
+<div class="prerequisites"><h3>사전 준비</h3><ul>
+<li>JDK 설치 완료</li>
+<li>터미널 (Mac/Linux) 또는 명령 프롬프트 (Windows) 사용 가능</li>
+</ul></div>
+
+<div class="box box-info"><div class="box-title">이번 실습의 목표</div><p>커맨드라인에서 <code>.java</code> 를 컴파일해 <code>.class</code> 를 만들고, JVM 으로 실행해봅니다. IDE 의 도움 없이 가장 밑바닥에서 자바 실행 흐름을 봅니다.</p></div>
+
+<div class="step"><div class="step-header"><div class="step-num">1</div><div class="step-title">자바 설치 확인</div></div>
+<pre><code>$ java -version
+$ javac -version</code></pre>
+<div class="expected"><div class="expected-title">예상 결과</div><p>두 명령 모두 버전 정보가 출력. <code>command not found</code> 가 뜨면 JDK 가 설치 안 된 상태.</p></div>
+<div class="checkpoint"><div class="check-title">CHECKPOINT</div><ul><li><code>java</code> 와 <code>javac</code> 의 차이를 한 문장으로 말할 수 있나요? (정답: java=JVM 실행, javac=컴파일)</li></ul></div></div>
+
+<div class="step"><div class="step-header"><div class="step-num">2</div><div class="step-title">간단한 자바 코드 작성</div></div>
+<p>아무 폴더에 <code>Hello.java</code> 파일을 만들고 다음 코드 입력:</p>
+<pre><code>public class Hello {
+    public static void main(String[] args) {
+        System.out.println("Hello, JVM!");
+    }
+}</code></pre>
+<div class="checkpoint"><div class="check-title">CHECKPOINT</div><ul><li>파일명과 클래스명이 정확히 같은가요? (자바 규칙)</li></ul></div></div>
+
+<div class="step"><div class="step-header"><div class="step-num">3</div><div class="step-title">컴파일</div></div>
+<pre><code>$ javac Hello.java
+$ ls
+Hello.class    Hello.java</code></pre>
+<div class="expected"><div class="expected-title">예상 결과</div><p>같은 폴더에 <code>Hello.class</code> 파일이 새로 생김. 이게 <strong>바이트 코드</strong>.</p></div>
+<div class="checkpoint"><div class="check-title">CHECKPOINT</div><ul><li><code>.class</code> 파일을 메모장으로 열어보세요 — 사람이 못 읽는 글자가 보입니다. 사람용이 아니라 JVM 용이니까.</li></ul></div></div>
+
+<div class="step"><div class="step-header"><div class="step-num">4</div><div class="step-title">JVM 으로 실행</div></div>
+<pre><code>$ java Hello
+Hello, JVM!</code></pre>
+<div class="expected"><div class="expected-title">예상 결과</div><p>"Hello, JVM!" 이 화면에 출력.</p></div>
+<div class="checkpoint"><div class="check-title">CHECKPOINT — 그 사이에 일어난 일</div><ul>
+<li>① <code>java Hello</code> 명령 → JVM 시작</li>
+<li>② Class Loader 가 <code>Hello.class</code> 를 메모리에 적재</li>
+<li>③ Execution Engine 이 <code>main()</code> 메서드를 실행</li>
+<li>④ 프로그램 종료 시 GC 가 사용한 메모리 정리</li>
+</ul></div></div>
+
+<div class="checklist"><h3>실습 완료 체크리스트</h3>
+<div class="check-item"><input type="checkbox"> <code>java -version</code> 으로 JDK 설치 확인</div>
+<div class="check-item"><input type="checkbox"> <code>.java</code> 파일 작성</div>
+<div class="check-item"><input type="checkbox"> <code>javac</code> 로 <code>.class</code> 생성</div>
+<div class="check-item"><input type="checkbox"> <code>java</code> 명령으로 실행하고 결과 확인</div>
+<div class="check-item"><input type="checkbox"> JVM 의 3 단계(로딩·실행·GC) 를 입으로 말할 수 있다</div>
+</div>
+
+<div class="nav">
+<a href="web-hello-servlet.html">&larr; 이전</a>
+<a href="../index.html">메인으로</a>
+<a href="spring-call-by-value.html">다음 &rarr;</a>
+</div></div>
+<script src="../js/screenshot.js?v=2"></script></body></html>

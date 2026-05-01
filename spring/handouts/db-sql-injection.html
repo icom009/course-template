@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SQL 인젝션 직접 시연 — 핸드아웃</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/print.css"></head><body>
+<div class="container">
+
+<div class="header">
+<div class="header-left"><div class="session-num">◆ PART · DB</div>
+<h1>SQL 인젝션 직접 시연</h1></div>
+<div class="header-right">Spring 기초<br>SMHRD</div></div>
+
+<div class="objectives"><h3>학습 목표</h3>
+<ul><li>SQL 인젝션 직접 시연 의 핵심 개념을 안다</li><li>두 파라미터 표기법 의 동작을 안다</li><li>`#{}` 만 쓰는 습관이 들어 있다. `${}` 는 정렬 컬럼 같은 특수 경우만.</li></ul></div>
+
+<h2>1. 문제</h2>
+<p>"#{} 와 ${} 의 차이가 뭐예요?" — 잘못 쓰면 보안 사고.</p>
+
+<h2>2. 새 도구</h2>
+<div class="note"><strong>두 파라미터 표기법:</strong> #{} = 안전한 PreparedStatement (값을 따옴표로 감쌈). ${} = 위험한 문자열 치환 (그대로 끼워넣음).</div>
+
+<h2>3. 코드</h2>
+<div class="diagram">&lt;!-- 위험한 코드 (Demo 용) --&gt;
+&lt;select id="login" resultType="com.smhrd.domain.Member"&gt;
+    SELECT * FROM mymember
+    WHERE id = '${id}' AND pwd = '${pwd}'
+&lt;/select&gt;
+
+-- 공격 입력:
+   id = "admin' OR '1'='1"
+   → 완성된 SQL:
+   SELECT * FROM mymember WHERE id='admin' OR '1'='1' AND pwd='...'
+   → 누구나 admin 으로 로그인 가능!
+
+&lt;!-- 안전한 코드 --&gt;
+&lt;select id="login" resultType="com.smhrd.domain.Member"&gt;
+    SELECT * FROM mymember
+    WHERE id = #{id} AND pwd = #{pwd}
+&lt;/select&gt;</div>
+
+<h2>4. 정리</h2>
+<ul><li>#{} = 안전 (PreparedStatement 자동)</li>
+<li>${} = 위험 (문자열 치환, 인젝션)</li>
+<li>기본은 무조건 #{} </li></ul>
+
+<h2>5. Before / After</h2>
+<div class="before-after">
+<div class="before"><div class="label">전 차시</div><p>"#{} 와 ${} 의 차이가 뭐예요?" — 잘못 쓰면 보안 사고.</p></div>
+<div class="after"><div class="label">이번 차시</div><p>`#{}` 만 쓰는 습관이 들어 있다. `${}` 는 정렬 컬럼 같은 특수 경우만.</p></div>
+</div>
+
+<div class="checklist"><h3>학습 확인 체크리스트</h3>
+<ul><li>#{} = 안전 (PreparedStatement 자동)</li>
+<li>${} = 위험 (문자열 치환, 인젝션)</li>
+<li>기본은 무조건 #{} </li></ul></div>
+
+<div class="nav"><a href="db-camel-snake-trap.html">&larr; 이전</a><a href="../index.html">메인으로</a><a href="db-transactional.html">다음 &rarr;</a></div>
+</div></body></html>

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>첫 DB 종단간 — 읽기 자료</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/example.css"></head><body>
+<div class="container">
+
+<div class="header"><div class="version-badge">v1</div><div class="session-num">★ PART · DB</div>
+<h1>첫 DB 종단간</h1><p class="subtitle">데이터와 MyBatis — 읽기 자료</p></div>
+
+<div class="minimap"><div class="minimap-title">📍 지금 어디를 만지고 있나요?</div><div class="flow">
+<div class="box">브라우저</div><span class="arrow">→</span>
+<div class="box active">데이터와 MyBatis</div><span class="arrow">→</span>
+<div class="box">DB</div></div></div>
+
+<div class="terms"><h3>핵심 용어</h3><div class="term-item"><span class="term-name">v1</span><span class="term-desc">우리 프로젝트의 첫 DB 연동 마일스톤.</span></div>
+<div class="term-item"><span class="term-name">종단간 흐름</span><span class="term-desc">입력에서 출력까지의 모든 계층 연결.</span></div></div>
+
+<h2>1. 문제</h2>
+<div class="pain-point"><div class="pain-title">전 차시까지의 답답함</div><p>v0.5 의 하드코딩 자리를 진짜 DB 로 교체할 시간.</p></div>
+
+<h2>2. 새 도구</h2>
+<div class="new-tool"><div class="tool-title">종단간 + DB</div><p>브라우저 → Controller → Service → Mapper → DB → 다시 화면. 흐름도가 처음 끝에서 끝까지 연결.</p></div>
+
+<h2>3. 코드 — v2 minimal Member 형태</h2>
+<pre><code>// com/smhrd/domain/Member.java
+@Data @AllArgsConstructor @NoArgsConstructor
+public class Member {
+    private String id;
+    private String pwd;
+}
+
+// com/smhrd/mapper/MemberMapper.java
+@Mapper public interface MemberMapper {
+    Member selectOne(String id);
+}
+
+&lt;!-- com/smhrd/mapper/MemberMapper.xml --&gt;
+&lt;mapper namespace="com.smhrd.mapper.MemberMapper"&gt;
+  &lt;select id="selectOne"
+          parameterType="string"
+          resultType="com.smhrd.domain.Member"&gt;
+    SELECT id, pwd FROM mymember WHERE id = #{id}
+  &lt;/select&gt;
+&lt;/mapper&gt;
+
+// com/smhrd/service/MemberService.java
+@Service
+public class MemberService {
+    @Autowired MemberMapper mapper;
+    public Member find(String id) { return mapper.selectOne(id); }
+}
+
+// com/smhrd/controller/MemberController.java
+@Controller
+public class MemberController {
+    @Autowired MemberService service;
+    @GetMapping("/member/view")
+    public String view(@RequestParam String id, Model model) {
+        model.addAttribute("member", service.find(id));
+        return "member/view";
+    }
+}
+
+&lt;!-- view.jsp --&gt;
+&lt;h1&gt;${member.id}&lt;/h1&gt;
+&lt;p&gt;${member.pwd}&lt;/p&gt;</code></pre>
+
+<h2>4. 정리</h2>
+<ul><li>브라우저 ↔ Controller ↔ Service ↔ Mapper ↔ DB 가 모두 연결</li>
+<li>v0.5 의 하드코딩 자리에 DB 호출이 들어감</li>
+<li>v1 — 우리 프로젝트의 진짜 시작</li></ul>
+
+<h2>5. Before / After</h2>
+<div class="before-after">
+<div class="before"><div class="label">전 차시 끝</div><p>v0.5 의 하드코딩 자리를 진짜 DB 로 교체할 시간.</p></div>
+<div class="arrow">→</div>
+<div class="after"><div class="label">이번 차시 끝</div><p>DB 의 데이터가 화면까지 흘러온다. v1 마일스톤.</p></div>
+</div>
+
+<div class="nav"><a href="db-transactional.html">&larr; 이전</a><a href="../index.html">메인으로</a><a href="auth-signup-form.html">다음 &rarr;</a></div>
+</div><script src="../js/screenshot.js?v=2"></script></body></html>

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>View · ViewResolver | Spring 기초</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/night.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/custom.css"></head><body>
+<div class="reveal"><div class="slides">
+
+<section><div class="session-title">
+<span class="session-glyph">◇ PART · MVC</span>
+<h1>View · ViewResolver</h1>
+<p class="subtitle">JSP 가 어디 있는지 어떻게 알까</p>
+</div></section>
+
+<section><h2>학습 목표</h2><div class="objectives"><ul>
+<li class="fragment fade-up">View 의 역할을 안다</li>
+<li class="fragment fade-up">ViewResolver 가 어떻게 ViewName 을 실제 파일로 매핑하는지 안다</li>
+<li class="fragment fade-up">prefix / suffix 의 의미를 안다</li>
+</ul></div></section>
+
+<section><h2>⚠️ 이상한 짧은 문자열</h2>
+<div class="pain-point">
+<div class="pain-title">컨트롤러의 return 값</div>
+<pre><code data-trim>
+@GetMapping("/board/list")
+public String list(Model model) {
+    model.addAttribute("boards", service.findAll());
+    return "board/list";        // ← 이 짧은 문자열이 어떻게 JSP 가 됨?
+}
+</code></pre>
+<p style="margin-top:0.4em;">"board/list" 라는 문자열이 어떻게 <code>/WEB-INF/views/board/list.jsp</code> 로 변신할까?</p>
+</div>
+</section>
+
+<section><h2>🛠️ ViewResolver — 이름을 경로로</h2>
+<div class="new-tool">
+<div class="tool-title">prefix + ViewName + suffix = 실제 경로</div>
+<p>Spring 은 컨트롤러가 반환한 짧은 문자열(ViewName)에 약속된 prefix·suffix 를 붙여 실제 JSP 파일 경로를 만듭니다.</p>
+</div>
+
+<pre><code class="language-xml" data-trim>
+&lt;!-- servlet-context.xml --&gt;
+&lt;bean id="viewResolver" class="...InternalResourceViewResolver"&gt;
+    &lt;property name="prefix" value="/WEB-INF/views/" /&gt;
+    &lt;property name="suffix" value=".jsp" /&gt;
+&lt;/bean&gt;
+</code></pre>
+
+<div class="diagram">
+   "board/list"
+        ↓
+   /WEB-INF/views/  +  board/list  +  .jsp
+        ↓
+   /WEB-INF/views/board/list.jsp
+</div>
+</section>
+
+<section><h2>왜 /WEB-INF/views/ 안에?</h2>
+<div class="info-box">
+<p><code>/WEB-INF/</code> 폴더의 특성:</p>
+<ul style="font-size:0.85em;">
+<li><strong>외부에서 직접 URL 접근 불가</strong> — 보안상 보호</li>
+<li>내부에서 forward·include 만 가능 (Spring 이 사용)</li>
+<li>JSP 가 사용자에게 직접 노출되지 않음</li>
+</ul>
+<p style="margin-top:0.4em;">→ 사용자가 <code>localhost/WEB-INF/views/board/list.jsp</code> 로 직접 접근 시도하면 — 404. 컨트롤러를 거쳐야만 JSP 가 보임.</p>
+</div>
+</section>
+
+<section><h2>실수 시 발생하는 오류</h2>
+<table style="font-size:0.7em; width:100%; border-collapse:collapse;">
+<thead><tr style="background:rgba(255,255,255,0.05);">
+<th style="padding:6px;">상황</th><th>증상</th></tr></thead>
+<tbody>
+<tr><td style="padding:5px;">JSP 파일 위치 잘못</td><td>"Could not resolve view with name 'xxx'"</td></tr>
+<tr><td style="padding:5px;">return 의 ViewName 오타</td><td>404 또는 위 메시지</td></tr>
+<tr><td style="padding:5px;">prefix/suffix 설정 빠짐</td><td>이상한 경로로 찾으려 함</td></tr>
+<tr><td style="padding:5px;">ViewName 에 .jsp 함께 넣음</td><td>"...list.jsp.jsp" 가 됨 → 404</td></tr>
+</tbody></table>
+</section>
+
+<section><h2>다른 ViewResolver 들</h2>
+<table style="font-size:0.75em; width:100%; border-collapse:collapse;">
+<thead><tr style="background:rgba(255,255,255,0.05);">
+<th style="padding:6px;">종류</th><th>용도</th></tr></thead>
+<tbody>
+<tr><td style="padding:5px;">InternalResourceViewResolver</td><td>JSP (본 과정)</td></tr>
+<tr><td style="padding:5px;">ThymeleafViewResolver</td><td>Thymeleaf (Boot 에서 자주)</td></tr>
+<tr><td style="padding:5px;">FreeMarkerViewResolver</td><td>FreeMarker</td></tr>
+<tr><td style="padding:5px;">JsonViewResolver</td><td>JSON 응답</td></tr>
+</tbody></table>
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 본 과정은 JSP. 후속 과정은 Thymeleaf 가 일반적.
+</p>
+</section>
+
+<section><h2>redirect: 와 forward:</h2>
+<pre><code class="language-java" data-trim>
+return "board/view";              // 일반 View — JSP 렌더링
+
+return "redirect:/board/list";    // 브라우저에 302 — 다른 URL 로 다시 요청
+return "forward:/board/list";     // 서버 내부에서 다른 컨트롤러로
+</code></pre>
+
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 「<strong>redirect:</strong>」 와 「<strong>forward:</strong>」 는 ViewResolver 가 특별 처리하는 접두사. JSP 매핑 안 함.
+</p>
+</section>
+
+<section><h2>JSP 의 표현 — JSTL + EL</h2>
+<pre><code class="language-jsp" data-trim>
+&lt;%@ page contentType="text/html; charset=UTF-8" %&gt;
+&lt;%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %&gt;
+
+&lt;!-- EL : Model 의 값 출력 --&gt;
+&lt;h1&gt;${board.title}&lt;/h1&gt;
+
+&lt;!-- JSTL c:if : 조건 분기 --&gt;
+&lt;c:if test="${board.writerId == sessionScope.loginUser.id}"&gt;
+    &lt;a&gt;수정&lt;/a&gt;
+&lt;/c:if&gt;
+
+&lt;!-- JSTL c:forEach : 반복 --&gt;
+&lt;c:forEach var="b" items="${boards}"&gt;
+    &lt;tr&gt;&lt;td&gt;${b.title}&lt;/td&gt;&lt;/tr&gt;
+&lt;/c:forEach&gt;
+</code></pre>
+</section>
+
+<section><h2>Model 의 데이터 접근</h2>
+<pre><code class="language-java" data-trim>
+// Controller
+model.addAttribute("board", b);
+model.addAttribute("isOwner", b.getWriterId() == userId);
+model.addAttribute("comments", commentService.list(b.getId()));
+</code></pre>
+
+<pre><code class="language-jsp" data-trim>
+&lt;!-- JSP 에서 --&gt;
+${board.title}              &lt;!-- Board 객체의 getTitle() --&gt;
+${isOwner}                  &lt;!-- boolean --&gt;
+${comments[0].content}      &lt;!-- List 의 첫 요소 --&gt;
+${sessionScope.loginUser}   &lt;!-- 세션의 객체 --&gt;
+</code></pre>
+</section>
+
+<section><h2>실수 — JSP 에 자바 코드 직접</h2>
+<div class="warning-box">
+<div class="box-title">옛 스타일 — 권장 X</div>
+<pre><code data-trim>
+&lt;%
+    Board b = (Board) request.getAttribute("board");
+    if (b.getWriterId() == 5) {
+        out.print("&lt;a&gt;수정&lt;/a&gt;");
+    }
+%&gt;
+</code></pre>
+<p style="font-size:0.85em;">2000 년대 초의 스타일. 현대 JSP 는 <strong>EL + JSTL</strong> 만으로 작성.</p>
+</div>
+</section>
+
+<section><h2>🔄 Before / After</h2><div class="before-after">
+<div class="before"><div class="label">전 차시 끝</div>
+<p style="font-size:0.85em;">컨트롤러의 return "board/list" 가 어떻게 JSP 로 도달하는지 막연.</p>
+</div>
+<div class="arrow">→</div>
+<div class="after"><div class="label">이번 차시 끝</div>
+<p style="font-size:0.85em;">prefix + ViewName + suffix 의 변환 규칙을 안다. JSP 의 EL + JSTL 사용.</p>
+</div>
+</div></section>
+
+<section><h2>이번 차시의 데이터 흐름</h2>
+<div class="flow-diagram"><div class="flow">
+<div class="box">Controller</div><span class="arrow">→</span>
+<div class="box new">"board/list"</div><span class="arrow">→</span>
+<div class="box new">ViewResolver</div><span class="arrow">→</span>
+<div class="box new">/WEB-INF/views/<br>board/list.jsp</div><span class="arrow">→</span>
+<div class="box">HTML 응답</div></div>
+<div class="caption">
+<span class="new-mark">●</span> ViewResolver 가 「이름 → 경로」 변환의 다리
+</div></div>
+</section>
+
+<section><h2>정리</h2><div class="summary"><h3>오늘 들고 가는 것</h3><ul>
+<li>ViewResolver = ViewName → 실제 View 파일 매핑</li>
+<li>prefix + ViewName + suffix 의 조립 규칙</li>
+<li>/WEB-INF/views/ 는 외부 직접 접근 차단</li>
+<li>JSP 는 EL + JSTL 만으로 작성</li>
+<li>redirect: / forward: 는 특별 접두사</li>
+</ul></div>
+</section>
+
+</div></div>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"></script>
+<script>Reveal.initialize({hash:true,slideNumber:'c/t',width:1280,height:720,margin:0.06,transition:'slide',plugins:[RevealHighlight,RevealNotes]});</script>
+<script src="../js/infographics.js?v=2"></script>
+<script src="../js/screenshot.js?v=2"></script></body></html>

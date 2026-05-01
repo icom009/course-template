@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Call by Value | Spring 기초</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/night.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/custom.css"></head><body>
+<div class="reveal"><div class="slides">
+
+<section><div class="session-title"><span class="session-glyph">◇ PART · SPRING</span><h1>Call by Value</h1><p class="subtitle">참조형도 「값」을 복사한다</p></div></section>
+
+<section><h2>학습 목표</h2><div class="objectives"><ul>
+<li class="fragment fade-up">자바의 데이터 전달 방식이 무엇인지 안다</li>
+<li class="fragment fade-up">기본형과 참조형 모두 「값 복사」가 적용됨을 안다</li>
+<li class="fragment fade-up">메서드에서 객체를 변경했을 때 원본이 바뀌는지 판단할 수 있다</li>
+</ul></div></section>
+
+<section><h2>⚠️ 가장 흔한 오해</h2><div class="pain-point"><div class="pain-title">학생들이 자주 헷갈리는 것</div>
+<p>"메서드 안에서 객체를 바꿨는데 — 어떨 땐 원본이 바뀌고, 어떨 땐 안 바뀌고. 도대체 규칙이 뭐예요?"</p></div></section>
+
+<section><h2>🛠️ Call by Value</h2><div class="new-tool"><div class="tool-title">자바는 항상 「값」을 복사한다</div>
+<p>메서드에 인자를 넘길 때 자바는 항상 변수의 <strong>값을 복사</strong>해서 전달합니다. 기본형이든 참조형이든 마찬가지.</p></div>
+<p style="font-size:0.85em; margin-top:0.4em;">단, <strong>참조형의 「값」은 객체 자체가 아니라 「주소」</strong>라는 점이 중요합니다.</p></section>
+
+<section><h2>기본형 — int, double 등</h2>
+<pre><code class="language-java" data-trim>
+void changeNumber(int x) {
+    x = 999;          // 복사된 값을 바꿈
+}
+
+int a = 1;
+changeNumber(a);
+System.out.println(a);  // 1 (안 바뀜)
+</code></pre>
+<p style="font-size:0.85em;">a 의 값(1) 이 복사되어 x 에 들어감. x 를 999 로 바꿔도 a 와는 무관.</p></section>
+
+<section><h2>참조형 — 객체</h2>
+<pre><code class="language-java" data-trim>
+void changeName(User u) {
+    u.name = "Bob";   // 같은 객체의 필드 변경
+}
+
+User user = new User("Alice");
+changeName(user);
+System.out.println(user.name);  // Bob (바뀜!)
+</code></pre>
+<p style="font-size:0.85em;">user 의 값(객체 주소)이 복사되어 u 에 들어감. 둘 다 같은 객체를 가리키므로 필드 변경은 보임.</p></section>
+
+<section><h2>그러나 — 참조 자체를 바꾸면?</h2>
+<pre><code class="language-java" data-trim>
+void replaceUser(User u) {
+    u = new User("Bob");  // u 가 가리키는 곳을 다른 객체로
+}
+
+User user = new User("Alice");
+replaceUser(user);
+System.out.println(user.name);  // Alice (안 바뀜!)
+</code></pre>
+<p style="font-size:0.85em;">u 가 가리키는 「주소」를 바꿨을 뿐. user 는 여전히 처음 객체를 가리킴.</p></section>
+
+<section><h2>핵심 정리</h2>
+<div class="info-box">
+<ul style="font-size:0.9em;">
+<li>자바는 <strong>항상 값 복사</strong></li>
+<li>참조형의 「값」 = 객체 주소</li>
+<li><strong>같은 객체의 내용을 변경</strong> → 원본에 보임</li>
+<li><strong>변수가 가리키는 곳 자체를 변경</strong> → 원본에 안 보임</li>
+</ul>
+</div></section>
+
+<section><h2>이번 차시의 데이터 흐름</h2><div class="flow-diagram"><div class="flow">
+<div class="box new">변수의 값 복사</div><span class="arrow">→</span>
+<div class="box">메서드 인자</div></div>
+<div class="caption"><span class="new-mark">●</span> 「값」의 정체가 기본형/참조형마다 다르다는 사실이 새로 등장</div></div></section>
+
+<section><h2>정리</h2><div class="summary"><h3>오늘 들고 가는 것</h3><ul>
+<li>자바는 항상 <strong>Call by Value</strong></li>
+<li>객체 필드 변경은 보이고, 참조 교체는 안 보인다</li>
+<li>이 규칙이 뒤에서 의존성 주입 이해의 기초가 됨</li>
+</ul></div>
+<p style="margin-top:0.8em; font-size:0.7em; color:var(--text-muted);">다음: <strong>클래스 vs 인스턴스</strong>.</p></section>
+
+</div></div>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"></script>
+<script>Reveal.initialize({hash:true,slideNumber:'c/t',width:1280,height:720,margin:0.06,transition:'slide',plugins:[RevealHighlight,RevealNotes]});</script>
+<script src="../js/infographics.js?v=2"></script>
+<script src="../js/screenshot.js?v=2"></script></body></html>

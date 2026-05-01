@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>비동기 통신이 푼 문제 | Spring 기초</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/night.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/custom.css"></head><body>
+<div class="reveal"><div class="slides">
+
+<section><div class="session-title">
+<span class="session-glyph">◇ PART · REST</span>
+<h1>비동기 통신이 푼 문제</h1>
+<p class="subtitle">전체 새로고침 vs 부분 통신</p>
+</div></section>
+
+<section><h2>학습 목표</h2><div class="objectives"><ul>
+<li class="fragment fade-up"><span class="keyword">동기 통신</span> 의 답답함을 직접 본다</li>
+<li class="fragment fade-up"><span class="keyword">비동기 통신(Ajax)</span> 가 무엇을 푸는지 안다</li>
+<li class="fragment fade-up">현대 웹사이트가 왜 이렇게 부드러운지 이해한다</li>
+<li class="fragment fade-up">Part 6 에서 만들 결과물을 미리 그린다</li>
+</ul></div></section>
+
+<section><h2>⚠️ v6 게시판의 답답함</h2>
+<div class="pain-point">
+<div class="pain-title">댓글 한 번 다는 데 일어나는 일</div>
+<ol style="font-size:0.85em;">
+<li>댓글 입력 → 「등록」 클릭</li>
+<li>화면 전체가 깜빡 (흰 화면 잠깐)</li>
+<li>모든 이미지·CSS·JS 다시 다운로드</li>
+<li>스크롤이 맨 위로 — 어디 있었는지 잃어버림</li>
+<li>다시 댓글 영역까지 스크롤</li>
+<li>단 한 줄 추가하려고 위 5 단계 모두 발생</li>
+</ol>
+<p style="margin-top:0.4em;">댓글 5 개 달면 5 번 새로고침. 100 개 달면 100 번. 사용자 경험이 끔찍합니다.</p>
+</div>
+</section>
+
+<section><h2>옛날 웹의 모습</h2>
+<div class="info-box">
+<p>1990 년대~2000 년대 초의 웹사이트는 모두 이런 식이었습니다:</p>
+<ul style="font-size:0.85em;">
+<li>버튼 클릭 = 페이지 통째로 새로고침</li>
+<li>네트워크가 느려서 흰 화면 시간이 길었음</li>
+<li>「인터넷 익스플로러 5」 시대의 풍경</li>
+</ul>
+<p style="margin-top:0.4em;">2005 년 구글 맵스가 등장했을 때 — 지도를 드래그해도 새로고침 없이 부드럽게 이어지는 게 충격적이었습니다. 그게 바로 <strong>Ajax</strong> 의 첫 대중화 사례.</p>
+</div>
+</section>
+
+<section><h2>🛠️ 비동기 통신 (Ajax) 의 발상</h2>
+<div class="new-tool">
+<div class="tool-title">「부분만 갱신」</div>
+<p>전체 페이지를 다시 받지 말고 — JS 로 백그라운드에서 서버에 요청 → 작은 데이터만 받아 → 화면의 일부분만 직접 수정.</p>
+</div>
+
+<div class="diagram">
+   동기 통신 (전통)
+       form 제출
+        ↓
+       서버: HTML 페이지 통째로
+        ↓
+       브라우저: 전체 다시 그림 (깜빡)
+
+   비동기 통신 (Ajax)
+       JS: fetch() 호출
+        ↓
+       서버: JSON 만 작게
+        ↓
+       JS: 화면의 일부분만 수정
+       (페이지 그대로 매끄럽게)
+</div>
+</section>
+
+<section><h2>비유 — 식당의 두 방식</h2>
+<div class="diagram">
+   동기 (옛 방식)
+       손님: "추가 주문 1개"
+        ↓
+       종업원: "잠깐만요" → 주방 갔다옴
+        ↓
+       손님이 자리에서 나가고 다시 들어옴
+        ↓ 손님: 자기 자리·메뉴판 다 다시 받음
+        ↓ 추가 주문 한 그릇 받음
+
+   비동기 (현대)
+       손님: "추가 주문 1개"
+        ↓ 종업원이 알아서 갔다옴
+       손님은 그대로 앉아서 다른 일
+        ↓
+       종업원: 추가 주문만 살짝 갖다놓음
+       손님: 메뉴판·자리·기존 음식 그대로
+</div>
+</section>
+
+<section><h2>Ajax 의 어원</h2>
+<div class="info-box">
+<p><strong>Ajax</strong> = Asynchronous JavaScript and XML</p>
+<p style="margin-top:0.4em; font-size:0.85em;">옛날엔 XML 로 데이터를 주고받았는데, 지금은 거의 모두 <strong>JSON</strong> 으로. 그래도 「Ajax」 라는 단어는 그대로 사용.</p>
+<p style="margin-top:0.4em; font-size:0.85em;">현대에는 「<strong>비동기 통신</strong>」 이라는 한국어 표현이 더 정확. 또는 「fetch」 라는 API 이름으로 부르기도 함.</p>
+</div>
+</section>
+
+<section><h2>현대 웹의 어디서 비동기가 쓰이나</h2>
+<div class="diagram">
+   페이스북·인스타그램
+       → 스크롤 내리면 새 글 불러옴 (전체 새로고침 없이)
+
+   네이버 검색
+       → 입력 중에 자동 완성 추천이 떠오름
+
+   카카오톡 웹
+       → 새 메시지가 화면에 자동 등장
+
+   구글 맵스
+       → 드래그하면 지도가 부드럽게 이어짐
+
+   유튜브
+       → 좋아요·구독 클릭 시 페이지 그대로
+
+   쇼핑몰 장바구니
+       → 「담기」 누르면 작은 알림만 뜸
+
+   온라인 게임 / 화상회의
+       → 실시간으로 데이터 주고받음 (WebSocket 등)
+
+   현대 웹의 사실상 모든 부드러운 인터랙션 = Ajax
+</div>
+</section>
+
+<section><h2>두 통신의 4 가지 차이</h2>
+<table style="font-size:0.7em; width:100%; border-collapse:collapse;">
+<thead><tr style="background:rgba(255,255,255,0.05);">
+<th style="padding:6px;">항목</th><th>동기 (전통)</th><th>비동기 (Ajax)</th></tr></thead>
+<tbody>
+<tr><td style="padding:5px;">트리거</td><td>form 제출 / 링크 클릭</td><td>JS 호출 (fetch)</td></tr>
+<tr><td style="padding:5px;">서버 응답</td><td>HTML 페이지 전체</td><td>JSON 데이터만</td></tr>
+<tr><td style="padding:5px;">화면 처리</td><td>브라우저가 전체 다시 그림</td><td>JS 가 부분 수정</td></tr>
+<tr><td style="padding:5px;">네트워크</td><td>HTML+CSS+이미지+JS 모두 (수백 KB)</td><td>JSON 만 (수 KB)</td></tr>
+<tr><td style="padding:5px;">사용자 경험</td><td>깜빡 + 스크롤 잃음</td><td>매끄러움 + 그대로</td></tr>
+</tbody></table>
+</section>
+
+<section><h2>코드 비교 — 동기 (form 제출)</h2>
+<pre><code class="language-html" data-trim>
+&lt;form action="/reply/add"
+      method="post"&gt;
+    &lt;input name="content"/&gt;
+    &lt;button&gt;등록&lt;/button&gt;
+&lt;/form&gt;
+
+// 서버 (@Controller)
+return "redirect:/board/view?num=...";
+
+// → 페이지 전체 다시 받음
+</code></pre>
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 등록 후 redirect 가 일어나면 화면을 통째로 다시 그립니다.
+</p>
+</section>
+
+<section><h2>코드 비교 — 비동기 (fetch)</h2>
+<pre><code class="language-javascript" data-trim>
+&lt;form onsubmit="add(event)"&gt;
+    &lt;input id="content"/&gt;
+    &lt;button&gt;등록&lt;/button&gt;
+&lt;/form&gt;
+
+async function add(event) {
+    event.preventDefault();
+    const res = await fetch(
+      '/api/replies', {...});
+    const newR = await res.json();
+    // DOM 에 추가만
+    list.appendChild(render(newR));
+}
+
+// → 페이지 그대로
+</code></pre>
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 같은 화면 안에서 새 댓글만 살짝 붙입니다.
+</p>
+</section>
+
+<section><h2>Ajax 의 등장 — 패러다임 전환</h2>
+<div class="info-box">
+<p>2005 년 「Ajax」 라는 용어가 만들어진 이후 웹의 모습이 통째로 바뀌었습니다:</p>
+<ul style="font-size:0.85em;">
+<li>「<strong>웹사이트</strong>」 → 「<strong>웹 애플리케이션</strong>」</li>
+<li>매번 페이지 이동 → 한 페이지에서 다양한 기능 (SPA, Single Page App)</li>
+<li>HTML 위주 → JSON API 위주</li>
+<li>서버 렌더링 위주 → 클라이언트(JS) 렌더링 증가</li>
+<li>React·Vue·Angular 같은 SPA 프레임워크 등장</li>
+</ul>
+</div>
+</section>
+
+<section><h2>본 과정에서 만들 비동기 기능</h2>
+<ul style="font-size:0.9em;">
+<li class="fragment"><strong>댓글 비동기 작성</strong> (v9) — 입력하고 등록 누르면 새로고침 없이 댓글 등장</li>
+<li class="fragment"><strong>조회수 자동 증가</strong> (v10) — 글 들어가면 +1 즉시 반영</li>
+<li class="fragment"><strong>사진 첨부</strong> (v10) — ADD COLUMN photo 와 짝</li>
+<li class="fragment"><strong>FormData 업로드</strong> (v10) — multipart/form-data</li>
+</ul>
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 모두 페이지 그대로 + 부분만 변경. 현대 웹의 표준.
+</p>
+</section>
+
+<section><h2>비동기의 두 축 — 서버 + 클라이언트</h2>
+<div class="diagram">
+   서버 측 (Spring) — 다음 차시들에서
+       @RestController
+       @RequestBody / @ResponseBody
+       JSON 자동 변환 (Jackson)
+       HTTP 메서드별 어노테이션 (Get/Post/Put/Delete Mapping)
+
+   클라이언트 측 (JavaScript) — 함께 학습
+       fetch API
+       async / await
+       JSON.stringify / JSON.parse
+       DOM 조작 (appendChild, innerHTML 등)
+</div>
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 본 과정은 <strong>둘 다</strong> 다룹니다. 양쪽이 짝을 이뤄야 비동기가 동작.
+</p>
+</section>
+
+<section><h2>fetch — 가장 단순한 형태</h2>
+<pre><code class="language-javascript" data-trim>
+// GET — 데이터 받기
+const res = await fetch('/api/boards/3');
+const board = await res.json();
+console.log(board.title);   // myboard.num=3 의 제목
+
+// POST — 데이터 보내기
+const r2 = await fetch('/api/boards', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+        title: '새 글',
+        content: '안녕하세요'
+    })
+});
+const newBoard = await r2.json();
+</code></pre>
+
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 「URL 에 요청 보내고 → 응답 받음」. 이전과 발상은 같지만 — JS 가 직접 통제.
+</p>
+</section>
+
+<section><h2>JSON — 비동기의 공용어</h2>
+<pre><code class="language-javascript" data-trim>
+// JavaScript 객체
+const board = {
+    num: 3,
+    title: "첫 글",
+    writer: "hong"
+};
+
+// JSON 문자열로 변환 (서버로 보낼 때)
+const text = JSON.stringify(board);
+// '{"num":3,"title":"첫 글","writer":"hong"}'
+
+// JSON 문자열을 객체로 (서버에서 받을 때)
+const obj = JSON.parse(text);
+console.log(obj.title);  // "첫 글"
+</code></pre>
+
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 자바와 자바스크립트가 「JSON」 이라는 공용어로 대화. 서로 모르는 언어지만 JSON 으로 변환·해석.
+</p>
+</section>
+
+<section><h2>F12 로 직접 보기 — 현대 사이트</h2>
+<ol style="font-size:0.9em;">
+<li class="fragment">네이버 또는 인스타그램 접속</li>
+<li class="fragment">F12 → Network → Fetch/XHR 필터 선택</li>
+<li class="fragment">스크롤 내려보기, 좋아요 누르기, 검색하기 등</li>
+<li class="fragment">매 액션마다 작은 JSON 요청이 발생함을 봄</li>
+</ol>
+
+<div class="screenshot">
+<div class="label">스크린샷</div>
+<div class="desc">F12 Network → Fetch/XHR 탭. 사용자 액션마다 작은 JSON 응답들이 줄지어 보이는 화면</div>
+</div>
+</section>
+
+<section><h2>비동기 = 사용자 경험의 혁명</h2>
+<div class="info-box">
+<p>비동기 통신이 가져온 변화 4 가지:</p>
+<ul style="font-size:0.85em;">
+<li><strong>① 화면 깜빡 제거</strong> — 사용자 만족도 ↑</li>
+<li><strong>② 네트워크 절약</strong> — 모바일 환경에서 결정적</li>
+<li><strong>③ 빠른 반응</strong> — 입력하는 동안 자동 검증·자동 저장</li>
+<li><strong>④ 풍부한 인터랙션</strong> — 게임·지도·실시간 채팅 가능</li>
+</ul>
+<p style="margin-top:0.4em;">현대 웹사이트가 「<strong>앱처럼 매끄럽게</strong>」 동작하는 이유의 80%.</p>
+</div>
+</section>
+
+<section><h2>주의 — 비동기의 함정</h2>
+<div class="warning-box">
+<div class="box-title">조심할 것</div>
+<ul style="font-size:0.85em;">
+<li><strong>네트워크 실패 처리</strong> — 동기는 「에러 페이지」 표시, 비동기는 직접 처리해야 함</li>
+<li><strong>로딩 상태 표시</strong> — 사용자가 「뭔가 진행 중」을 알도록</li>
+<li><strong>중복 클릭 방지</strong> — 빠르게 두 번 누르면 두 번 요청</li>
+<li><strong>SEO 영향</strong> — JS 로 그린 화면을 검색 엔진이 못 읽을 수 있음</li>
+<li><strong>브라우저 뒤로가기</strong> — URL 안 바뀌면 뒤로가기 동작 X</li>
+</ul>
+</div>
+</section>
+
+<section><h2>본 과정의 학습 순서</h2>
+<ol style="font-size:0.9em;">
+<li class="fragment"><strong>이번 차시</strong> — 비동기 통신의 「왜?」 를 안다</li>
+<li class="fragment"><strong>JSON 형식 깊이 보기</strong> — 데이터 표기법 이해</li>
+<li class="fragment"><strong>@RestController</strong> — 서버 측 도구 등장</li>
+<li class="fragment"><strong>HTTP 메서드 어노테이션</strong> — RESTful URL 디자인</li>
+<li class="fragment"><strong>★ v8 REST 변환</strong> — v6 게시판을 REST API 로</li>
+<li class="fragment"><strong>★ v9 비동기 댓글</strong> — fetch 첫 사용</li>
+<li class="fragment"><strong>★ v10 자잘한 비동기</strong> — 패턴 응용</li>
+<li class="fragment"><strong>★ v∞ 디버깅 워크숍</strong> — 마무리</li>
+</ol>
+</section>
+
+<section><h2>🔄 Before / After</h2><div class="before-after">
+<div class="before"><div class="label">Part 5 끝 (v6/v7)</div>
+<p style="font-size:0.85em;">동작하는 게시판이 있다. 매 클릭마다 화면 깜빡.</p>
+</div>
+<div class="arrow">→</div>
+<div class="after"><div class="label">이번 차시 끝</div>
+<p style="font-size:0.85em;">동기와 비동기 차이를 안다. 다음 차시들에서 만들 결과물의 큰 그림이 그려진다.</p>
+</div>
+</div></section>
+
+
+      <section>
+        <h2>📊 한 그림 정리</h2>
+        <div data-infographic="sync-vs-async"></div>
+      </section>
+
+      <section><h2>이번 차시의 데이터 흐름</h2>
+<div class="flow-diagram"><div class="flow">
+<div class="box">사용자 액션</div><span class="arrow">→</span>
+<div class="box new">JS fetch</div><span class="arrow">→</span>
+<div class="box">서버 (REST API)</div><span class="arrow">→</span>
+<div class="box new">JSON 응답</div><span class="arrow">→</span>
+<div class="box new">JS DOM 수정</div></div>
+<div class="caption">
+<span class="new-mark">●</span> JS 가 흐름의 양쪽 끝(시작·도착)을 통제 — 페이지는 그대로
+</div></div>
+</section>
+
+<section><h2>정리</h2><div class="summary"><h3>오늘 들고 가는 것</h3><ul>
+<li>동기 = 전체 새로고침 / 비동기 = 부분 갱신</li>
+<li>Ajax = 비동기 통신의 통칭. 현대는 fetch 와 JSON</li>
+<li>현대 웹 사이트의 매끄러움 = Ajax 의 결과</li>
+<li>본 과정에서 v8~v10 으로 단계별 비동기 게시판 구축</li>
+<li>비동기에는 서버(@RestController) + 클라이언트(fetch) 양축</li>
+</ul></div>
+<p style="margin-top:0.8em; font-size:0.7em; color:var(--text-muted);">
+다음: <strong>JSON 형식 깊이</strong> — DTO 가 JSON 으로 변환되는 그 순간.
+</p>
+</section>
+
+</div></div>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"></script>
+<script>Reveal.initialize({hash:true,slideNumber:'c/t',width:1280,height:720,margin:0.06,transition:'slide',plugins:[RevealHighlight,RevealNotes]});</script>
+<script src="../js/infographics.js?v=2"></script>
+<script src="../js/screenshot.js?v=2"></script></body></html>

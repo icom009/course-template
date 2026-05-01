@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>첫 종단간 흐름 — 읽기 자료</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/example.css"></head><body>
+<div class="container">
+
+<div class="header"><div class="version-badge">v0.5</div><div class="session-num">★ PART · MVC</div>
+<h1>첫 종단간 흐름</h1><p class="subtitle">Spring MVC — 읽기 자료</p></div>
+
+<div class="minimap"><div class="minimap-title">📍 지금 어디를 만지고 있나요?</div><div class="flow">
+<div class="box">브라우저</div><span class="arrow">→</span>
+<div class="box active">Spring MVC</div><span class="arrow">→</span>
+<div class="box">DB</div></div></div>
+
+<div class="terms"><h3>핵심 용어</h3><div class="term-item"><span class="term-name">종단간 (End-to-end)</span><span class="term-desc">브라우저 입력에서 화면 출력까지 모든 계층이 연결된 상태.</span></div>
+<div class="term-item"><span class="term-name">v0.5</span><span class="term-desc">우리 프로젝트의 두 번째 마일스톤. DB 없는 종단간.</span></div></div>
+
+<h2>1. 문제</h2>
+<div class="pain-point"><div class="pain-title">전 차시까지의 답답함</div><p>아직 흐름도가 부분 부분이다. DB 없이라도 종단간을 한 번 완성해보자.</p></div>
+
+<h2>2. 새 도구</h2>
+<div class="new-tool"><div class="tool-title">하드코딩 + 종단간</div><p>폼 → Controller → Service → (서비스에 하드코딩 데이터) → JSP. 흐름도가 처음 한 줄로 완성.</p></div>
+
+<h2>3. 코드</h2>
+<pre><code>@Service
+public class GreetService {
+    public String getGreeting(String name) {
+        return "안녕하세요, " + name + "님!";  // DB 없이
+    }
+}
+
+@Controller
+public class GreetController {
+    @Autowired GreetService service;
+
+    @RequestMapping("/greet")
+    public String greet(@RequestParam String name, Model model) {
+        model.addAttribute("msg", service.getGreeting(name));
+        return "greet";
+    }
+}
+
+&lt;!-- greet.jsp --&gt;
+&lt;h1&gt;${msg}&lt;/h1&gt;</code></pre>
+
+<h2>4. 정리</h2>
+<ul><li>DB 없이도 종단간 흐름 완성 가능</li>
+<li>Service 의 하드코딩 자리는 다음 Part 에서 DB 로 교체</li>
+<li>v0.5 — 우리 프로젝트의 두 번째 마일스톤</li></ul>
+
+<h2>5. Before / After</h2>
+<div class="before-after">
+<div class="before"><div class="label">전 차시 끝</div><p>아직 흐름도가 부분 부분이다. DB 없이라도 종단간을 한 번 완성해보자.</p></div>
+<div class="arrow">→</div>
+<div class="after"><div class="label">이번 차시 끝</div><p>폼 → Controller → Service → JSP 의 종단간 흐름이 처음 한 줄로 이어진다. v0.5 마일스톤.</p></div>
+</div>
+
+<div class="nav"><a href="mvc-encoding-filter.html">&larr; 이전</a><a href="../index.html">메인으로</a><a href="db-basics.html">다음 &rarr;</a></div>
+</div><script src="../js/screenshot.js?v=2"></script></body></html>

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>첫 Spring 프로젝트 — 실습</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/lab.css"></head><body>
+<div class="container">
+<div class="header"><div class="badge">▣ LAB · SPRING</div><h1>Spring 프로젝트 첫 실행</h1><p class="subtitle">첫 Spring 프로젝트 + Bean 주입 — 실습 / 약 30분</p></div>
+
+<div class="minimap"><div class="minimap-title">📍 지금 어디를 만지고 있나요?</div><div class="flow">
+<div class="box">브라우저</div><span class="arrow">→</span><div class="box">Tomcat</div><span class="arrow">→</span>
+<div class="box active">Controller + Service Bean</div><span class="arrow">→</span><div class="box">View</div><span class="arrow">→</span><div class="box">DB</div></div></div>
+
+<div class="prerequisites"><h3>사전 준비</h3><ul>
+<li>전 차시 「개발 환경 구축」 완료 (JDK · Eclipse · Tomcat 연동)</li>
+</ul></div>
+
+<div class="step"><div class="step-header"><div class="step-num">1</div><div class="step-title">Spring Legacy Project 생성</div></div>
+<ol>
+<li>Eclipse 메뉴: <code>File → New → Other...</code></li>
+<li>「Spring」 폴더 → <code>Spring Legacy Project</code></li>
+<li>Project Name: <code>spring-demo</code></li>
+<li>Template: <code>Spring MVC Project</code> 선택</li>
+<li>패키지명: <code>com.example.demo</code> (점 3 개 이상 필수)</li>
+<li>Finish</li>
+</ol>
+<div class="screenshot"><div class="label">스크린샷</div><div class="desc">Spring Legacy Project 마법사의 Spring MVC Project 템플릿 선택 화면</div></div>
+<div class="checkpoint"><div class="check-title">CHECKPOINT</div><ul>
+<li>Project Explorer 에 자동 생성된 폴더 구조가 보이나요? (<code>src/main/java</code>, <code>src/main/webapp</code>, <code>pom.xml</code> 등)</li>
+</ul></div></div>
+
+<div class="step"><div class="step-header"><div class="step-num">2</div><div class="step-title">⚠️ Maven Update Project</div></div>
+<p>프로젝트 우클릭 → <code>Maven → Update Project... → OK</code></p>
+<p>처음에 의존성을 다운로드하는 시간이 좀 걸릴 수 있습니다. 인터넷 연결 확인.</p>
+<div class="checkpoint"><div class="check-title">CHECKPOINT</div><ul>
+<li>Maven Dependencies 폴더에 spring-* jar 들이 보이나요?</li>
+</ul></div></div>
+
+<div class="step"><div class="step-header"><div class="step-num">3</div><div class="step-title">HelloService 작성</div></div>
+<p><code>src/main/java/com/example/demo</code> 패키지에 새 클래스 <code>HelloService</code>:</p>
+<pre><code>package com.example.demo;
+
+import org.springframework.stereotype.Service;
+
+@Service
+public class HelloService {
+    public String getMessage() {
+        return "Spring Bean 으로 인사드립니다!";
+    }
+}</code></pre>
+</div>
+
+<div class="step"><div class="step-header"><div class="step-num">4</div><div class="step-title">HomeController 수정</div></div>
+<p>템플릿이 자동 생성한 <code>HomeController</code> 를 다음으로 교체:</p>
+<pre><code>package com.example.demo;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+@Controller
+public class HomeController {
+
+    @Autowired
+    private HelloService helloService;
+
+    @RequestMapping("/")
+    public String home(Model model) {
+        model.addAttribute("msg", helloService.getMessage());
+        return "home";
+    }
+}</code></pre>
+<div class="checkpoint"><div class="check-title">CHECKPOINT</div><ul>
+<li>빨간 줄이 있나요? import 가 모두 제대로 들어왔는지 확인.</li>
+</ul></div></div>
+
+<div class="step"><div class="step-header"><div class="step-num">5</div><div class="step-title">JSP 수정</div></div>
+<p><code>src/main/webapp/WEB-INF/views/home.jsp</code> 를 다음으로 교체:</p>
+<pre><code>&lt;%@ page contentType="text/html; charset=UTF-8" %&gt;
+&lt;html&gt;
+&lt;head&gt;&lt;title&gt;Hello Spring&lt;/title&gt;&lt;/head&gt;
+&lt;body&gt;
+    &lt;h1&gt;${msg}&lt;/h1&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+</div>
+
+<div class="step"><div class="step-header"><div class="step-num">6</div><div class="step-title">Run on Server</div></div>
+<ol>
+<li>프로젝트 우클릭 → <code>Run As → Run on Server</code></li>
+<li>전 차시에서 등록한 Tomcat 선택 → Finish</li>
+<li>Console 에 startup 로그 확인</li>
+<li>Eclipse 내장 브라우저(또는 외부 크롬)에 화면 등장</li>
+</ol>
+<div class="screenshot"><div class="label">스크린샷</div><div class="desc">"Spring Bean 으로 인사드립니다!" 가 큰 글씨로 보이는 결과 화면</div></div>
+<div class="expected"><div class="expected-title">예상 결과</div><p>주소창: <code>http://localhost:8080/spring-demo/</code><br>화면: <strong>Spring Bean 으로 인사드립니다!</strong></p></div>
+<div class="checkpoint"><div class="check-title">CHECKPOINT — 그 사이에 일어난 일</div><ul>
+<li>Tomcat 시작 시 컨테이너가 <code>HelloService</code> 와 <code>HomeController</code> 를 모두 Bean 으로 등록</li>
+<li>Controller 가 만들어질 때 <code>@Autowired</code> 자리에 HelloService 자동 주입</li>
+<li>요청이 오면 Controller 가 Service 를 호출 → 결과를 모델에 담고 → JSP 가 화면 생성</li>
+</ul></div></div>
+
+<div class="step"><div class="step-header"><div class="step-num">7</div><div class="step-title">실험 — Bean 등록 빼보기</div></div>
+<p>HelloService 의 <code>@Service</code> 를 잠시 주석 처리하고 다시 실행해보세요. 무엇이 일어나나?</p>
+<pre><code>// @Service  ← 주석!
+public class HelloService { ... }</code></pre>
+<div class="expected"><div class="expected-title">예상 결과</div><p>500 Server Error. Console 에 「No qualifying bean of type 'HelloService' available」 같은 메시지.</p></div>
+<p>이걸 보고 다시 <code>@Service</code> 를 살리세요. 「Bean 등록」이 없으면 「자동 주입」이 불가능하다는 사실 체감.</p>
+</div>
+
+<div class="checklist"><h3>실습 완료 체크리스트</h3>
+<div class="check-item"><input type="checkbox"> Spring Legacy Project 생성</div>
+<div class="check-item"><input type="checkbox"> Maven Update Project 실행</div>
+<div class="check-item"><input type="checkbox"> HelloService Bean 작성</div>
+<div class="check-item"><input type="checkbox"> HomeController 에서 <code>@Autowired</code></div>
+<div class="check-item"><input type="checkbox"> JSP 의 <code>${msg}</code> 표현식</div>
+<div class="check-item"><input type="checkbox"> Tomcat 실행 후 화면 확인</div>
+<div class="check-item"><input type="checkbox"> <code>@Service</code> 제거 시 에러 직접 봄</div>
+</div>
+
+<div class="nav"><a href="spring-eclipse-tomcat.html">&larr; 이전</a><a href="../index.html">메인으로</a><a href="mvc-why-separation.html">다음 &rarr;</a></div>
+</div><script src="../js/screenshot.js?v=2"></script></body></html>

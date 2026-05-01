@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>v2 원시적인 회원가입/로그인 | Spring 기초</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/night.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/custom.css"></head><body>
+<div class="reveal"><div class="slides">
+
+<section>
+<div class="version-badge">v2</div>
+<div class="session-title">
+<span class="session-glyph">★ MILESTONE · BOARD</span>
+<h1>원시적인 회원가입/로그인</h1>
+<p class="subtitle">의도적으로 위험한 첫 버전</p>
+</div></section>
+
+<section><h2>학습 목표</h2><div class="objectives"><ul>
+<li class="fragment fade-up">의도적으로 「<span class="keyword">위험한 인증</span>」 을 만들어본다</li>
+<li class="fragment fade-up">평문 비밀번호 / 무상태 의 문제를 직접 체감한다</li>
+<li class="fragment fade-up">v3 에서 무엇을 고칠지 명확히 본다</li>
+</ul></div></section>
+
+<section><h2>⚠️ 왜 일부러 위험하게?</h2>
+<div class="pain-point">
+<div class="pain-title">학습 전략 — 「불편 먼저, 도구 나중」</div>
+<p>v3 에서 BCrypt + 세션을 도입할 때 — 그 도구가 「왜 좋은지」 가 머리에 박히려면, 도구 없는 상태의 답답함을 직접 겪어봐야 합니다.</p>
+<p style="margin-top:0.4em;">v2 는 일부러 위험. v3 가 그 위험을 푸는 모습을 다음 차시에서.</p>
+</div>
+</section>
+
+<section><h2>🛠️ v2 의 두 가지 의도된 위험</h2>
+<div class="new-tool">
+<div class="tool-title">평문 + 무상태</div>
+<ul style="font-size:0.9em;">
+<li><strong>① 평문 비밀번호</strong> — 입력 그대로 DB 에 저장</li>
+<li><strong>② 무상태 로그인</strong> — 로그인 성공해도 세션 저장 안 함 → 페이지 옮기면 풀림</li>
+</ul>
+</div>
+</section>
+
+<section><h2>v2 의 테이블 — 최소 두 컬럼</h2>
+<pre><code class="language-sql" data-trim>
+CREATE TABLE mymember (
+    id  VARCHAR(50)  PRIMARY KEY,
+    pwd VARCHAR(20)  NOT NULL
+);
+</code></pre>
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 <code>pwd VARCHAR(20)</code> — 평문 비밀번호엔 충분. 하지만 v3 에서 BCrypt 도입 시 이 길이가 문제.
+</p>
+</section>
+
+<section><h2>회원가입 — 평문 그대로</h2>
+<pre><code class="language-java" data-trim>
+package com.smhrd.service;
+
+@Service
+public class MemberService {
+    @Autowired private MemberMapper mapper;
+
+    // ⚠️ 평문 그대로 저장 (의도적 위험)
+    public void signup(Member m) {
+        mapper.insert(m);  // pwd 변환 없이 그대로
+    }
+}
+</code></pre>
+
+<pre><code class="language-sql" data-trim>
+-- DB 의 결과
+SELECT id, pwd FROM mymember;
+
+id      | pwd
+--------+----------
+hong    | mypw1234     ← 평문 그대로!
+kim     | secret999
+</code></pre>
+</section>
+
+<section><h2>왜 평문이 위험한가</h2>
+<div class="warning-box">
+<div class="box-title">시나리오</div>
+<ul style="font-size:0.85em;">
+<li>DB 가 어떤 이유로든 유출되면 — 모든 사용자의 비밀번호 노출</li>
+<li>관리자도 사용자 비밀번호를 그대로 봄 → 신뢰 문제</li>
+<li>사용자들이 같은 비밀번호를 다른 사이트에도 쓰는 경우 → 다른 서비스도 위험</li>
+<li>법적 책임 — 개인정보보호법 위반 가능성</li>
+</ul>
+</div>
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 v3 에서 BCrypt 단방향 해시로 해결.
+</p>
+</section>
+
+<section><h2>로그인 — 비교만</h2>
+<pre><code class="language-java" data-trim>
+public Member login(String id, String pwd) {
+    Member m = mapper.selectOne(id);
+    if (m != null &amp;&amp; m.getPwd().equals(pwd)) {
+        return m;       // 단순 문자열 비교
+    }
+    return null;
+}
+</code></pre>
+
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 BCrypt 같은 해시 비교 X. 단순 String.equals().
+</p>
+</section>
+
+<section><h2>로그인 처리 — 세션 저장 X</h2>
+<pre><code class="language-java" data-trim>
+@PostMapping("/login")
+public String login(@RequestParam String id,
+                     @RequestParam String pwd) {
+    Member m = service.login(id, pwd);
+    if (m == null) {
+        return "redirect:/login?error";
+    }
+    return "redirect:/";
+    // ⚠️ session.setAttribute 안 함!
+}
+</code></pre>
+
+<div class="warning-box" style="margin-top:0.4em;">
+<div class="box-title">결과</div>
+<p style="font-size:0.85em;">로그인은 성공하지만 — 다른 페이지로 이동하면 「누구였는지」 모름. 모든 페이지가 비로그인 상태.</p>
+</div>
+</section>
+
+<section><h2>실험 — 직접 체감</h2>
+<ol style="font-size:0.85em;">
+<li class="fragment">v2 코드로 회원가입</li>
+<li class="fragment">DB 직접 SELECT — 비밀번호가 평문으로 보임 ⚠️</li>
+<li class="fragment">로그인 성공</li>
+<li class="fragment">메인 페이지 이동 — 「로그인 안 한 상태」 처럼 보임</li>
+<li class="fragment">「로그인이 안 유지되네...?」 직접 느껴봄</li>
+<li class="fragment">왜 그런지를 안 채로 v3 로 진행 → 해결책의 의미가 살아남</li>
+</ol>
+</section>
+
+<section><h2>v2 의 의미</h2>
+<div class="info-box">
+<p>v2 는 학습용 일회성 단계입니다. 실제 서비스에선 절대 사용 X.</p>
+<ul style="font-size:0.85em;">
+<li>v2 의 목적 = 「불편 체험」</li>
+<li>v3 에서 BCrypt + 세션으로 고침</li>
+<li>두 줄·세 줄의 변경이 보안을 어떻게 바꾸는지 비교</li>
+</ul>
+</div>
+</section>
+
+<section><h2>🔄 Before / After</h2><div class="before-after">
+<div class="before"><div class="label">전 차시 끝</div>
+<p style="font-size:0.85em;">회원가입 폼은 만들었지만 인증 흐름 전체는 미완성.</p>
+</div>
+<div class="arrow">→</div>
+<div class="after"><div class="label">v2 끝</div>
+<p style="font-size:0.85em;">위험한 인증이 작동한다. 두 가지 문제 (평문 / 무상태) 를 직접 체감.</p>
+</div>
+</div></section>
+
+<section><h2>정리</h2><div class="summary"><h3>오늘 들고 가는 것</h3><ul>
+<li>v2 = 의도적으로 위험한 인증</li>
+<li>① 평문 저장 ② 세션 없는 로그인 = 두 가지 문제</li>
+<li>다음 차시 v3 에서 두 문제 모두 해결</li>
+<li>실 서비스에선 절대 사용 X</li>
+</ul></div>
+<p style="margin-top:0.8em; font-size:0.7em; color:var(--text-muted);">
+다음: <strong>쿠키 깊이 보기</strong> → <strong>세션 깊이 보기</strong> → <strong>★ v3 안전 인증</strong>.
+</p>
+</section>
+
+</div></div>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"></script>
+<script>Reveal.initialize({hash:true,slideNumber:'c/t',width:1280,height:720,margin:0.06,transition:'slide',plugins:[RevealHighlight,RevealNotes]});</script>
+<script src="../js/infographics.js?v=2"></script>
+<script src="../js/screenshot.js?v=2"></script></body></html>

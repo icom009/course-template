@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>쿠키 vs 세션 | Spring 기초</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/night.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/custom.css"></head><body>
+<div class="reveal"><div class="slides">
+
+<section><div class="session-title">
+<span class="session-glyph">◆ TURNING · BOARD</span>
+<h1>쿠키 vs 세션</h1>
+<p class="subtitle">무엇을 어디에 저장할 것인가</p>
+</div></section>
+
+<section><h2>학습 목표</h2><div class="objectives"><ul>
+<li class="fragment fade-up">쿠키와 세션의 <span class="keyword">저장 위치</span> 차이를 안다</li>
+<li class="fragment fade-up">두 도구의 <span class="keyword">보안 수준</span> 과 <span class="keyword">용량 한계</span>를 안다</li>
+<li class="fragment fade-up">상황별로 어느 것을 쓸지 <span class="keyword">결정 기준</span> 을 갖는다</li>
+<li class="fragment fade-up">세션도 사실은 쿠키를 쓴다는 사실을 안다</li>
+</ul></div></section>
+
+<section><h2>⚠️ 두 도구가 비슷해 보인다</h2>
+<div class="pain-point">
+<div class="pain-title">학생들이 자주 헷갈리는 것</div>
+<p>"쿠키도 사용자 정보를 저장하고, 세션도 사용자 정보를 저장하고 — 둘 중 어느 걸 쓰면 되나요?"</p>
+<p style="margin-top:0.4em;">전 차시들에서 각자 따로 봤지만, 이번에 둘을 나란히 비교해서 의사결정 기준을 잡습니다.</p>
+</div>
+</section>
+
+<section><h2>🛠️ 두 도구 — 한 줄 정의</h2>
+<div class="diagram">
+   ┌──────────────────────────────────────────────────┐
+   │ 쿠키 (Cookie)                                     │
+   │   브라우저에 저장되는 작은 메모                   │
+   │   매 요청에 자동으로 함께 보내짐                  │
+   ├──────────────────────────────────────────────────┤
+   │ 세션 (Session)                                    │
+   │   서버에 저장되는 보관함                          │
+   │   사용자에겐 「열쇠」(JSESSIONID 쿠키)만 발급     │
+   └──────────────────────────────────────────────────┘
+</div>
+</section>
+
+<section><h2>🛠️ 두 도구의 모습</h2>
+<div class="new-tool">
+<div class="tool-title">손님이 들고 가느냐 / 가게가 보관하느냐</div>
+<p>식당에 비유하면 — 쿠키는 「영수증」(손님 호주머니에 들어감), 세션은 「손목 도장」(가게 보관함의 열쇠).</p>
+<div style="display:flex; gap:1em; justify-content:center; margin-top:1em;">
+<img src="../images/receipt.jpg" alt="영수증" style="max-width: 260px; border-radius: 12px; display: block; opacity: 0.9;">
+<img src="../images/wristband-stamp.jpg" alt="손목 도장" style="max-width: 260px; border-radius: 12px; display: block; opacity: 0.9;">
+</div>
+</div>
+</section>
+
+<section><h2>🛠️ 영수증 vs 손목 도장 — 동작</h2>
+<div class="diagram">
+   쿠키 (영수증)
+       손님 호주머니에 영수증 자체가 들어감
+       다음 방문 때 영수증 보여주면 가게가 인식
+       → 데이터가 손님 쪽에
+
+   세션 (손목 도장 + 보관함)
+       손님은 손목 도장만 받음 (작은 코드)
+       진짜 정보(주문 내역·VIP 등급)는 가게 보관함에
+       다음 방문 때 도장 보여주면 가게가 보관함 열어 확인
+       → 데이터가 가게 쪽에
+</div>
+</section>
+
+<section><h2>한눈에 비교</h2>
+<table style="font-size:0.7em; width:100%; border-collapse:collapse;">
+<thead><tr style="background:rgba(255,255,255,0.05);">
+<th style="padding:6px;">항목</th><th>쿠키</th><th>세션</th></tr></thead>
+<tbody>
+<tr><td style="padding:5px;"><strong>저장 위치</strong></td><td>브라우저 (사용자 PC)</td><td>서버 메모리</td></tr>
+<tr><td style="padding:5px;"><strong>보안</strong></td><td>약함 (사용자가 보고 수정 가능)</td><td>강함 (서버 내부)</td></tr>
+<tr><td style="padding:5px;"><strong>용량</strong></td><td>~4 KB</td><td>큼 (메모리 한계까지)</td></tr>
+<tr><td style="padding:5px;"><strong>수명 제어</strong></td><td>maxAge 로 명시 (브라우저 닫혀도 유지 가능)</td><td>설정된 시간 (보통 30 분)</td></tr>
+<tr><td style="padding:5px;"><strong>서버 부하</strong></td><td>0 (브라우저가 보관)</td><td>사용자당 메모리 점유</td></tr>
+<tr><td style="padding:5px;"><strong>여러 서버 동기화</strong></td><td>자동 (각 요청에 동봉)</td><td>별도 처리 필요 (Redis 등)</td></tr>
+<tr><td style="padding:5px;"><strong>JS 접근</strong></td><td>가능 (httpOnly 옵션 시 차단)</td><td>불가</td></tr>
+</tbody></table>
+</section>
+
+<section><h2>중요 — 세션도 쿠키를 쓴다</h2>
+<div class="info-box">
+<p>"쿠키 vs 세션" 이라고 비교하지만, 사실 <strong>세션도 쿠키를 사용</strong> 합니다.</p>
+<pre><code data-trim>
+서버:  Set-Cookie: JSESSIONID=abc123xyz...
+브라우저:  Cookie: JSESSIONID=abc123xyz... (자동 동봉)
+</code></pre>
+<p style="margin-top:0.3em;">차이는 「<strong>무엇을 보관하느냐</strong>」:</p>
+<ul style="font-size:0.85em;">
+<li>쿠키만 — 데이터 자체를 쿠키에</li>
+<li>세션 — 데이터는 서버에, 「열쇠」만 쿠키에</li>
+</ul>
+</div>
+</section>
+
+<section><h2>흐름 비교 — 로그인 처리</h2>
+<div class="diagram">
+   ① 쿠키만으로 로그인 (위험)
+      로그인 성공
+        ↓
+      Set-Cookie: userId=admin; userName=관리자; isVip=true
+        ↓ 브라우저에 그대로 저장
+      다음 요청 시 사용자가 쿠키 변조 가능!
+      → 일반 사용자가 isVip=true 로 변경 가능
+      → 보안 사고
+
+   ② 세션 사용 (안전)
+      로그인 성공
+        ↓
+      서버: session.setAttribute("loginUser", member)
+            보관함에 모든 정보 저장
+        ↓
+      Set-Cookie: JSESSIONID=abc123  (열쇠만)
+        ↓
+      다음 요청 시
+        Cookie: JSESSIONID=abc123
+        ↓
+      서버: 보관함에서 abc123 의 loginUser 꺼냄
+            사용자가 변조 불가
+</div>
+</section>
+
+<section><h2>의사결정 기준 — 무엇을 어디에</h2>
+
+<table style="font-size:0.7em; width:100%; border-collapse:collapse;">
+<thead><tr style="background:rgba(255,255,255,0.05);">
+<th style="padding:6px;">데이터 종류</th><th>예시</th><th>저장 위치</th></tr></thead>
+<tbody>
+<tr><td style="padding:5px;">로그인한 사용자 정보</td><td>userId, role</td><td><strong>세션</strong></td></tr>
+<tr><td style="padding:5px;">권한 / VIP 등급</td><td>관리자 여부</td><td><strong>세션</strong></td></tr>
+<tr><td style="padding:5px;">비밀번호 / 카드번호</td><td>(절대로!)</td><td><strong>세션</strong> (또는 아예 저장 X)</td></tr>
+<tr><td style="padding:5px;">장바구니 (비회원)</td><td>상품 ID 목록</td><td>쿠키</td></tr>
+<tr><td style="padding:5px;">장바구니 (로그인 사용자)</td><td>상품 ID 목록</td><td><strong>세션 또는 DB</strong></td></tr>
+<tr><td style="padding:5px;">UI 설정</td><td>다크모드, 폰트 크기</td><td>쿠키</td></tr>
+<tr><td style="padding:5px;">최근 본 상품</td><td>상품 ID 목록</td><td>쿠키 또는 LocalStorage</td></tr>
+<tr><td style="padding:5px;">광고 추적</td><td>방문 기록</td><td>쿠키 (제 3 자 쿠키)</td></tr>
+</tbody></table>
+</section>
+
+<section><h2>핵심 의사결정 한 줄</h2>
+<div class="info-box">
+<p style="font-size:1.1em;"><strong>"민감한 정보 → 세션" / "사용자 편의 설정 → 쿠키"</strong></p>
+<p style="margin-top:0.4em; font-size:0.85em;">사용자가 봐도 / 변조해도 문제없는 데이터만 쿠키. 그 외에는 세션.</p>
+</div>
+</section>
+
+<section><h2>코드 비교 — Spring 에서</h2>
+<pre><code class="language-java" data-trim>
+// 쿠키로 다크모드 저장
+@PostMapping("/setting/theme")
+public String setTheme(@RequestParam String theme,
+                        HttpServletResponse resp) {
+    Cookie c = new Cookie("theme", theme);
+    c.setMaxAge(60 * 60 * 24 * 30);     // 30 일
+    c.setPath("/");
+    resp.addCookie(c);
+    return "redirect:/";
+}
+
+// 세션으로 로그인 정보 저장
+@PostMapping("/login")
+public String login(String userId, String password, HttpSession session) {
+    Member m = service.login(userId, password);
+    if (m != null) {
+        session.setAttribute("loginUser", m);
+        return "redirect:/";
+    }
+    return "redirect:/login?error";
+}
+</code></pre>
+</section>
+
+<section><h2>F12 로 직접 확인</h2>
+
+<p style="font-size:0.9em;"><strong>쿠키 보기</strong>: F12 → Application → Cookies → 도메인 선택</p>
+<div class="screenshot">
+<div class="label">스크린샷</div>
+<div class="desc">F12 Application 탭의 Cookies 영역. theme=dark, JSESSIONID=abc123 등이 표 형태로 나열</div>
+</div>
+
+<p style="font-size:0.9em; margin-top:0.4em;"><strong>세션 ID 가 매 요청에 동봉됨</strong>: F12 → Network → 한 요청 → Headers → Request Headers → Cookie 줄</p>
+</section>
+
+<section><h2>쿠키 옵션 — 보안 강화</h2>
+<table style="font-size:0.75em; width:100%; border-collapse:collapse;">
+<thead><tr style="background:rgba(255,255,255,0.05);">
+<th style="padding:6px;">옵션</th><th>의미</th><th>왜 중요</th></tr></thead>
+<tbody>
+<tr><td style="padding:5px;"><code>HttpOnly</code></td><td>JS 에서 접근 불가</td><td>XSS 공격 방어</td></tr>
+<tr><td style="padding:5px;"><code>Secure</code></td><td>HTTPS 에서만 전송</td><td>중간자 공격 방어</td></tr>
+<tr><td style="padding:5px;"><code>SameSite</code></td><td>크로스 도메인 요청 시 제한</td><td>CSRF 방어</td></tr>
+<tr><td style="padding:5px;"><code>Domain</code></td><td>유효 도메인 제한</td><td>의도치 않은 공유 방지</td></tr>
+<tr><td style="padding:5px;"><code>MaxAge</code></td><td>유효 시간(초)</td><td>오래된 쿠키 자동 삭제</td></tr>
+</tbody></table>
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 JSESSIONID 는 보통 <strong>HttpOnly</strong> 자동 적용 (Spring 기본).
+</p>
+</section>
+
+<section><h2>세션의 한계 — 알아둘 것</h2>
+<div class="warning-box">
+<div class="box-title">서버가 여러 대일 때</div>
+<p style="font-size:0.85em;">대형 사이트는 서버가 여러 대(예: A, B, C). 사용자가 A 서버에서 로그인 → B 서버로 요청이 가면 → B 는 그 세션을 모름. 「Sticky Session」 또는 「세션 클러스터링」(Redis 등) 으로 해결.</p>
+</div>
+
+<div class="warning-box" style="margin-top:0.4em;">
+<div class="box-title">메모리 부담</div>
+<p style="font-size:0.85em;">동시 사용자 10 만 명 = 서버에 10 만 개 보관함. 메모리 압박. 큰 데이터는 DB 또는 외부 캐시(Redis)에.</p>
+</div>
+
+<p style="font-size:0.85em; margin-top:0.4em; color:var(--text-muted);">
+👉 본 과정의 학습용 환경에서는 단일 서버 가정. 위 한계는 후속 과정에서.
+</p>
+</section>
+
+<section><h2>현대 웹의 흐름 — JWT</h2>
+<div class="info-box">
+<p>최근에는 세션 대신 <strong>JWT (JSON Web Token)</strong> 도 자주 사용:</p>
+<ul style="font-size:0.85em;">
+<li>서버가 토큰을 발급 → 토큰 자체에 사용자 정보 (서명되어 있어 변조 불가)</li>
+<li>서버는 보관함 안 가짐 — 토큰만 검증</li>
+<li>여러 서버 환경에 유리</li>
+<li>모바일 앱 / SPA 와 잘 맞음</li>
+</ul>
+<p style="margin-top:0.4em; font-size:0.85em; color:var(--text-muted);">
+👉 본 과정에서는 세션만. JWT 는 후속 과정.
+</p>
+</div>
+</section>
+
+<section><h2>실험 — 세션 vs 쿠키 직접 비교</h2>
+<ol style="font-size:0.9em;">
+<li class="fragment">로그인 후 F12 → Application → Cookies 에서 <strong>JSESSIONID</strong> 확인</li>
+<li class="fragment">JSESSIONID 값을 변경 (인스펙터에서 직접 편집)</li>
+<li class="fragment">새로고침 → 로그인 풀림 (세션 키가 안 맞아서)</li>
+<li class="fragment">반대로 — 쿠키로 직접 사용자 정보 저장 시도 (<code>userId=admin</code>)</li>
+<li class="fragment">변조해도 서버가 무시 — 세션이 진짜 정보 보관자이기 때문</li>
+</ol>
+</section>
+
+<section><h2>본 과정의 결정</h2>
+<div class="info-box">
+<p style="font-size:0.95em;"><strong>회원 관리 / 로그인 → HttpSession 사용</strong></p>
+<p style="margin-top:0.4em; font-size:0.85em;">v3 부터 v∞ 까지 모든 인증·권한 처리는 세션 기반. 쿠키는 다음 경우에만:</p>
+<ul style="font-size:0.85em;">
+<li>JSESSIONID (자동 — Spring 이 알아서)</li>
+<li>UI 설정 (필요 시)</li>
+</ul>
+</div>
+</section>
+
+<section><h2>🔄 Before / After</h2><div class="before-after">
+<div class="before"><div class="label">전 차시 끝</div>
+<p style="font-size:0.85em;">쿠키와 세션을 따로따로 봤다. 둘이 어떻게 다른지, 언제 무엇을 쓸지 흐릿.</p>
+</div>
+<div class="arrow">→</div>
+<div class="after"><div class="label">이번 차시 끝</div>
+<p style="font-size:0.85em;">두 도구의 저장 위치·보안·용량 차이를 표로 정리. 의사결정 기준을 갖춘다.</p>
+</div>
+</div></section>
+
+
+      <section>
+        <h2>📊 한 그림 정리</h2>
+        <div data-infographic="cookie-vs-session"></div>
+      </section>
+
+      <section><h2>이번 차시의 데이터 흐름</h2>
+<div class="flow-diagram"><div class="flow">
+<div class="box">민감 데이터</div><span class="arrow">→</span>
+<div class="box new">세션 (서버)</div><span class="arrow">↔</span>
+<div class="box new">JSESSIONID 쿠키</div><span class="arrow">↔</span>
+<div class="box">브라우저</div></div>
+<div class="caption">
+<span class="new-mark">●</span> 데이터는 서버에, 사용자에겐 「열쇠」만 — 보안 패턴의 기본
+</div></div>
+</section>
+
+<section><h2>정리</h2><div class="summary"><h3>오늘 들고 가는 것</h3><ul>
+<li>쿠키 = 브라우저 보관 / 세션 = 서버 보관</li>
+<li>세션도 쿠키(JSESSIONID)를 「열쇠」로 사용</li>
+<li>의사결정: <strong>민감 정보 → 세션</strong>, 편의 설정 → 쿠키</li>
+<li>쿠키 옵션: HttpOnly · Secure · SameSite</li>
+<li>본 과정은 모든 인증을 <strong>세션</strong> 으로</li>
+</ul></div>
+<p style="margin-top:0.8em; font-size:0.7em; color:var(--text-muted);">
+다음: <strong>★ v3 안전한 회원가입/로그인</strong> — BCrypt + 세션 도입.
+</p>
+</section>
+
+</div></div>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"></script>
+<script>Reveal.initialize({hash:true,slideNumber:'c/t',width:1280,height:720,margin:0.06,transition:'slide',plugins:[RevealHighlight,RevealNotes]});</script>
+<script src="../js/infographics.js?v=2"></script>
+<script src="../js/screenshot.js?v=2"></script></body></html>

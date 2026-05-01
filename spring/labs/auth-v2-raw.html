@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>원시적인 회원가입/로그인 — 실습</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/lab.css"></head><body>
+<div class="container">
+
+<div class="header"><div class="version-badge">v2</div><div class="badge">★ LAB · BOARD</div>
+<h1>원시적인 회원가입/로그인</h1><p class="subtitle">회원과 게시판 — 실습</p></div>
+
+<div class="minimap"><div class="minimap-title">📍 지금 어디를 만지고 있나요?</div><div class="flow">
+<div class="box">브라우저</div><span class="arrow">→</span>
+<div class="box active">회원과 게시판</div><span class="arrow">→</span>
+<div class="box">DB</div></div></div>
+
+<div class="prerequisites"><h3>사전 준비</h3>
+<ul><li>전 차시 완료</li><li>Eclipse + Tomcat 동작 환경</li></ul></div>
+
+<div class="box box-info"><div class="box-title">이번 실습의 목표</div>
+<p>비밀번호를 그대로 DB 에 저장. 로그인은 SELECT 비교만. 페이지 옮기면 풀림.</p></div>
+
+<div class="step"><div class="step-header"><div class="step-num">1</div><div class="step-title">테이블 + 도메인 + 코드 작성</div></div>
+<pre><code>-- v2 의 테이블 (MySQL)
+CREATE TABLE mymember (
+    id  VARCHAR(50)  PRIMARY KEY,
+    pwd VARCHAR(20)  NOT NULL
+);
+
+// com.smhrd.domain.Member
+@Data @AllArgsConstructor @NoArgsConstructor
+public class Member {
+    private String id;
+    private String pwd;
+}
+
+// com.smhrd.service.MemberService
+@Service
+public class MemberService {
+    @Autowired MemberMapper mapper;
+
+    public void signup(Member m) {
+        // 평문 그대로! (의도적으로 위험)
+        mapper.insert(m);
+    }
+
+    public Member login(String id, String pwd) {
+        Member m = mapper.selectOne(id);
+        if (m != null &amp;&amp; m.getPwd().equals(pwd)) {
+            return m;
+        }
+        return null;
+    }
+}
+
+// com.smhrd.controller.LoginController
+@Controller
+public class LoginController {
+    @PostMapping("/login")
+    public String login(@RequestParam String id,
+                         @RequestParam String pwd) {
+        Member m = service.login(id, pwd);
+        if (m != null) return "redirect:/";
+        return "redirect:/login?error";
+        // 세션 저장 X — 페이지 이동 시 로그인 풀림
+    }
+}</code></pre>
+<div class="checkpoint"><div class="check-title">CHECKPOINT</div>
+<ul><li><code>SHOW TABLES;</code> 에 <code>mymember</code> 가 보이는가?</li><li>컴파일 오류 없는가?</li></ul></div></div>
+
+<div class="step"><div class="step-header"><div class="step-num">2</div><div class="step-title">실행 + 결과 확인</div></div>
+<p>Run on Server 로 실행하고 회원가입 → DB 확인 → 로그인 순서로 따라갑니다.</p>
+<div class="checkpoint"><div class="check-title">CHECKPOINT</div>
+<ul><li><code>SELECT id, pwd FROM mymember;</code> — 평문이 그대로 보이는가? (의도된 위험)</li><li>로그인 성공 후 다른 페이지 이동 시 「로그인 풀림」 직접 체감했는가?</li></ul></div></div>
+
+<div class="checklist"><h3>실습 완료 체크리스트</h3>
+<div class="check-item"><input type="checkbox"> v2 = 의도적 위험 버전</div>
+<div class="check-item"><input type="checkbox"> 평문 비밀번호의 위험</div>
+<div class="check-item"><input type="checkbox"> 세션 없으면 로그인 안 유지</div>
+<div class="check-item"><input type="checkbox"> 다음 차시들에서 v3 로 진화</div></div>
+
+<div class="nav"><a href="auth-signup-form.html">&larr; 이전</a><a href="../index.html">메인으로</a><a href="cookie-deep.html">다음 &rarr;</a></div>
+</div><script src="../js/screenshot.js?v=2"></script></body></html>

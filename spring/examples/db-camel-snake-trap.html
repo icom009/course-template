@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>카멜 ↔ 스네이크 함정 — 읽기 자료</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/example.css"></head><body>
+<div class="container">
+
+<div class="header"><div class="session-num">◆ PART · DB</div>
+<h1>카멜 ↔ 스네이크 함정</h1><p class="subtitle">데이터와 MyBatis — 읽기 자료</p></div>
+
+<div class="minimap"><div class="minimap-title">📍 지금 어디를 만지고 있나요?</div><div class="flow">
+<div class="box">브라우저</div><span class="arrow">→</span>
+<div class="box active">데이터와 MyBatis</div><span class="arrow">→</span>
+<div class="box">DB</div></div></div>
+
+<div class="terms"><h3>핵심 용어</h3><div class="term-item"><span class="term-name">카멜 케이스</span><span class="term-desc">userId, createdAt — 자바 컨벤션.</span></div>
+<div class="term-item"><span class="term-name">스네이크 케이스</span><span class="term-desc">user_id, created_at — DB 컨벤션.</span></div>
+<div class="term-item"><span class="term-name">mapUnderscoreToCamelCase</span><span class="term-desc">MyBatis 글로벌 옵션. true 로 두면 자동 변환.</span></div></div>
+
+<h2>1. 문제</h2>
+<div class="pain-point"><div class="pain-title">전 차시까지의 답답함</div><p>"분명히 SELECT 했는데 객체에 데이터가 안 들어와요. 모두 null 이에요!"</p></div>
+
+<h2>2. 새 도구</h2>
+<div class="new-tool"><div class="tool-title">이름 규칙의 차이</div><p>DB 는 user_id (스네이크), 자바는 userId (카멜). 둘이 자동으로는 매핑 안 됨.</p></div>
+
+<h2>3. 코드</h2>
+<pre><code>-- DB (일반 예시)
+CREATE TABLE sample (
+    user_id    VARCHAR(50),     -- 스네이크
+    created_at TIMESTAMP
+);
+
+// 자바 VO
+public class Sample {
+    private String userId;        // 카멜
+    private LocalDateTime createdAt;
+}
+
+-- 결과: SELECT 해도 userId, createdAt 이 null
+
+// 해법 1: AS 로 매핑
+SELECT user_id AS userId, created_at AS createdAt FROM sample
+
+// 해법 2: 글로벌 설정 (권장)
+&lt;!-- mybatis-config.xml --&gt;
+&lt;settings&gt;
+    &lt;setting name="mapUnderscoreToCamelCase" value="true"/&gt;
+&lt;/settings&gt;</code></pre>
+
+<h2>4. 정리</h2>
+<ul><li>DB 스네이크 vs 자바 카멜 불일치 = null</li>
+<li>해법 1: SELECT ... AS ... (수동)</li>
+<li>해법 2: mapUnderscoreToCamelCase=true (전역, 권장)</li></ul>
+
+<h2>5. Before / After</h2>
+<div class="before-after">
+<div class="before"><div class="label">전 차시 끝</div><p>"분명히 SELECT 했는데 객체에 데이터가 안 들어와요. 모두 null 이에요!"</p></div>
+<div class="arrow">→</div>
+<div class="after"><div class="label">이번 차시 끝</div><p>null 이 되는 함정을 만나면 어디를 의심할지 안다.</p></div>
+</div>
+
+<div class="nav"><a href="db-mapper-xml.html">&larr; 이전</a><a href="../index.html">메인으로</a><a href="db-sql-injection.html">다음 &rarr;</a></div>
+</div><script src="../js/screenshot.js?v=2"></script></body></html>

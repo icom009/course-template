@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mapper 인터페이스 ↔ XML | Spring 기초</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/night.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/custom.css"></head><body>
+<div class="reveal"><div class="slides">
+
+<section><div class="session-title">
+<span class="session-glyph">▣ PART · DB</span>
+<h1>Mapper 인터페이스 ↔ XML</h1>
+<p class="subtitle">두 파일이 어떻게 짝지어지는가</p>
+</div></section>
+
+<section><h2>학습 목표</h2><div class="objectives"><ul>
+<li class="fragment fade-up">Mapper 인터페이스 + XML 의 <span class="keyword">매칭 규칙</span> 4 가지를 안다</li>
+<li class="fragment fade-up"><span class="keyword">resultType</span>, <span class="keyword">parameterType</span>, <span class="keyword">#{}</span> 사용</li>
+<li class="fragment fade-up"><span class="keyword">useGeneratedKeys</span> 로 INSERT 후 ID 받기</li>
+<li class="fragment fade-up">JOIN 결과 매핑</li>
+</ul></div></section>
+
+<section><h2>⚠️ 두 파일이 어떻게 연결?</h2>
+<div class="pain-point">
+<div class="pain-title">학생이 자주 하는 질문</div>
+<p>"인터페이스에는 메서드 시그니처만 있고, XML 에는 SQL 만 있는데 — 어떻게 연결되어서 동작하지?"</p>
+<p style="margin-top:0.4em;">「<strong>이름 매칭</strong>」 의 마법.</p>
+</div>
+</section>
+
+<section><h2>🛠️ 4 가지 매칭 규칙</h2>
+<div class="new-tool">
+<div class="tool-title">namespace · id · 파일 위치 · 패키지 스캔</div>
+<p>인터페이스와 XML 이 짝지어지는 데 필요한 4 가지 일치.</p>
+</div>
+</section>
+
+<section><h2>① namespace ↔ 인터페이스 풀 클래스명</h2>
+<pre><code class="language-java" data-trim>
+// src/main/java/com/smhrd/mapper/BoardMapper.java
+package com.smhrd.mapper;
+
+@Mapper
+public interface BoardMapper { ... }
+</code></pre>
+
+<pre><code class="language-xml" data-trim>
+&lt;!-- src/main/resources/com/smhrd/mapper/BoardMapper.xml --&gt;
+&lt;mapper namespace="com.smhrd.mapper.BoardMapper"&gt;
+                          ↑
+                   풀 클래스명과 완전히 일치
+</code></pre>
+</section>
+
+<section><h2>② id ↔ 메서드 이름</h2>
+<pre><code class="language-java" data-trim>
+public interface BoardMapper {
+    Board selectOne(int num);     // ← 메서드명
+}
+</code></pre>
+
+<pre><code class="language-xml" data-trim>
+&lt;mapper namespace="com.smhrd.mapper.BoardMapper"&gt;
+
+    &lt;select id="selectOne"
+            parameterType="int"
+            resultType="com.smhrd.domain.Board"&gt;
+            ↑
+       메서드 이름과 정확히 일치
+        SELECT num, title, writer, content
+        FROM myboard WHERE num = #{num}
+    &lt;/select&gt;
+
+&lt;/mapper&gt;
+</code></pre>
+</section>
+
+<section><h2>③ XML 파일 위치 — root-context 의 mapperLocations</h2>
+<pre><code class="language-xml" data-trim>
+&lt;!-- root-context.xml --&gt;
+&lt;bean id="sqlSessionFactory" ...&gt;
+    &lt;property name="mapperLocations"
+              value="classpath:com/smhrd/mapper/*Mapper.xml" /&gt;
+&lt;/bean&gt;
+</code></pre>
+
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 인터페이스와 같은 경로(<code>com/smhrd/mapper/</code>) 의 *Mapper.xml 자동 등록.
+</p>
+</section>
+
+<section><h2>④ 인터페이스 위치 — MapperScannerConfigurer</h2>
+<pre><code class="language-xml" data-trim>
+&lt;!-- root-context.xml --&gt;
+&lt;bean class="org.mybatis.spring.mapper.MapperScannerConfigurer"&gt;
+    &lt;property name="basePackage" value="com.smhrd.mapper" /&gt;
+&lt;/bean&gt;
+</code></pre>
+
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 이 패키지 안의 모든 @Mapper 인터페이스를 Bean 으로 자동 등록.
+</p>
+</section>
+
+<section><h2>완전한 매칭 그림</h2>
+<div class="diagram">
+   Service: mapper.selectOne(3);
+                 ↓
+   BoardMapper.java
+       Board selectOne(int num);
+                 ↓ namespace + id 매칭
+   BoardMapper.xml
+       &lt;mapper namespace="com.smhrd.mapper.BoardMapper"&gt;
+         &lt;select id="selectOne"&gt;
+           SELECT num, title, writer, content
+           FROM myboard WHERE num=#{num}
+         &lt;/select&gt;
+       &lt;/mapper&gt;
+</div>
+</section>
+
+<section><h2>resultType — 결과 매핑</h2>
+<pre><code class="language-xml" data-trim>
+&lt;!-- 단일 객체 --&gt;
+&lt;select id="selectOne"
+        parameterType="int"
+        resultType="com.smhrd.domain.Board"&gt;
+    SELECT num, title, writer, content
+    FROM myboard WHERE num = #{num}
+&lt;/select&gt;
+
+&lt;!-- List 반환 --&gt;
+&lt;select id="selectList" resultType="com.smhrd.domain.Board"&gt;
+    SELECT num, title, writer, content
+    FROM myboard ORDER BY num DESC
+&lt;/select&gt;
+&lt;!-- 인터페이스에서 List&lt;Board&gt; 라고 선언했으면 자동 List --&gt;
+
+&lt;!-- 단순 타입 --&gt;
+&lt;select id="count" resultType="int"&gt;
+    SELECT COUNT(*) FROM myboard
+&lt;/select&gt;
+</code></pre>
+</section>
+
+<section><h2>#{} — 파라미터 바인딩</h2>
+<pre><code class="language-java" data-trim>
+// 인터페이스
+Board selectOne(int num);
+Board selectByWriter(@Param("writer") String writer);
+</code></pre>
+
+<pre><code class="language-xml" data-trim>
+&lt;!-- 단일 파라미터 — 이름 자유 --&gt;
+&lt;select ...&gt; WHERE num = #{num} &lt;/select&gt;
+
+&lt;!-- 객체 — getter 호출 --&gt;
+&lt;insert id="insert" parameterType="com.smhrd.domain.Board"&gt;
+    INSERT INTO myboard(title, writer, content)
+    VALUES(#{title}, #{writer}, #{content})
+&lt;/insert&gt;
+</code></pre>
+</section>
+
+<section><h2>useGeneratedKeys — INSERT 후 num 받기</h2>
+<pre><code class="language-xml" data-trim>
+&lt;insert id="insert"
+        parameterType="com.smhrd.domain.Board"
+        useGeneratedKeys="true" keyProperty="num"&gt;
+    INSERT INTO myboard(title, writer, content)
+    VALUES(#{title}, #{writer}, #{content})
+&lt;/insert&gt;
+</code></pre>
+
+<pre><code class="language-java" data-trim>
+Board b = new Board();
+b.setTitle("새 글");
+b.setWriter("hong");
+b.setContent("안녕하세요");
+mapper.insert(b);
+
+System.out.println(b.getNum());   // ⭐ AUTO_INCREMENT 결과 자동 채워짐 (예: 7)
+</code></pre>
+</section>
+
+<section><h2>컬럼 ↔ 필드 자동 매핑</h2>
+<pre><code class="language-xml" data-trim>
+&lt;!-- DB 컬럼명: snake_case (created_at) --&gt;
+&lt;!-- Java 필드: camelCase (createdAt)   --&gt;
+&lt;select id="selectList" resultType="com.smhrd.domain.Board"&gt;
+    SELECT num, title, writer, content
+    FROM myboard ORDER BY num DESC
+&lt;/select&gt;
+</code></pre>
+
+<pre><code class="language-xml" data-trim>
+&lt;!-- mybatis-config.xml 에서 한 줄 설정 --&gt;
+&lt;settings&gt;
+    &lt;setting name="mapUnderscoreToCamelCase" value="true"/&gt;
+&lt;/settings&gt;
+</code></pre>
+
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 컬럼명이 같은 칸(num, title, writer, content)이면 그대로 매핑. 이후 차시에서 <code>created_at</code> ↔ <code>createdAt</code> 같은 변환이 필요해지면 이 옵션이 핵심.
+</p>
+</section>
+
+<section><h2>resultMap — 명시적 매핑</h2>
+<pre><code class="language-xml" data-trim>
+&lt;resultMap id="boardMap" type="com.smhrd.domain.Board"&gt;
+    &lt;id     property="num"     column="num" /&gt;
+    &lt;result property="title"   column="title" /&gt;
+    &lt;result property="writer"  column="writer" /&gt;
+    &lt;result property="content" column="content" /&gt;
+&lt;/resultMap&gt;
+
+&lt;select id="selectList" resultMap="boardMap"&gt;
+    SELECT num, title, writer, content FROM myboard
+&lt;/select&gt;
+</code></pre>
+
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 복잡한 매핑이 필요할 때 사용. 본 과정은 mapUnderscoreToCamelCase 만으로 대부분 충분.
+</p>
+</section>
+
+<section><h2>흔한 함정</h2>
+<table style="font-size:0.7em; width:100%; border-collapse:collapse;">
+<thead><tr style="background:rgba(255,255,255,0.05);">
+<th style="padding:6px;">증상</th><th>원인</th></tr></thead>
+<tbody>
+<tr><td style="padding:5px;">"Invalid bound statement"</td><td>namespace ↔ 풀 클래스명 / id ↔ 메서드명 불일치</td></tr>
+<tr><td style="padding:5px;">"No qualifying bean of type 'XMapper'"</td><td>MapperScannerConfigurer basePackage 잘못</td></tr>
+<tr><td style="padding:5px;">XML 못 찾음</td><td>mapperLocations 경로 잘못</td></tr>
+<tr><td style="padding:5px;">필드 모두 null</td><td>mapUnderscoreToCamelCase 누락</td></tr>
+<tr><td style="padding:5px;">INSERT 후 id 가 0</td><td>useGeneratedKeys 누락</td></tr>
+</tbody></table>
+</section>
+
+<section><h2>🔄 Before / After</h2><div class="before-after">
+<div class="before"><div class="label">전 차시 끝</div>
+<p style="font-size:0.85em;">Mapper 가 동작은 하지만 어떻게 연결되는지 막연.</p>
+</div>
+<div class="arrow">→</div>
+<div class="after"><div class="label">이번 차시 끝</div>
+<p style="font-size:0.85em;">4 가지 매칭 규칙을 안다. resultType·#{}·useGeneratedKeys 사용.</p>
+</div>
+</div></section>
+
+<section><h2>정리</h2><div class="summary"><h3>오늘 들고 가는 것</h3><ul>
+<li>매칭 4 규칙: namespace · id · XML 위치 · 인터페이스 위치</li>
+<li>resultType / List 자동 매핑 / 단순 타입</li>
+<li>#{} 으로 파라미터 안전 바인딩</li>
+<li>useGeneratedKeys 로 INSERT 후 ID 자동 채움</li>
+</ul></div>
+</section>
+
+</div></div>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"></script>
+<script>Reveal.initialize({hash:true,slideNumber:'c/t',width:1280,height:720,margin:0.06,transition:'slide',plugins:[RevealHighlight,RevealNotes]});</script>
+<script src="../js/infographics.js?v=2"></script>
+<script src="../js/screenshot.js?v=2"></script></body></html>

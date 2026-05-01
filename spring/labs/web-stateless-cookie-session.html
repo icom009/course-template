@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>무상태성과 쿠키·세션 — 실습</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+  <link rel="stylesheet" href="css/lab.css">
+</head>
+<body>
+  <div class="container">
+
+    <div class="header">
+      <div class="badge">▣ LAB · WEB</div>
+      <h1>F12 로 쿠키 직접 보기</h1>
+      <p class="subtitle">무상태성과 쿠키·세션 — 실습 / 소요 시간: 약 15분</p>
+    </div>
+
+    <div class="minimap">
+      <div class="minimap-title">📍 지금 어디를 만지고 있나요?</div>
+      <div class="flow">
+        <div class="box active">브라우저</div>
+        <span class="arrow">⇄</span>
+        <div class="box active">서버</div>
+        <span class="arrow">→</span>
+        <div class="box">Controller</div>
+        <span class="arrow">→</span>
+        <div class="box">Service</div>
+        <span class="arrow">→</span>
+        <div class="box">DB</div>
+      </div>
+    </div>
+
+    <div class="prerequisites">
+      <h3>사전 준비</h3>
+      <ul>
+        <li>크롬(Chrome) 브라우저</li>
+        <li>아무 사이트의 계정 한 개 (네이버·구글 등)</li>
+      </ul>
+    </div>
+
+    <div class="box box-info">
+      <div class="box-title">이번 실습의 목표</div>
+      <p>실제 사이트에 발급된 쿠키를 직접 눈으로 보고, 세션 ID 가 그 안에 어떻게 들어 있는지 확인합니다. 코드를 짜는 건 Part 5에서.</p>
+    </div>
+
+    <div class="step">
+      <div class="step-header"><div class="step-num">1</div><div class="step-title">쿠키 저장소 열기</div></div>
+      <ol>
+        <li>크롬에서 <code>www.naver.com</code> 접속</li>
+        <li><code>F12</code> → 위쪽 탭에서 <strong>Application</strong> 클릭 (없으면 <code>≫</code> 펼쳐서 찾기)</li>
+        <li>왼쪽 사이드바에서 <strong>Storage → Cookies → https://www.naver.com</strong></li>
+      </ol>
+      <div class="screenshot">
+        <div class="label">스크린샷</div>
+        <div class="desc">F12 Application 탭의 Cookies 영역. Name·Value·Domain·Expires 컬럼으로 여러 줄이 표시됨</div>
+      </div>
+      <div class="checkpoint">
+        <div class="check-title">CHECKPOINT</div>
+        <ul>
+          <li>표에 몇 줄의 쿠키가 보이나요?</li>
+          <li>Name 컬럼에서 <code>NID_</code>, <code>JSESSIONID</code> 같은 이름이 보이나요?</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-header"><div class="step-num">2</div><div class="step-title">JSESSIONID 또는 비슷한 세션 쿠키 찾기</div></div>
+      <p>Name 컬럼에서 <code>JSESSIONID</code>, <code>session</code>, <code>NID_SES</code> 등 <strong>"세션"이 들어간 이름</strong>을 찾아보세요. 사이트마다 이름은 다르지만 역할은 같습니다.</p>
+      <p>Value 컬럼을 클릭하면 길고 무작위해 보이는 문자열이 보입니다. 이게 <strong>당신의 「손목 도장」</strong>입니다.</p>
+      <div class="checkpoint">
+        <div class="check-title">CHECKPOINT</div>
+        <ul>
+          <li>세션 쿠키의 Value 길이가 얼마나 되나요? (보통 30자 이상의 긴 문자열)</li>
+          <li>이 값이 의미 있는 단어로 읽히나요? 무작위 문자처럼 보일 겁니다 — 일부러 그렇게 만든 거예요.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-header"><div class="step-num">3</div><div class="step-title">쿠키가 요청에 자동으로 실린다는 것 확인</div></div>
+      <ol>
+        <li>F12 의 <strong>Network</strong> 탭으로 이동</li>
+        <li>새로고침</li>
+        <li>아무 요청이나 클릭 → <strong>Headers</strong> 탭 → <strong>Request Headers</strong> 영역</li>
+        <li><code>Cookie:</code> 라는 이름의 헤더를 찾으세요</li>
+      </ol>
+      <div class="expected">
+        <div class="expected-title">예상 결과</div>
+        <p><code>Cookie:</code> 헤더 안에 방금 봤던 쿠키들이 모두 적혀 있습니다. <strong>요청을 보낼 때마다 자동으로 함께 가는 것</strong>입니다.</p>
+      </div>
+      <div class="checkpoint">
+        <div class="check-title">CHECKPOINT</div>
+        <ul>
+          <li>Step 1에서 본 쿠키들이 Request Headers 의 <code>Cookie:</code> 줄에 적혀 있나요?</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-header"><div class="step-num">4</div><div class="step-title">쿠키 삭제로 「잊히는 경험」 만들어보기</div></div>
+      <p>로그인 상태인 사이트(네이버 등)에서 다음을 해봅니다:</p>
+      <ol>
+        <li>F12 → Application → Cookies</li>
+        <li>모든 쿠키를 선택해 삭제 (우클릭 → Clear)</li>
+        <li>새로고침</li>
+      </ol>
+      <div class="expected">
+        <div class="expected-title">예상 결과</div>
+        <p>로그인이 풀려 있습니다 — 서버가 「누군지 모르는」 상태가 되었기 때문입니다.</p>
+      </div>
+      <div class="checkpoint">
+        <div class="check-title">CHECKPOINT — 그림으로 그리기</div>
+        <ul>
+          <li>왜 쿠키를 지우면 로그인이 풀릴까요? (정답: 손목 도장이 사라지면 가게가 손님을 알아볼 수 없음)</li>
+          <li>이 한 번의 경험이 Part 5 의 로그인/세션 차시에서 다시 등장합니다.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="checklist">
+      <h3>실습 완료 체크리스트</h3>
+      <div class="check-item"><input type="checkbox"> F12 Application 탭에서 쿠키 목록을 봤다</div>
+      <div class="check-item"><input type="checkbox"> JSESSIONID(또는 비슷한) 세션 쿠키를 찾았다</div>
+      <div class="check-item"><input type="checkbox"> Network 탭에서 Cookie 헤더가 자동으로 실리는 것을 확인했다</div>
+      <div class="check-item"><input type="checkbox"> 쿠키를 지운 뒤 로그인이 풀리는 것을 직접 봤다</div>
+      <div class="check-item"><input type="checkbox"> 「쿠키 = 브라우저 / 세션 = 서버」를 입으로 말할 수 있다</div>
+    </div>
+
+    <div class="nav">
+      <a href="web-get-vs-post.html">&larr; 이전: GET vs POST</a>
+      <a href="../index.html">메인으로</a>
+      <a href="web-static-vs-dynamic.html">다음: 정적 vs 동적 / WAS &rarr;</a>
+    </div>
+
+  </div>
+  <script src="../js/screenshot.js?v=2"></script>
+</body>
+</html>

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spring vs Spring Boot | Spring 기초</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/night.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/custom.css"></head><body>
+<div class="reveal"><div class="slides">
+
+<section><div class="session-title"><span class="session-glyph">◇ PART · SPRING</span><h1>Spring vs Spring Boot</h1><p class="subtitle">우리는 왜 Legacy 로 시작하는가</p></div></section>
+
+<section><h2>학습 목표</h2><div class="objectives"><ul>
+<li class="fragment fade-up">Spring 과 Spring Boot 의 관계를 안다</li>
+<li class="fragment fade-up">Boot 가 어떤 부담을 자동화해주는지 안다</li>
+<li class="fragment fade-up">우리 과정이 Legacy 로 시작하는 이유를 안다</li>
+</ul></div></section>
+
+<section><h2>두 단어의 관계</h2>
+<div class="diagram">
+   Spring (Framework)        ← 거대한 도구 모음
+       │
+       ├── Spring MVC        (웹)
+       ├── Spring JDBC       (DB)
+       ├── Spring Security   (보안)
+       └── ... 수십 개
+
+   Spring Boot               ← Spring 위에 얹힌 자동 설정 도우미
+       └── 「설정 다 알아서 해줄게」
+</div></section>
+
+<section><h2>🛠️ Spring (Legacy)</h2><div class="new-tool"><div class="tool-title">고전 방식</div>
+<p>웹 프로젝트를 만들려면 <code>web.xml</code>·<code>root-context.xml</code>·<code>servlet-context.xml</code> 같은 XML 설정 파일을 직접 작성. 자유도 높지만 진입 장벽도 높음.</p></div></section>
+
+<section><h2>🚀 Spring Boot</h2><div class="new-tool"><div class="tool-title">현대 방식 — 「자동 설정」</div>
+<p>설정 파일 거의 안 씀. <code>@SpringBootApplication</code> 한 줄에 컨테이너·내장 톰캣·DB 연동까지 자동. <code>main()</code> 메서드 하나로 실행.</p></div>
+<pre><code class="language-java" data-trim>
+@SpringBootApplication
+public class App {
+    public static void main(String[] args) {
+        SpringApplication.run(App.class, args);  // 끝!
+    }
+}
+</code></pre></section>
+
+<section><h2>📊 한눈에 비교</h2>
+<table style="font-size:0.85em; width:100%; border-collapse:collapse;">
+<thead><tr style="background:rgba(255,255,255,0.05);">
+<th style="padding:8px;">항목</th><th>Spring (Legacy)</th><th>Spring Boot</th></tr></thead>
+<tbody>
+<tr><td style="padding:6px;">설정</td><td>XML 직접 작성</td><td>자동 설정</td></tr>
+<tr><td style="padding:6px;">서버</td><td>외부 Tomcat</td><td>내장 Tomcat</td></tr>
+<tr><td style="padding:6px;">실행</td><td>WAR 배포</td><td><code>java -jar</code></td></tr>
+<tr><td style="padding:6px;">진입 장벽</td><td>높음</td><td>낮음</td></tr>
+<tr><td style="padding:6px;">학습 가치</td><td>구조를 깊이 이해</td><td>빠른 결과</td></tr>
+</tbody></table></section>
+
+<section><h2>왜 우리는 Legacy 로?</h2>
+<div class="info-box">
+<p>Boot 는 편리하지만 <strong>많은 일을 자동으로 숨겨놓습니다</strong>. 비전공자가 Boot 로 시작하면 「되긴 하는데 왜 되는지 모르는」 상태가 되기 쉽습니다.</p>
+<p style="margin-top:0.5em;">Legacy 로 XML 한 줄 한 줄을 직접 짜보면 <strong>Spring 의 동작 원리</strong>를 이해할 수 있고, 나중에 Boot 로 옮길 때도 자신 있게 다룰 수 있습니다.</p>
+</div></section>
+
+<section><h2>🔄 Before / After</h2><div class="before-after">
+<div class="before"><div class="label">전 차시까지</div><p>Spring 의 IoC/DI 발상은 안다. Spring Boot 와 차이는 모름.</p></div>
+<div class="arrow">→</div>
+<div class="after"><div class="label">이번 차시 끝</div><p>Spring 과 Boot 의 관계를 안다. 우리가 Legacy 로 시작하는 이유에 동의한다.</p></div>
+</div></section>
+
+<section><h2>이번 차시의 데이터 흐름</h2><div class="flow-diagram"><div class="flow">
+<div class="box new">Spring Framework<br><small>(우리가 학습)</small></div><span class="arrow">→</span>
+<div class="box">Spring Boot<br><small>(후속 과정)</small></div></div>
+<div class="caption"><span class="new-mark">●</span> 학습 경로의 큰 그림이 잡혔습니다</div></div></section>
+
+<section><h2>정리</h2><div class="summary"><h3>오늘 들고 가는 것</h3><ul>
+<li>Spring = 거대한 프레임워크 모음</li>
+<li>Boot = Spring 자동 설정 도우미</li>
+<li>우리는 원리를 이해하기 위해 Legacy 로</li>
+</ul></div>
+<p style="margin-top:0.8em; font-size:0.7em; color:var(--text-muted);">다음: <strong>Maven & pom.xml</strong>.</p></section>
+
+</div></div>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"></script>
+<script>Reveal.initialize({hash:true,slideNumber:'c/t',width:1280,height:720,margin:0.06,transition:'slide',plugins:[RevealHighlight,RevealNotes]});</script>
+<script src="../js/infographics.js?v=2"></script>
+<script src="../js/screenshot.js?v=2"></script></body></html>

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>안전한 게시판 — 읽기 자료</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/example.css"></head><body>
+<div class="container">
+
+<div class="header"><div class="version-badge">v6</div><div class="session-num">★ PART · BOARD</div>
+<h1>안전한 게시판</h1><p class="subtitle">회원과 게시판 — 읽기 자료</p></div>
+
+<div class="minimap"><div class="minimap-title">📍 지금 어디를 만지고 있나요?</div><div class="flow">
+<div class="box">브라우저</div><span class="arrow">→</span>
+<div class="box active">회원과 게시판</div><span class="arrow">→</span>
+<div class="box">DB</div></div></div>
+
+<div class="terms"><h3>핵심 용어</h3><div class="term-item"><span class="term-name">인증 (Authentication)</span><span class="term-desc">누구인지 확인 (로그인).</span></div>
+<div class="term-item"><span class="term-name">인가 (Authorization)</span><span class="term-desc">권한 확인 (이 사람이 이 작업을 할 수 있나?).</span></div>
+<div class="term-item"><span class="term-name">ALTER TABLE ADD COLUMN</span><span class="term-desc">운영 중 테이블에 컬럼 추가. DEFAULT 절로 기존 row 도 채움.</span></div></div>
+
+<h2>1. 문제</h2>
+<div class="pain-point"><div class="pain-title">전 차시까지의 답답함</div><p>v5 의 두 가지 답답함 — ① 누구나 남의 글을 수정·삭제 가능. ② <code>myboard</code> 에 작성일이 없어 「언제 쓴 글인지」 표시할 수 없음.</p></div>
+
+<h2>2. 새 도구</h2>
+<div class="new-tool"><div class="tool-title">ALTER ADD created_at + 인가</div><p>① <code>ALTER TABLE myboard ADD COLUMN created_at DATETIME DEFAULT CURRENT_TIMESTAMP</code> ② 작성자 문자열과 세션 사용자 ID 비교.</p></div>
+
+<h2>3. 코드</h2>
+<pre><code>-- 스키마 변경
+ALTER TABLE myboard
+  ADD COLUMN created_at DATETIME DEFAULT CURRENT_TIMESTAMP;
+
+// com.smhrd.domain.Board (createdAt 필드 합류)
+@Data @AllArgsConstructor @NoArgsConstructor
+public class Board {
+    private int           num;
+    private String        title;
+    private String        writer;
+    private String        content;
+    private LocalDateTime createdAt;   // ← v6 추가
+}
+
+@PostMapping("/board/update")
+public String update(Board b, HttpSession session) {
+    Member u = (Member) session.getAttribute("loginUser");
+    Board original = service.selectOne(b.getNum());
+
+    // 본인 확인 (인가)
+    if (!original.getWriter().equals(u.getId())) {
+        return "redirect:/board/view?num=" + b.getNum() + "&amp;err=forbidden";
+    }
+
+    service.update(b, u.getId());
+    return "redirect:/board/view?num=" + b.getNum();
+}
+
+@PostMapping("/board/delete")
+public String delete(@RequestParam int num, HttpSession session) {
+    Member u = (Member) session.getAttribute("loginUser");
+    Board original = service.selectOne(num);
+    if (!original.getWriter().equals(u.getId())) {
+        return "redirect:/board/view?num=" + num + "&amp;err=forbidden";
+    }
+    service.delete(num, u.getId());
+    return "redirect:/board/list";
+}
+
+&lt;!-- view.jsp 에서 --&gt;
+&lt;p&gt;작성자: ${board.writer} | 작성일: ${board.createdAt}&lt;/p&gt;
+&lt;c:if test="${board.writer == sessionScope.loginUser.id}"&gt;
+    &lt;a href="/board/edit?num=${board.num}"&gt;수정&lt;/a&gt;
+    &lt;form action="/board/delete" method="post" style="display:inline;"&gt;
+        &lt;input type="hidden" name="num" value="${board.num}"&gt;
+        &lt;button&gt;삭제&lt;/button&gt;
+    &lt;/form&gt;
+&lt;/c:if&gt;</code></pre>
+
+<h2>4. 정리</h2>
+<ul><li><code>ALTER ADD COLUMN created_at DATETIME DEFAULT CURRENT_TIMESTAMP</code></li>
+<li>인가 = 권한 체크 — <code>writer.equals(u.getId())</code></li>
+<li>JSP 에서도 c:if 로 버튼 숨김</li>
+<li>v6 마일스톤</li></ul>
+
+<h2>5. Before / After</h2>
+<div class="before-after">
+<div class="before"><div class="label">전 차시 끝</div><p>v5 의 위험 — 누구나 남의 글을 수정·삭제 가능. 본인 확인이 필요.</p></div>
+<div class="arrow">→</div>
+<div class="after"><div class="label">이번 차시 끝</div><p>본인 글만 수정·삭제 가능. v6 — 실용 가능한 게시판.</p></div>
+</div>
+
+<div class="nav"><a href="board-v5-minimal.html">&larr; 이전</a><a href="../index.html">메인으로</a><a href="board-v7-paging.html">다음 &rarr;</a></div>
+</div><script src="../js/screenshot.js?v=2"></script></body></html>

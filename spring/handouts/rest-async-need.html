@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>비동기 통신이 푼 문제 — 핸드아웃</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/print.css"></head><body>
+<div class="container">
+
+<div class="header">
+<div class="header-left"><div class="session-num">◇ PART · REST</div>
+<h1>비동기 통신이 푼 문제</h1></div>
+<div class="header-right">Spring 기초<br>SMHRD</div></div>
+
+<div class="objectives"><h3>학습 목표</h3>
+<ul><li>비동기 통신이 푼 문제 의 핵심 개념을 안다</li><li>비동기 통신 (Ajax) 의 동작을 안다</li><li>동기와 비동기의 차이를 안다. 다음 차시들에서 실제 코드.</li></ul></div>
+
+<h2>1. 문제</h2>
+<p>게시판에 댓글 하나 달 때마다 페이지 전체가 깜빡인다. 답답하다.</p>
+
+<h2>2. 새 도구</h2>
+<div class="note"><strong>비동기 통신 (Ajax):</strong> 페이지 전체를 다시 로드하지 않고 필요한 부분만 서버와 주고받는 통신 방식.</div>
+
+<h2>3. 코드</h2>
+<div class="diagram">// 동기 (전체 새로고침)
+form 제출 → 서버 → 새 HTML → 화면 전체 깜빡
+
+// 비동기 (Ajax)
+fetch('/api/replies', {method: 'POST', body: ...})
+    .then(res =&gt; res.json())
+    .then(data =&gt; {
+        // 받은 데이터로 DOM 의 일부분만 업데이트
+        document.querySelector('#replyList').innerHTML += ...
+    });
+// 페이지는 그대로, 변하는 부분만 변함</div>
+
+<h2>4. 정리</h2>
+<ul><li>동기 = 전체 새로고침</li>
+<li>비동기 = 필요한 부분만</li>
+<li>fetch / XMLHttpRequest</li>
+<li>JSON 으로 데이터 교환</li></ul>
+
+<h2>5. Before / After</h2>
+<div class="before-after">
+<div class="before"><div class="label">전 차시</div><p>게시판에 댓글 하나 달 때마다 페이지 전체가 깜빡인다. 답답하다.</p></div>
+<div class="after"><div class="label">이번 차시</div><p>동기와 비동기의 차이를 안다. 다음 차시들에서 실제 코드.</p></div>
+</div>
+
+<div class="checklist"><h3>학습 확인 체크리스트</h3>
+<ul><li>동기 = 전체 새로고침</li>
+<li>비동기 = 필요한 부분만</li>
+<li>fetch / XMLHttpRequest</li>
+<li>JSON 으로 데이터 교환</li></ul></div>
+
+<div class="nav"><a href="board-v7-paging.html">&larr; 이전</a><a href="../index.html">메인으로</a><a href="rest-json.html">다음 &rarr;</a></div>
+</div></body></html>

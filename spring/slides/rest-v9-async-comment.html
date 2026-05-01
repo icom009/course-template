@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>v9 비동기 댓글 | Spring 기초</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/night.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/custom.css"></head><body>
+<div class="reveal"><div class="slides">
+
+<section>
+<div class="version-badge">v9</div>
+<div class="session-title">
+<span class="session-glyph">★ MILESTONE · REST</span>
+<h1>비동기 댓글</h1>
+<p class="subtitle">새로고침이 사라지는 순간</p>
+</div>
+</section>
+
+<section><h2>학습 목표</h2><div class="objectives"><ul>
+<li class="fragment fade-up"><span class="keyword">fetch</span> 로 서버에 비동기 요청을 보낸다</li>
+<li class="fragment fade-up">JSON 응답을 받아 <span class="keyword">DOM</span> 에 직접 추가한다</li>
+<li class="fragment fade-up">댓글이 <span class="keyword">새로고침 없이</span> 화면에 등장하는 경험을 만든다</li>
+<li class="fragment fade-up"><span class="keyword">async/await</span> 의 기본 사용법을 안다</li>
+</ul></div></section>
+
+<section><h2>⚠️ v6/v8 의 답답함</h2>
+<div class="pain-point">
+<div class="pain-title">댓글 한 번 달 때마다</div>
+<ol style="font-size:0.85em;">
+<li>댓글 입력 + 제출 클릭</li>
+<li>화면 전체가 깜빡 (새로고침)</li>
+<li>모든 이미지·스크립트 다시 다운로드</li>
+<li>스크롤이 맨 위로 — 어디 있었는지 잃어버림</li>
+</ol>
+<p style="margin-top:0.4em;">현대 웹사이트는 이런 식으로 동작 안 합니다. <strong>댓글은 즉시 추가되고 화면은 그대로</strong>여야 합니다.</p>
+</div>
+</section>
+
+<section><h2>🛠️ 비동기 통신의 발상</h2>
+<div class="new-tool">
+<div class="tool-title">「부분만 갱신」</div>
+<p>전체 페이지를 새로 받는 대신, JS 로 백그라운드에서 서버에 요청 → JSON 받아 → 화면의 일부분만 직접 수정.</p>
+</div>
+
+<div class="diagram">
+   동기 (전통)                  비동기 (Ajax)
+   ──────────                   ──────────
+   form 제출                    fetch() 호출
+        ↓                            ↓
+   서버 → HTML 전체              서버 → JSON 만
+        ↓                            ↓
+   페이지 다시 그림              JS 가 일부만 변경
+   (깜빡)                        (그대로 매끄럽게)
+</div>
+</section>
+
+<section><h2>오늘 만들 것</h2>
+<div class="info-box">
+<p>v6 게시판의 글 상세 페이지에 댓글 기능을 추가합니다:</p>
+<ul style="font-size:0.85em;">
+<li>입력창 + 등록 버튼</li>
+<li>등록 시 fetch 로 서버에 POST</li>
+<li>서버는 댓글 객체를 JSON 으로 반환</li>
+<li>JS 가 그 JSON 으로 댓글 목록 끝에 새 댓글 추가</li>
+<li>페이지 새로고침 0 회</li>
+</ul>
+</div>
+</section>
+
+<section><h2>① DB — 댓글 테이블 신설</h2>
+<pre><code class="language-sql" data-trim>
+CREATE TABLE myreply (
+    num        INT          PRIMARY KEY AUTO_INCREMENT,
+    content    VARCHAR(500) NOT NULL,
+    boardnum   INT          NOT NULL,
+    writer     VARCHAR(50)  NOT NULL,
+    created_at DATETIME     DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (boardnum) REFERENCES myboard(num) ON DELETE CASCADE
+);
+</code></pre>
+<p style="font-size:0.8em; margin-top:0.4em;">
+👉 <code>boardnum</code> 이 <code>myboard.num</code> 을 가리키는 <strong>FK 첫 등장</strong>. <code>ON DELETE CASCADE</code> — 글이 지워지면 댓글도 함께 삭제.
+</p>
+</section>
+
+<section><h2>② Reply 도메인 + Mapper</h2>
+<pre><code class="language-java" data-trim>
+// com.smhrd.domain.Reply
+@Data @AllArgsConstructor @NoArgsConstructor
+public class Reply {
+    private int num;
+    private String content;
+    private int boardnum;
+    private String writer;
+    private LocalDateTime createdAt;
+}
+
+// com.smhrd.mapper.ReplyMapper
+public interface ReplyMapper {
+    List&lt;Reply&gt; selectList(int boardnum);
+    void insert(Reply r);
+}
+</code></pre>
+</section>
+
+<section><h2>② Mapper XML</h2>
+<pre><code class="language-xml" data-trim>
+&lt;mapper namespace="com.smhrd.mapper.ReplyMapper"&gt;
+
+    &lt;select id="selectList" parameterType="int"
+            resultType="com.smhrd.domain.Reply"&gt;
+        SELECT num, content, boardnum, writer, created_at
+        FROM myreply
+        WHERE boardnum = #{boardnum}
+        ORDER BY num ASC
+    &lt;/select&gt;
+
+    &lt;insert id="insert" parameterType="com.smhrd.domain.Reply"
+            useGeneratedKeys="true" keyProperty="num"&gt;
+        INSERT INTO myreply(content, boardnum, writer)
+        VALUES(#{content}, #{boardnum}, #{writer})
+    &lt;/insert&gt;
+
+&lt;/mapper&gt;
+</code></pre>
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 <code>useGeneratedKeys</code> + <code>keyProperty</code>: INSERT 후 자동 증가된 <code>num</code> 이 객체로 돌아옴.
+</p>
+</section>
+
+<section><h2>③ Service</h2>
+<pre><code class="language-java" data-trim>
+package com.smhrd.service;
+
+@Service
+public class ReplyService {
+
+    @Autowired
+    private ReplyMapper mapper;
+
+    public List&lt;Reply&gt; list(int boardnum) {
+        return mapper.selectList(boardnum);
+    }
+
+    public Reply add(Reply r) {
+        mapper.insert(r);
+        // insert 후 num 이 채워진 r 이 그대로 돌아옴
+        return r;
+    }
+}
+</code></pre>
+</section>
+
+<section><h2>④ REST Controller — 조회</h2>
+<pre><code class="language-java" data-trim>
+package com.smhrd.controller;
+
+@RestController
+@RequestMapping("/api/replies")
+public class ReplyApiController {
+
+    @Autowired
+    private ReplyService service;
+
+    // GET /api/replies?boardnum=3
+    @GetMapping
+    public List&lt;Reply&gt; list(@RequestParam int boardnum) {
+        return service.list(boardnum);
+    }
+}
+</code></pre>
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 글 번호로 댓글 목록을 JSON 배열로 반환.
+</p>
+</section>
+
+<section><h2>④ REST Controller — 등록</h2>
+<pre><code class="language-java" data-trim>
+    // POST /api/replies
+    @PostMapping
+    public Reply add(@RequestBody Reply r,
+                     HttpSession session) {
+        Member u = (Member) session.getAttribute("loginUser");
+        if (u == null) {
+            throw new RuntimeException("로그인이 필요합니다");
+        }
+        r.setWriter(u.getId());   // 세션에서 작성자 ID
+        return service.add(r);
+    }
+</code></pre>
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 세션에서 작성자를 채워 넣고 새 댓글 객체를 그대로 응답.
+</p>
+</section>
+
+<section><h2>⑤ JSP — 댓글 영역 마크업</h2>
+<pre><code class="language-jsp" data-trim>
+&lt;!-- /WEB-INF/views/board/view.jsp 의 일부 --&gt;
+&lt;h1&gt;${board.title}&lt;/h1&gt;
+&lt;div&gt;${board.content}&lt;/div&gt;
+
+&lt;hr/&gt;
+&lt;h3&gt;댓글&lt;/h3&gt;
+
+&lt;div id="replyList"&gt;
+    &lt;!-- 여기에 JS 로 댓글 추가됨 --&gt;
+&lt;/div&gt;
+
+&lt;c:if test="${not empty sessionScope.loginUser}"&gt;
+    &lt;form id="replyForm" onsubmit="addReply(event)"&gt;
+        &lt;input type="text" id="replyInput" placeholder="댓글" /&gt;
+        &lt;button type="submit"&gt;등록&lt;/button&gt;
+    &lt;/form&gt;
+&lt;/c:if&gt;
+
+&lt;script&gt;
+    const BOARD_NUM = ${board.num};
+    /* 다음 슬라이드의 JS */
+&lt;/script&gt;
+</code></pre>
+</section>
+
+<section><h2>⑥ JS — 댓글 목록 불러오기</h2>
+<pre><code class="language-javascript" data-trim>
+// 페이지 로드 시 기존 댓글 가져오기
+async function loadReplies() {
+    const res = await fetch(`/api/replies?boardnum=${BOARD_NUM}`);
+    const replies = await res.json();
+
+    const list = document.getElementById('replyList');
+    list.innerHTML = '';
+    replies.forEach(r => {
+        list.appendChild(renderReply(r));
+    });
+}
+
+// 페이지 로드 시 한 번 실행
+loadReplies();
+</code></pre>
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 <code>fetch</code> 로 JSON 배열을 받아 한 줄씩 DOM 으로 그립니다.
+</p>
+</section>
+
+<section><h2>⑥ JS — 댓글 한 줄 렌더링</h2>
+<pre><code class="language-javascript" data-trim>
+function renderReply(r) {
+    const div = document.createElement('div');
+    div.className = 'reply';
+    div.innerHTML = `
+        &lt;strong&gt;${r.writer}&lt;/strong&gt;
+        &lt;span&gt;${r.createdAt}&lt;/span&gt;
+        &lt;p&gt;${r.content}&lt;/p&gt;
+    `;
+    return div;
+}
+</code></pre>
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 댓글 객체 하나를 받아 DOM 노드 하나를 만듭니다. 등록 시에도 재사용.
+</p>
+</section>
+
+<section><h2>⑦ JS — 댓글 작성 — 요청 보내기</h2>
+<pre><code class="language-javascript" data-trim>
+async function addReply(event) {
+    event.preventDefault();   // form 의 기본 제출 막기
+
+    const input = document.getElementById('replyInput');
+    const content = input.value.trim();
+    if (!content) return;
+
+    const res = await fetch('/api/replies', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            boardnum: BOARD_NUM,
+            content: content
+        })
+    });
+    /* 다음 슬라이드 — 응답 처리 */
+}
+</code></pre>
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 <code>preventDefault()</code> 로 페이지 새로고침을 막고, JSON 으로 POST 합니다.
+</p>
+</section>
+
+<section><h2>⑦ JS — 댓글 작성 — 응답 처리</h2>
+<pre><code class="language-javascript" data-trim>
+    try {
+        if (!res.ok) throw new Error('서버 오류');
+
+        const newReply = await res.json();
+        // 응답으로 받은 댓글을 화면 끝에 추가
+        document.getElementById('replyList')
+                .appendChild(renderReply(newReply));
+
+        input.value = '';   // 입력창 비움
+    } catch (e) {
+        alert('댓글 등록 실패: ' + e.message);
+    }
+}
+</code></pre>
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 응답 JSON 을 같은 <code>renderReply</code> 로 그려서 끝에 붙이고, 입력창만 비움. 페이지 그대로.
+</p>
+</section>
+
+<section><h2>전체 흐름 — 시간순</h2>
+<div class="diagram">
+   t=0  사용자: "좋은 글이네요" 입력 + 등록 버튼
+
+   t=1  JS: addReply(event) 호출
+            event.preventDefault()  ← 새로고침 막음
+            fetch POST /api/replies
+
+   t=2  서버: @RequestBody Reply r 로 자동 변환
+            session 에서 사용자 확인
+            ReplyService.add(r)
+            ReplyMapper.insert(r)
+            DB 에 한 행 추가
+            반환: 채워진 Reply 객체
+
+   t=3  서버 → 클라이언트: JSON 응답
+            { "num": 7, "content": "좋은 글이네요", "writer": "hong", ... }
+
+   t=4  JS: const newReply = await res.json()
+            renderReply(newReply) → DOM 요소 만듦
+            replyList.appendChild(...)
+            입력창 비움
+
+   t=5  화면: 댓글 목록 끝에 새 댓글이 「등장」
+            새로고침 없이, 스크롤 그대로
+</div>
+</section>
+
+<section><h2>v6/v8 → v9 핵심 차이 — 기존 동기 폼</h2>
+<pre><code class="language-html" data-trim>
+&lt;form action="/reply/add"
+      method="post"&gt;
+    &lt;input name="content"/&gt;
+    &lt;button&gt;등록&lt;/button&gt;
+&lt;/form&gt;
+
+// 서버 (@Controller)
+return "redirect:/board/view?num=...";
+
+// → 페이지 전체 새로고침
+</code></pre>
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 등록 버튼을 누르면 페이지가 통째로 다시 그려집니다. 스크롤 위치도 잃음.
+</p>
+</section>
+
+<section><h2>v6/v8 → v9 핵심 차이 — 새 비동기 fetch</h2>
+<pre><code class="language-html" data-trim>
+&lt;form onsubmit="addReply(event)"&gt;
+    &lt;input id="replyInput"/&gt;
+    &lt;button&gt;등록&lt;/button&gt;
+&lt;/form&gt;
+
+// 서버 (@RestController)
+return r;   // JSON
+
+// → JS 가 화면 끝에 새 댓글만 추가
+//   페이지 그대로
+</code></pre>
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 같은 화면 안에서 댓글만 살짝 추가됩니다. 스크롤·입력 상태 보존.
+</p>
+</section>
+
+<section><h2>async / await — JS 의 비동기</h2>
+<pre><code class="language-javascript" data-trim>
+// 옛 방식 (Promise)
+fetch('/api/replies?boardnum=3')
+    .then(res =&gt; res.json())
+    .then(replies =&gt; {
+        replies.forEach(r =&gt; { ... });
+    })
+    .catch(err =&gt; console.error(err));
+
+// 현대 (async / await — 가독성 ↑)
+async function load() {
+    try {
+        const res = await fetch('/api/replies?boardnum=3');
+        const replies = await res.json();
+        replies.forEach(r =&gt; { ... });
+    } catch (err) {
+        console.error(err);
+    }
+}
+</code></pre>
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 <code>await</code> 는 <code>async</code> 함수 안에서만. 비동기를 동기처럼 읽기 좋게.
+</p>
+</section>
+
+<section><h2>흔한 함정 4 가지</h2>
+<table style="font-size:0.7em; width:100%; border-collapse:collapse;">
+<thead><tr style="background:rgba(255,255,255,0.05);">
+<th style="padding:6px;">함정</th><th>증상</th></tr></thead>
+<tbody>
+<tr><td style="padding:5px;"><code>event.preventDefault()</code> 빠짐</td><td>fetch 도 가지만 form 도 제출됨 → 화면 전체 새로고침</td></tr>
+<tr><td style="padding:5px;"><code>Content-Type: application/json</code> 누락</td><td>서버에서 @RequestBody 매핑 실패</td></tr>
+<tr><td style="padding:5px;"><code>JSON.stringify</code> 누락</td><td>객체가 [object Object] 문자열로 보내짐</td></tr>
+<tr><td style="padding:5px;"><code>await</code> 누락</td><td>res 가 Promise 객체 그대로 → res.json() 에러</td></tr>
+</tbody></table>
+</section>
+
+<section><h2>새로고침 없이 — 두 가지 의미</h2>
+<div class="info-box">
+<ul style="font-size:0.85em;">
+<li><strong>UX 개선</strong> — 화면 깜빡 없음, 스크롤 유지, 빠른 반응</li>
+<li><strong>네트워크 절약</strong> — HTML/CSS/이미지 다시 안 받음 (JSON 만 작게)</li>
+</ul>
+<p style="margin-top:0.4em;">두 효과가 모이면 사용자는 「부드러운 앱」 같은 경험을 합니다. 이게 현대 웹의 표준.</p>
+</div>
+</section>
+
+<section><h2>다음 차시 미리보기 — v10</h2>
+<div class="diagram">
+   기존 myboard 에 ALTER 두 번:
+
+   - 조회수: ADD COLUMN view_count INT DEFAULT 0
+   - 사진:   ADD COLUMN photo VARCHAR(200) NULL
+
+   v9 의 fetch 패턴을 그대로 응용해 화면 갱신.
+   동적 SQL 의 첫 등장.
+</div>
+</section>
+
+<section><h2>v9 의 의미</h2>
+<div class="info-box">
+<p>v8 에서 만든 REST API 가 <strong>처음으로 클라이언트와 만나는 차시</strong>. v9 부터 우리 사이트는:</p>
+<ul style="font-size:0.85em;">
+<li>기존 v6 의 JSP 게시판 동작 (그대로)</li>
+<li>그 위에 비동기 댓글이 매끄럽게 동작</li>
+</ul>
+<p style="margin-top:0.4em;">두 형태가 공존하며, 부분 부분 비동기로 옮겨가는 길.</p>
+</div>
+</section>
+
+<section><h2>🔄 Before / After</h2><div class="before-after">
+<div class="before"><div class="label">v8 끝</div>
+<p style="font-size:0.85em;">REST API 가 만들어졌다. 하지만 클라이언트가 안 씀.</p>
+</div>
+<div class="arrow">→</div>
+<div class="after"><div class="label">v9 끝</div>
+<p style="font-size:0.85em;">JS 가 fetch 로 REST API 호출. 댓글이 새로고침 없이 등장. 새 시대의 웹 인터랙션.</p>
+</div>
+</div></section>
+
+<section><h2>이번 차시의 데이터 흐름</h2>
+<div class="flow-diagram"><div class="flow">
+<div class="box">사용자 클릭</div><span class="arrow">→</span>
+<div class="box new">JS fetch</div><span class="arrow">→</span>
+<div class="box">REST API</div><span class="arrow">→</span>
+<div class="box">DB</div><span class="arrow">↓</span>
+<div class="box new">JSON 응답</div><span class="arrow">→</span>
+<div class="box new">JS DOM 추가</div></div>
+<div class="caption">
+<span class="new-mark">●</span> JS 가 흐름의 <strong>두 끝</strong>(시작·끝)을 잡고 화면 전환을 직접 통제
+</div></div>
+</section>
+
+<section><h2>정리</h2><div class="summary"><h3>오늘 들고 가는 것</h3><ul>
+<li>fetch + JSON.stringify 로 비동기 POST</li>
+<li>응답 JSON 으로 직접 DOM 조작</li>
+<li><code>event.preventDefault()</code> 로 form 기본 동작 막기</li>
+<li>async/await 로 깔끔한 비동기 코드</li>
+<li><strong>v9 — 새로고침 없는 사용자 경험의 첫 구현</strong></li>
+</ul></div>
+<p style="margin-top:0.8em; font-size:0.7em; color:var(--text-muted);">
+다음: <strong>v10 자잘한 비동기 + 첨부파일</strong> — 같은 패턴 응용.
+</p>
+</section>
+
+</div></div>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"></script>
+<script>Reveal.initialize({hash:true,slideNumber:'c/t',width:1280,height:720,margin:0.06,transition:'slide',plugins:[RevealHighlight,RevealNotes]});</script>
+<script src="../js/infographics.js?v=2"></script>
+<script src="../js/screenshot.js?v=2"></script></body></html>

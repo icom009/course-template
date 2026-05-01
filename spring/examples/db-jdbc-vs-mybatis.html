@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JDBC → MyBatis — 읽기 자료</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/example.css"></head><body>
+<div class="container">
+
+<div class="header"><div class="session-num">◆ PART · DB</div>
+<h1>JDBC → MyBatis</h1><p class="subtitle">데이터와 MyBatis — 읽기 자료</p></div>
+
+<div class="minimap"><div class="minimap-title">📍 지금 어디를 만지고 있나요?</div><div class="flow">
+<div class="box">브라우저</div><span class="arrow">→</span>
+<div class="box active">데이터와 MyBatis</div><span class="arrow">→</span>
+<div class="box">DB</div></div></div>
+
+<div class="terms"><h3>핵심 용어</h3><div class="term-item"><span class="term-name">JDBC</span><span class="term-desc">자바의 표준 DB 접근 API. 저수준.</span></div>
+<div class="term-item"><span class="term-name">MyBatis</span><span class="term-desc">JDBC 위에 얹힌 SQL 매핑 프레임워크.</span></div>
+<div class="term-item"><span class="term-name">boilerplate</span><span class="term-desc">반복적이고 의미 없는 코드.</span></div></div>
+
+<h2>1. 문제</h2>
+<div class="pain-point"><div class="pain-title">전 차시까지의 답답함</div><p>JDBC 로 DB 다루는 코드가 너무 길고 반복적이다.</p></div>
+
+<h2>2. 새 도구</h2>
+<div class="new-tool"><div class="tool-title">MyBatis — 자바 ↔ SQL 통역사</div><p>반복 코드를 줄이고 SQL 작성에만 집중하게 해주는 도구.</p></div>
+
+<h2>3. 코드</h2>
+<pre><code>// JDBC (BEFORE) — 30 줄
+Connection conn = ds.getConnection();
+PreparedStatement ps = conn.prepareStatement(
+    "SELECT id, pwd FROM mymember WHERE id=?");
+ps.setString(1, "hong");
+ResultSet rs = ps.executeQuery();
+if (rs.next()) {
+    Member m = new Member();
+    m.setId(rs.getString("id"));
+    m.setPwd(rs.getString("pwd"));
+}
+rs.close(); ps.close(); conn.close();
+
+// MyBatis (AFTER) — 1 줄
+Member m = mapper.selectOne("hong");</code></pre>
+
+<h2>4. 정리</h2>
+<ul><li>JDBC = 반복적 boilerplate 가 길다</li>
+<li>MyBatis = SQL 만 적으면 끝</li>
+<li>ResultSet → 객체 자동 변환</li></ul>
+
+<h2>5. Before / After</h2>
+<div class="before-after">
+<div class="before"><div class="label">전 차시 끝</div><p>JDBC 로 DB 다루는 코드가 너무 길고 반복적이다.</p></div>
+<div class="arrow">→</div>
+<div class="after"><div class="label">이번 차시 끝</div><p>MyBatis 가 줄여주는 분량을 직접 본다.</p></div>
+</div>
+
+<div class="nav"><a href="db-mysql-tables.html">&larr; 이전</a><a href="../index.html">메인으로</a><a href="db-setup-checklist.html">다음 &rarr;</a></div>
+</div><script src="../js/screenshot.js?v=2"></script></body></html>

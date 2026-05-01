@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>6 계층 한눈에 | Spring 기초</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/night.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/custom.css"></head><body>
+<div class="reveal"><div class="slides">
+
+<section>
+<div class="session-title">
+<span class="session-glyph">◇ PART · MVC</span>
+<h1>6 계층 한눈에</h1>
+<p class="subtitle">DispatcherServlet ~ View 의 분업 지도</p>
+</div>
+<aside class="notes">
+이 차시는 Spring MVC 의 큰 그림을 잡는 핵심. 다음 차시들에서 각 계층을 깊이 파고들기 전, 「어떤 계층들이 있고 누가 누구에게 일을 시키는가」를 머릿속에 박는다.
+</aside>
+</section>
+
+<section><h2>학습 목표</h2><div class="objectives"><ul>
+<li class="fragment fade-up">Spring MVC 의 <span class="keyword">6 계층</span>이 무엇인지 안다</li>
+<li class="fragment fade-up">각 계층의 <span class="keyword">단 하나의 책임</span>을 입으로 말할 수 있다</li>
+<li class="fragment fade-up">하나의 요청이 6 계층을 어떻게 통과하는지 그릴 수 있다</li>
+<li class="fragment fade-up">이 분업이 왜 코드를 안전하고 유연하게 만드는지 안다</li>
+</ul></div></section>
+
+<section><h2>⚠️ 분업 없는 코드의 한계</h2>
+<div class="pain-point">
+<div class="pain-title">한 메서드에 다 박힌 코드</div>
+<pre><code data-trim>
+@RequestMapping("/board/list")
+public String list() {
+    // ① DB 직접 연결
+    Connection c = DriverManager.getConnection(...);
+    // ② SQL 실행
+    PreparedStatement ps = c.prepareStatement("SELECT...");
+    // ③ 결과 가공
+    while(rs.next()) { ... }
+    // ④ HTML 조립
+    StringBuilder html = new StringBuilder("&lt;html&gt;...");
+    // 한 메서드 안에 4 가지 일이 다 있다
+}
+</code></pre>
+<p style="margin-top:0.4em;">화면 디자인 한 번 바꾸려고 SQL 도 손대야 한다면? 부서지기 쉽고, 테스트 불가능, 새 사람이 와서 손대기 어려움.</p>
+</div>
+</section>
+
+<section><h2>🛠️ 6 계층 분업 — 식당으로 비유</h2>
+<div class="new-tool">
+<div class="tool-title">각자의 일이 다르다</div>
+<p>큰 식당이 손님 한 명을 응대하는 흐름과 정확히 같습니다. 각 사람은 자기 일만 하고, 다른 사람의 일은 알지 못해도 됩니다.</p>
+</div>
+
+<div class="diagram">
+   ① DispatcherServlet  →  안내데스크 (입구 통제)
+   ② Controller         →  종업원 (주문 받기)
+   ③ Service            →  메인 셰프 (실제 요리)
+   ④ DAO / Repository   →  식재료 창고 관리자 (DB 접근)
+   ⑤ DTO / VO           →  그릇 (데이터 운반)
+   ⑥ View               →  식탁·메뉴판 (화면)
+</div>
+</section>
+
+<section><h2>전체 흐름 — 요청이 들어가는 길</h2>
+<div class="diagram">
+   브라우저 GET /board/view?id=3
+        ↓
+   ① DispatcherServlet
+       "이 URL 누구한테 보낼까?"
+        ↓
+   ② BoardController.view(3)
+       "id=3 받음, 셰프에게 부탁하자"
+        ↓
+   ③ BoardService.findById(3)
+       "비즈니스 로직 처리"
+        ↓
+   ④ BoardMapper.findById(3)
+       "DB 에 SQL 실행"
+        ↓
+       DB
+</div>
+</section>
+
+<section><h2>전체 흐름 — 결과가 돌아오는 길</h2>
+<div class="diagram">
+       DB → ⑤ Board (DTO) 한 개 반환
+        ↑
+   ④ Mapper 가 DTO 로 받아 Service 로
+        ↑
+   ③ Service 가 결과를 Controller 로
+        ↑
+   ② Controller 가 model 에 담고 ViewName 반환
+        ↓
+   ⑥ View (JSP) — 화면 그림
+        ↓
+   브라우저 → 화면 표시
+</div>
+</section>
+
+<section><h2>① DispatcherServlet — 안내데스크</h2>
+<div class="info-box">
+<p><strong>책임</strong>: 모든 HTTP 요청을 가장 먼저 받는다. 어느 컨트롤러가 처리할지 결정해서 넘긴다.</p>
+</div>
+
+<ul style="font-size:0.85em;">
+<li class="fragment">Spring 이 만들어주는 부품 — 우리가 직접 짜지 않음</li>
+<li class="fragment"><code>web.xml</code> 에 한 번만 등록</li>
+<li class="fragment">Front Controller 패턴의 구현체</li>
+<li class="fragment">URL 보고 적절한 컨트롤러 메서드를 찾음 (HandlerMapping 도움)</li>
+</ul>
+
+<div class="diagram">
+   web.xml 에서:
+   &lt;servlet&gt;
+       &lt;servlet-class&gt;
+           org.springframework.web.servlet.DispatcherServlet
+       &lt;/servlet-class&gt;
+   &lt;/servlet&gt;
+</div>
+</section>
+
+<section><h2>② Controller — 종업원</h2>
+<div class="info-box">
+<p><strong>책임</strong>: 요청을 받아 검증하고, 적절한 Service 에게 일을 시킨다. 결과를 모델에 담아 View 로 보낸다.</p>
+</div>
+
+<pre><code class="language-java" data-trim>
+@Controller
+public class BoardController {
+
+    @Autowired
+    private BoardService service;          // 셰프
+
+    @GetMapping("/board/view")
+    public String view(@RequestParam int id, Model model) {
+        Board b = service.findById(id);     // 셰프에게 부탁
+        model.addAttribute("board", b);     // 그릇에 담아
+        return "board/view";                // 식탁(JSP)으로
+    }
+}
+</code></pre>
+
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 컨트롤러는 「<strong>중개자</strong>」 — SQL 도 모르고, HTML 도 안 만든다.
+</p>
+</section>
+
+<section><h2>③ Service — 메인 셰프</h2>
+<div class="info-box">
+<p><strong>책임</strong>: 실제 요리(비즈니스 로직)를 한다. 트랜잭션도 책임진다.</p>
+</div>
+<pre><code class="language-java" data-trim>
+@Service
+public class BoardService {
+
+    @Autowired
+    private BoardMapper mapper;            // 창고 관리자
+
+    public Board findById(int id) {
+        Board b = mapper.findById(id);
+        if (b == null) {
+            throw new IllegalArgumentException("글이 없습니다");
+        }
+        return b;
+    }
+}
+</code></pre>
+</section>
+
+<section><h2>③ Service — 트랜잭션 예시</h2>
+<pre><code class="language-java" data-trim>
+@Service
+public class BoardService {
+
+    @Autowired private BoardMapper mapper;
+    @Autowired private FileService fileService;
+
+    @Transactional
+    public void writeWithFile(Board b, MultipartFile file) {
+        mapper.insert(b);                   // 글 저장
+        fileService.save(file);             // 파일 저장
+        // 둘 중 하나 실패하면 둘 다 롤백
+    }
+}
+</code></pre>
+</section>
+
+<section><h2>③ Service 가 진짜로 하는 일</h2>
+<ul style="font-size:0.85em;">
+<li class="fragment"><strong>비즈니스 규칙 적용</strong> — "글이 없으면 예외" 같은 도메인 규칙</li>
+<li class="fragment"><strong>여러 Mapper 호출 조합</strong> — 글 + 파일 + 알림 등 여러 DB 작업</li>
+<li class="fragment"><strong>트랜잭션 경계</strong> — <code>@Transactional</code> 로 원자성 보장</li>
+<li class="fragment"><strong>외부 시스템 호출</strong> — 결제 API, 메일 발송 등</li>
+</ul>
+
+<div class="info-box" style="margin-top:0.5em;">
+<p style="font-size:0.9em;">Service 가 「두툼해야」 한다 — Controller 와 Mapper 는 얇게.</p>
+</div>
+</section>
+
+<section><h2>④ DAO / Repository — 창고 관리자</h2>
+<div class="info-box">
+<p><strong>책임</strong>: DB 접근 SQL 만 작성. 비즈니스 로직 없음.</p>
+</div>
+
+<pre><code class="language-java" data-trim>
+// 인터페이스 — 자바
+@Mapper
+public interface BoardMapper {
+    Board findById(int id);
+    List&lt;Board&gt; findAll();
+    void insert(Board b);
+    void update(Board b);
+    void delete(int id);
+}
+
+// SQL — XML
+&lt;mapper namespace="...BoardMapper"&gt;
+    &lt;select id="findById" resultType="Board"&gt;
+        SELECT * FROM board WHERE id = #{id}
+    &lt;/select&gt;
+&lt;/mapper&gt;
+</code></pre>
+
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 「DAO」 와 「Repository」 는 사실 같은 일. Spring 권장은 <code>@Repository</code>.
+</p>
+</section>
+
+<section><h2>⑤ DTO / VO — 그릇</h2>
+<div class="info-box">
+<p><strong>책임</strong>: 계층 사이 데이터 운반. 로직은 거의 없는 「데이터 그릇」.</p>
+</div>
+
+<pre><code class="language-java" data-trim>
+public class Board {
+    private int id;
+    private String title;
+    private String content;
+    private int writerId;
+    private LocalDateTime createdAt;
+
+    // getter / setter
+    public int getId() { return id; }
+    public void setId(int id) { this.id = id; }
+    // ...
+}
+</code></pre>
+
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 DB 한 행 ↔ JSP 의 <code>${board.title}</code> 사이를 오가는 그릇.
+</p>
+</section>
+
+<section><h2>⑤ DTO · VO · Entity — 미세한 차이</h2>
+<table style="font-size:0.7em; width:100%; border-collapse:collapse;">
+<thead><tr style="background:rgba(255,255,255,0.05);">
+<th style="padding:6px;">이름</th><th>주된 의미</th><th>특징</th></tr></thead>
+<tbody>
+<tr><td style="padding:5px;"><strong>DTO</strong></td><td>Data Transfer Object</td><td>계층 간 운반. 보통 getter/setter</td></tr>
+<tr><td style="padding:5px;"><strong>VO</strong></td><td>Value Object</td><td>「값」으로서 의미. 불변(immutable) 권장</td></tr>
+<tr><td style="padding:5px;"><strong>Entity</strong></td><td>DB 의 한 행을 표현</td><td>JPA 등에서. 본 과정에서는 미사용</td></tr>
+</tbody></table>
+<p style="font-size:0.85em; margin-top:0.5em;">
+👉 본 과정에선 「DTO 와 VO 는 거의 같다」 정도로 받아들여도 OK. 정확한 구분은 Part 3 의 <strong>◇ DTO·VO·Model</strong> 차시에서.
+</p>
+</section>
+
+<section><h2>⑥ View — 식탁·메뉴판</h2>
+<div class="info-box">
+<p><strong>책임</strong>: 모델 데이터를 받아 사용자에게 보여줄 화면을 그린다.</p>
+</div>
+
+<pre><code class="language-jsp" data-trim>
+&lt;!-- /WEB-INF/views/board/view.jsp --&gt;
+&lt;%@ page contentType="text/html; charset=UTF-8" %&gt;
+&lt;html&gt;
+&lt;body&gt;
+    &lt;h1&gt;${board.title}&lt;/h1&gt;
+    &lt;p&gt;작성자: ${board.writerName}&lt;/p&gt;
+    &lt;div&gt;${board.content}&lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 View 는 자바 코드를 거의 안 씀. 표현(<code>${...}</code>)만.
+</p>
+</section>
+
+<section><h2>각 계층의 「단 하나의 책임」</h2>
+<table style="font-size:0.7em; width:100%; border-collapse:collapse;">
+<thead><tr style="background:rgba(255,255,255,0.05);">
+<th style="padding:6px;">계층</th><th>한 줄 책임</th><th>이런 코드는 여기 없음</th></tr></thead>
+<tbody>
+<tr><td style="padding:5px;">DispatcherServlet</td><td>요청 분배</td><td>(우리가 안 짬)</td></tr>
+<tr><td style="padding:5px;">Controller</td><td>요청·응답 중개</td><td>SQL, 비즈니스 규칙</td></tr>
+<tr><td style="padding:5px;">Service</td><td>비즈니스 로직 + 트랜잭션</td><td>HTML, 직접 SQL</td></tr>
+<tr><td style="padding:5px;">DAO/Repository</td><td>SQL 만</td><td>비즈니스 규칙</td></tr>
+<tr><td style="padding:5px;">DTO/VO</td><td>데이터 운반</td><td>비즈니스 메서드</td></tr>
+<tr><td style="padding:5px;">View</td><td>화면 표시</td><td>SQL, 비즈니스 처리</td></tr>
+</tbody></table>
+<aside class="notes">「이런 코드는 여기 없음」을 외우면 코드를 어느 계층에 둘지 헷갈리지 않게 됩니다.</aside>
+</section>
+
+<section><h2>의존 방향 — 위에서 아래로만</h2>
+<div class="diagram">
+   Controller
+        ↓ 호출
+   Service
+        ↓ 호출
+   DAO / Repository
+        ↓ 호출
+   DB
+
+   ※ 거꾸로는 절대 안 됨
+   - Service 가 Controller 를 호출 X
+   - DAO 가 Service 를 호출 X
+</div>
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 화살표가 한 방향이라 의존 관계가 단순. 한 계층 변경이 위로만 영향.
+</p>
+</section>
+
+<section><h2>분업이 만드는 5 가지 효과</h2>
+<ul>
+<li class="fragment"><strong>① 변경 격리</strong> — 화면 디자인 변경 = View 만, DB 변경 = DAO 만</li>
+<li class="fragment"><strong>② 테스트 용이</strong> — Service 만 단위 테스트 가능 (Controller·DB 없이)</li>
+<li class="fragment"><strong>③ 재사용</strong> — 같은 Service 를 웹 / API / 배치에서 모두 사용</li>
+<li class="fragment"><strong>④ 협업</strong> — 백엔드는 Service 작성, 프론트는 View 작성</li>
+<li class="fragment"><strong>⑤ 코드 추적</strong> — 버그 위치를 계층으로 좁힘</li>
+</ul>
+</section>
+
+<section><h2>실습 환경의 폴더 구조</h2>
+<div class="diagram">
+   src/main/java/com/example/demo/
+       ├─ controller/      ← @Controller 들
+       │   └─ BoardController.java
+       ├─ service/         ← @Service 들
+       │   └─ BoardService.java
+       ├─ mapper/          ← @Mapper 들
+       │   └─ BoardMapper.java
+       └─ domain/          ← DTO/VO 들
+           └─ Board.java
+
+   src/main/webapp/WEB-INF/views/
+       └─ board/           ← View(JSP) 들
+           ├─ list.jsp
+           └─ view.jsp
+
+   src/main/resources/mappers/
+       └─ BoardMapper.xml  ← SQL
+</div>
+</section>
+
+<section><h2>실수 대처 가이드</h2>
+<table style="font-size:0.7em; width:100%; border-collapse:collapse;">
+<thead><tr style="background:rgba(255,255,255,0.05);">
+<th style="padding:6px;">증상</th><th>의심할 계층</th></tr></thead>
+<tbody>
+<tr><td style="padding:5px;">404 Not Found</td><td>DispatcherServlet 매핑 / Controller URL</td></tr>
+<tr><td style="padding:5px;">"No qualifying bean of type 'XService'"</td><td>Service 의 @Service 누락</td></tr>
+<tr><td style="padding:5px;">NullPointerException at mapper</td><td>DAO 의 @Autowired 누락</td></tr>
+<tr><td style="padding:5px;">SELECT 결과 모두 null</td><td>DTO 필드 매핑 (mapUnderscoreToCamelCase)</td></tr>
+<tr><td style="padding:5px;">"Could not resolve view"</td><td>ViewName 오타 또는 JSP 위치</td></tr>
+<tr><td style="padding:5px;">한글 깨짐</td><td>web.xml CharacterEncodingFilter</td></tr>
+</tbody></table>
+</section>
+
+<section><h2>다음 차시들 미리보기</h2>
+<ul>
+<li class="fragment"><strong>다음 차시</strong> — DispatcherServlet 깊이 보기</li>
+<li class="fragment">Controller 해부 (어노테이션, Model)</li>
+<li class="fragment">Service 계층 (트랜잭션 자리)</li>
+<li class="fragment">DAO / Repository 계층</li>
+<li class="fragment">DTO · VO · Model 의 정확한 차이</li>
+<li class="fragment">View · ViewResolver</li>
+<li class="fragment">설정 파일 3 종 해부 (XML 공포증 해소)</li>
+<li class="fragment">★ v0.5 첫 종단간 흐름</li>
+</ul>
+</section>
+
+<section><h2>🔄 Before / After</h2><div class="before-after">
+<div class="before"><div class="label">Part 3 시작</div>
+<p style="font-size:0.85em;">"분업하라" 는 큰 그림은 안다. 6 계층의 이름은 처음 들어봄.</p>
+</div>
+<div class="arrow">→</div>
+<div class="after"><div class="label">이번 차시 끝</div>
+<p style="font-size:0.85em;">6 계층의 이름·책임·의존 방향을 한 그림으로 외운다. 다음 차시들에서 각 계층을 깊이 파고들 토대 완성.</p>
+</div>
+</div></section>
+
+
+      <section>
+        <h2>📊 한 그림 정리</h2>
+        <div data-infographic="mvc-6-layers"></div>
+      </section>
+
+      <section><h2>이번 차시의 데이터 흐름</h2>
+<div class="flow-diagram"><div class="flow">
+<div class="box new">DispatcherServlet</div><span class="arrow">→</span>
+<div class="box new">Controller</div><span class="arrow">→</span>
+<div class="box new">Service</div><span class="arrow">→</span>
+<div class="box new">DAO</div><span class="arrow">→</span>
+<div class="box">DB</div></div>
+<div class="caption">
+<span class="new-mark">●</span> 4 개 계층 박스가 한 번에 등장 — Part 3 의 토대
+</div></div>
+</section>
+
+<section><h2>정리</h2><div class="summary"><h3>오늘 들고 가는 것</h3><ul>
+<li><strong>6 계층</strong> = DispatcherServlet · Controller · Service · DAO · DTO · View</li>
+<li>각 계층은 <strong>단 하나의 책임</strong></li>
+<li>의존 방향은 <strong>위 → 아래</strong> 한 방향</li>
+<li>분업이 만드는 5 가지 효과 (변경 격리·테스트·재사용·협업·추적)</li>
+<li>다음 차시들에서 각 계층을 깊이</li>
+</ul></div>
+<p style="margin-top:0.8em; font-size:0.7em; color:var(--text-muted);">
+다음: <strong>DispatcherServlet 깊이 보기</strong> — URL 분배의 마법.
+</p>
+</section>
+
+</div></div>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"></script>
+<script>Reveal.initialize({hash:true,slideNumber:'c/t',width:1280,height:720,margin:0.06,transition:'slide',plugins:[RevealHighlight,RevealNotes]});</script>
+<script src="../js/infographics.js?v=2"></script>
+<script src="../js/screenshot.js?v=2"></script></body></html>

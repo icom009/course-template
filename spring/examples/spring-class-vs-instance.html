@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>클래스 vs 인스턴스 — 읽기 자료</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/example.css"></head><body>
+<div class="container">
+<div class="header"><div class="session-num">◇ PART · SPRING</div><h1>클래스 vs 인스턴스</h1><p class="subtitle">Java와 Spring의 철학 — 읽기 자료</p></div>
+
+<div class="minimap"><div class="minimap-title">📍 지금 어디를 만지고 있나요?</div><div class="flow">
+<div class="box">브라우저</div><span class="arrow">→</span><div class="box">Tomcat</div><span class="arrow">→</span>
+<div class="box active">JVM 메모리</div><span class="arrow">→</span><div class="box">Controller</div><span class="arrow">→</span><div class="box">DB</div></div></div>
+
+<div class="terms"><h3>이 차시의 핵심 용어</h3>
+<div class="term-item"><span class="term-name">클래스 (Class)</span><span class="term-desc">객체를 만들기 위한 설계도. 어떤 데이터(필드)와 동작(메서드)을 가지는지 정의.</span></div>
+<div class="term-item"><span class="term-name">인스턴스 (Instance)</span><span class="term-desc">클래스라는 설계도로 실제 만들어진 「객체」. <code>new</code> 키워드로 생성. 각자 독립된 메모리.</span></div>
+<div class="term-item"><span class="term-name">필드 (Field)</span><span class="term-desc">인스턴스가 가지는 데이터. 인스턴스마다 값이 다를 수 있음.</span></div>
+<div class="term-item"><span class="term-name">생성자 (Constructor)</span><span class="term-desc">인스턴스를 만들 때 호출되는 특별한 메서드. <code>new ClassName(...)</code> 의 <code>(...)</code> 부분.</span></div>
+</div>
+
+<h2>1. 두 단어의 관계</h2>
+<p>학생들이 자주 헷갈리는 두 단어 — 클래스와 인스턴스. 사실 비유 한 가지로 끝납니다.</p>
+
+<div class="new-tool"><div class="tool-title">설계도와 제품</div>
+<p>클래스는 「아이폰의 설계 도면」, 인스턴스는 그 도면으로 찍어낸 「내 폰·친구 폰」. 설계 도면 한 장으로 폰 수억 개를 만들 수 있고, 각 폰은 독립된 물건이죠.</p></div>
+
+<h2>2. 코드로 보기</h2>
+
+<h3>클래스 정의 — 설계도 작성</h3>
+<pre><code>class User {
+    String name;
+    int age;
+
+    User(String name, int age) {
+        this.name = name;
+        this.age = age;
+    }
+}</code></pre>
+
+<h3>인스턴스 생성 — 설계도로 제품 찍기</h3>
+<pre><code>User u1 = new User("Alice", 25);   // 인스턴스 1
+User u2 = new User("Bob", 30);     // 인스턴스 2
+User u3 = new User("Carol", 28);   // 인스턴스 3</code></pre>
+
+<h2>3. 메모리 그림</h2>
+<div class="diagram">
+   클래스 (설계도) — JVM 의 메서드 영역에 한 번만 적재
+       └── User 의 필드 정의: name, age
+
+   인스턴스 (제품) — 힙(Heap) 메모리에 각각 별도로
+       u1 → [name="Alice", age=25]
+       u2 → [name="Bob",   age=30]
+       u3 → [name="Carol", age=28]
+</div>
+
+<p>각 인스턴스는 자기만의 데이터를 가집니다. <code>u1.name</code> 을 바꿔도 <code>u2.name</code> 에는 아무 영향이 없습니다.</p>
+
+<h2>4. 왜 Spring 에서 중요한가</h2>
+<div class="box box-info">
+<div class="box-title">Spring 의 거의 모든 객체는 인스턴스</div>
+<p>Spring 컨테이너는 우리가 정의한 클래스를 보고, 인스턴스를 「자동으로 한 개 만들어서 보관」하는 역할을 합니다. Bean 이라는 게 결국 「Spring 이 관리하는 인스턴스」입니다. 다음 차시들에서 자세히 다룹니다.</p></div>
+
+<h2>5. Before / After</h2>
+<div class="before-after">
+<div class="before"><div class="label">전 차시 끝</div><p>인자 전달 규칙은 안다. 객체가 어떻게 만들어지는지는 모름.</p></div>
+<div class="arrow">→</div>
+<div class="after"><div class="label">이번 차시 끝</div><p>클래스 1 개 ↔ 인스턴스 N 개의 관계를 안다. 각 인스턴스가 독립된 메모리를 가진다.</p></div>
+</div>
+
+<div class="nav"><a href="spring-call-by-value.html">&larr; 이전</a><a href="../index.html">메인으로</a><a href="spring-new-trap.html">다음: ◆ new 의 함정 &rarr;</a></div>
+</div><script src="../js/screenshot.js?v=2"></script></body></html>

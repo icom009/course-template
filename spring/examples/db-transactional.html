@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>@Transactional 기본 — 읽기 자료</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/example.css"></head><body>
+<div class="container">
+
+<div class="header"><div class="session-num">◇ PART · DB</div>
+<h1>@Transactional 기본</h1><p class="subtitle">데이터와 MyBatis — 읽기 자료</p></div>
+
+<div class="minimap"><div class="minimap-title">📍 지금 어디를 만지고 있나요?</div><div class="flow">
+<div class="box">브라우저</div><span class="arrow">→</span>
+<div class="box active">데이터와 MyBatis</div><span class="arrow">→</span>
+<div class="box">DB</div></div></div>
+
+<div class="terms"><h3>핵심 용어</h3><div class="term-item"><span class="term-name">트랜잭션 (Transaction)</span><span class="term-desc">여러 작업을 하나의 단위로 묶은 것.</span></div>
+<div class="term-item"><span class="term-name">롤백 (Rollback)</span><span class="term-desc">실패 시 모든 변경을 취소.</span></div>
+<div class="term-item"><span class="term-name">커밋 (Commit)</span><span class="term-desc">성공 시 변경을 영구히 반영.</span></div></div>
+
+<h2>1. 문제</h2>
+<div class="pain-point"><div class="pain-title">전 차시까지의 답답함</div><p>"송금" 같은 작업 — 출금만 됐는데 입금이 실패하면? 돈이 사라진다.</p></div>
+
+<h2>2. 새 도구</h2>
+<div class="new-tool"><div class="tool-title">@Transactional</div><p>메서드 내 모든 DB 작업을 하나의 단위로 묶음. 하나라도 실패하면 모두 롤백.</p></div>
+
+<h2>3. 코드</h2>
+<pre><code>@Service
+public class TransferService {
+
+    @Transactional
+    public void transfer(int from, int to, int amount) {
+        accountMapper.withdraw(from, amount);   // 출금
+        accountMapper.deposit(to, amount);      // 입금
+        // 둘 중 하나라도 예외 발생 → 자동 롤백
+        // 둘 다 성공 → 커밋
+    }
+}</code></pre>
+
+<h2>4. 정리</h2>
+<ul><li>@Transactional = 메서드의 모든 DB 작업을 한 단위로</li>
+<li>하나 실패하면 전부 롤백</li>
+<li>Service 계층에 붙임</li></ul>
+
+<h2>5. Before / After</h2>
+<div class="before-after">
+<div class="before"><div class="label">전 차시 끝</div><p>"송금" 같은 작업 — 출금만 됐는데 입금이 실패하면? 돈이 사라진다.</p></div>
+<div class="arrow">→</div>
+<div class="after"><div class="label">이번 차시 끝</div><p>여러 DB 작업을 묶어야 할 때 어떤 어노테이션을 쓰는지 안다.</p></div>
+</div>
+
+<div class="nav"><a href="db-sql-injection.html">&larr; 이전</a><a href="../index.html">메인으로</a><a href="db-first-end-to-end.html">다음 &rarr;</a></div>
+</div><script src="../js/screenshot.js?v=2"></script></body></html>

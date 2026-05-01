@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SpringBoot 개요 | Spring 후반부</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/night.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+  <link rel="stylesheet" href="css/custom.css">
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+      <section>
+        <div class="session-title">
+          <span class="session-glyph">◇ PART · BOOT</span>
+          <h1>SpringBoot 개요</h1>
+          <p class="subtitle">설정의 무게를 내려놓고 다시 만나는 Spring</p>
+        </div>
+        <aside class="notes">
+          이전 과정에서 우리는 Spring Legacy 로 v∞ 까지 갔습니다. 그 길의 끝에서 학생이 가장 자주 묻던 질문 — "왜 매번 같은 설정을 7개 파일에 다시 쓰죠?" 오늘 그 답을 가져옵니다.
+          오늘은 개념만. 실제 SpringBoot 프로젝트는 다음 차시부터.
+        </aside>
+      </section>
+
+      <section>
+        <h2>학습 목표</h2>
+        <div class="objectives">
+          <ul>
+            <li class="fragment fade-up">Spring Legacy 의 설정 파일이 <span class="keyword">왜 그렇게 많았는지</span> 자기 말로 설명할 수 있다</li>
+            <li class="fragment fade-up"><span class="keyword">SpringBoot</span> 가 그 부담을 어떻게 줄이는지 큰 그림으로 안다</li>
+            <li class="fragment fade-up"><span class="keyword">@SpringBootApplication</span> 한 줄과 <span class="keyword">Starter 의존성</span> 의 역할을 안다</li>
+            <li class="fragment fade-up">SpringBoot 가 <strong>대신 해주지 않는 것</strong> 도 함께 안다</li>
+          </ul>
+        </div>
+      </section>
+
+      <section>
+        <h2>⚠️ 이전 과정의 끝에서</h2>
+        <div class="pain-point">
+          <div class="pain-title">v∞ 까지 가본 사람만 아는 피로</div>
+          <p>Hello Servlet (v0) 부터 REST API 게시판 (v∞) 까지 — 우리는 끝까지 갔습니다.</p>
+          <p style="margin-top: 0.5em;">그런데 새 프로젝트를 시작하려고 하면 — <strong>그 모든 설정을 처음부터 다시 써야 합니다.</strong> web.xml, servlet-context.xml, root-context.xml, pom.xml, ViewResolver, 인코딩 필터…</p>
+          <p style="margin-top: 0.5em; font-size: 0.85em; color: var(--text-muted);">코드 한 줄도 짜기 전에 30분이 사라집니다.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2>⚠️ 이상한 일</h2>
+        <div class="pain-point">
+          <div class="pain-title">매 프로젝트마다 7번씩 똑같은 설정</div>
+          <div class="diagram">
+   프로젝트 A : web.xml + servlet-context.xml + root-context.xml + pom.xml ...
+   프로젝트 B : web.xml + servlet-context.xml + root-context.xml + pom.xml ...
+   프로젝트 C : web.xml + servlet-context.xml + root-context.xml + pom.xml ...
+                                ↑
+              99% 같은 내용을 매번 다시 작성
+          </div>
+          <p style="margin-top: 0.4em;">사실상 <strong>복사-붙여넣기의 연속</strong>. 그런데 한 줄만 어긋나도 톰캣이 안 뜹니다.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2>⚠️ XML 설정 지옥 — 의존 그래프</h2>
+        <div class="diagram">
+   ┌─────────────┐  참조  ┌──────────────────────┐
+   │  web.xml    │ ─────→ │ servlet-context.xml  │
+   └─────────────┘        └──────────────────────┘
+          │ 등록                       │ 의존
+          ↓                            ↓
+   ┌──────────────────┐       ┌────────────────────┐
+   │ encoding-filter  │       │  root-context.xml  │
+   └──────────────────┘       └────────────────────┘
+                                      │ DataSource / TX
+                                      ↓
+                              ┌──────────────────┐
+                              │   pom.xml (50줄) │
+                              └──────────────────┘
+                                      │
+                              ┌───────┴────────┐
+                              ↓                ↓
+                        log4j.xml        view-resolver
+        </div>
+        <p style="font-size: 0.85em; margin-top: 0.4em;">
+          파일 7개가 <strong>서로를 참조</strong> 합니다. 한 줄만 어긋나도 톰캣이 안 뜨고, 어느 파일이 원인인지 학생은 알 길이 없습니다.
+        </p>
+        <aside class="notes">v∞ 까지 가는 길에 이 7개 파일을 매번 손으로 만졌습니다. 다음 슬라이드에서 그중 web.xml 한 파일의 길이를 봅니다.</aside>
+      </section>
+
+      <section>
+        <h2>⚠️ web.xml 한 파일조차 이 정도</h2>
+        <pre><code class="language-xml" data-trim>
+&lt;servlet&gt;
+  &lt;servlet-name&gt;appServlet&lt;/servlet-name&gt;
+  &lt;servlet-class&gt;...DispatcherServlet&lt;/servlet-class&gt;
+  &lt;init-param&gt;
+    &lt;param-name&gt;contextConfigLocation&lt;/param-name&gt;
+    &lt;param-value&gt;servlet-context.xml&lt;/param-value&gt;
+  &lt;/init-param&gt;
+&lt;/servlet&gt;
+&lt;servlet-mapping&gt;
+  &lt;url-pattern&gt;/&lt;/url-pattern&gt;
+&lt;/servlet-mapping&gt;
+        </code></pre>
+        <p style="font-size: 0.85em; color: var(--text-muted);">
+          web.xml 의 일부. 합치면 100줄을 넘습니다.
+        </p>
+      </section>
+
+      <section>
+        <h2>⚠️ 버전을 직접 적던 시절</h2>
+        <p style="font-size: 0.9em;">Legacy 시절의 pom.xml — 의존성마다 <strong>버전 번호를 일일이 손으로</strong> 적었습니다.</p>
+        <pre><code class="language-xml" data-trim>
+&lt;dependency&gt;
+  &lt;groupId&gt;org.springframework&lt;/groupId&gt;
+  &lt;artifactId&gt;spring-webmvc&lt;/artifactId&gt;
+  &lt;version&gt;5.3.20&lt;/version&gt;
+&lt;/dependency&gt;
+&lt;dependency&gt;
+  &lt;groupId&gt;org.springframework&lt;/groupId&gt;
+  &lt;artifactId&gt;spring-jdbc&lt;/artifactId&gt;
+  &lt;version&gt;5.2.8&lt;/version&gt;  &lt;!-- ← 한 줄 어긋남 --&gt;
+&lt;/dependency&gt;
+&lt;dependency&gt;
+  &lt;groupId&gt;org.mybatis&lt;/groupId&gt;
+  &lt;artifactId&gt;mybatis-spring&lt;/artifactId&gt;
+  &lt;version&gt;2.0.6&lt;/version&gt;
+&lt;/dependency&gt;
+        </code></pre>
+      </section>
+
+      <section>
+        <h2>⚠️ 검색의 시작</h2>
+        <div class="pain-point">
+          <div class="pain-title">버전 한 자릿수 차이로 빌드 실패</div>
+          <p><strong>spring-jdbc 의 5.2.8</strong> — 한 줄 어긋났을 뿐인데 톰캣이 안 뜹니다. 콘솔의 빨간 스택트레이스 앞에서 학생은 어디부터 봐야 할지 모릅니다.</p>
+          <p style="margin-top: 0.5em;">검색해보면 「Spring 5.3 에는 mybatis-spring 2.1 이상이 필요합니다」 같은 답을 <strong>한참 뒤에야</strong> 발견. 코드 한 줄 짜기 전에 또 30분.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2>🛠️ SpringBoot — 등장 배경</h2>
+        <div class="new-tool">
+          <div class="tool-title">"매번 같은 설정을 다시 쓰지 맙시다"</div>
+          <p>Spring 팀이 같은 고민을 했습니다. 99% 같은 설정이라면 — <strong>기본값을 프레임워크가 미리 들고 있으면 되지 않을까?</strong></p>
+          <p style="margin-top: 0.4em;">사용자는 <strong>다른 1% 만</strong> 적으면 됩니다. 이게 SpringBoot 의 핵심 철학입니다.</p>
+          <img src="../images/lego-kit.jpg" alt="베이스 키트 비유"
+               style="max-width: 380px; border-radius: 12px; margin: 1em auto 0.3em; display: block; opacity: 0.88;">
+        </div>
+        <p class="fragment" style="margin-top: 0.5em; font-size: 0.85em; color: var(--text-muted);">
+          이미 조립된 베이스 키트 위에서 출발하는 셈. Spring 자체가 사라진 게 아니라, <strong>설정만 미리 깔아둔 Spring</strong> 입니다.
+        </p>
+      </section>
+
+      <section>
+        <h2>🛠️ Auto-Configuration — 자동 설정</h2>
+        <div class="new-tool">
+          <div class="tool-title">@SpringBootApplication 한 줄</div>
+          <p>이 어노테이션 하나가 <strong>"클래스패스에 뭐가 있는지 보고, 알아서 필요한 빈을 등록"</strong> 합니다.</p>
+        </div>
+        <div class="diagram">
+   [classpath 스캔]   →   [@Conditional 판정]   →   [빈 자동 등록]
+
+   spring-webmvc 발견  →  @ConditionalOnClass    →  DispatcherServlet ✓
+   tomcat-embed  발견  →  @ConditionalOnClass    →  TomcatWebServer  ✓
+   jackson       발견  →  @ConditionalOnClass    →  JsonConverter    ✓
+   mybatis-boot  발견  →  @ConditionalOnBean(DS) →  SqlSessionFactory✓
+        </div>
+        <p style="font-size: 0.85em; margin-top: 0.4em; color: var(--text-muted);">
+          Legacy 에서 우리가 손으로 적던 XML — 그걸 SpringBoot 가 대신 적어줍니다.
+        </p>
+      </section>
+
+      <section>
+        <h2>📊 Auto-Configuration 흐름 — 한 그림</h2>
+        <div data-infographic="auto-config-flow"></div>
+      </section>
+
+      <section>
+        <h2>🛠️ Starter — 묶음 의존성</h2>
+        <div class="new-tool">
+          <div class="tool-title">spring-boot-starter-web 한 줄</div>
+          <p>웹 애플리케이션에 필요한 의존성을 <strong>이미 검증된 버전으로 묶어둔 세트</strong>.</p>
+        </div>
+        <div class="diagram">
+   spring-boot-starter-web 한 줄
+        ├── spring-webmvc (호환 버전)
+        ├── spring-web    (호환 버전)
+        ├── tomcat-embed-core
+        ├── jackson-databind  (JSON 변환)
+        └── ...
+        </div>
+        <p style="font-size: 0.85em; margin-top: 0.4em;">
+          버전 번호를 우리가 안 적습니다. <strong>SpringBoot 버전 하나</strong> 가 모든 하위 의존성의 호환 버전을 결정합니다.
+        </p>
+      </section>
+
+      <section>
+        <h2>📊 Starter 한 줄이 풀어내는 트리</h2>
+        <div data-infographic="starter-bundle"></div>
+      </section>
+
+      <section>
+        <h2>🛠️ 임베디드 톰캣</h2>
+        <div class="new-tool">
+          <div class="tool-title">main() 메서드로 바로 실행</div>
+          <p>Legacy 에서는 <strong>톰캣을 따로 설치 → war 를 톰캣에 배포</strong> 했습니다. SpringBoot 는 톰캣을 jar 안에 품고 있어서 — <code>java -jar app.jar</code> 한 줄로 실행됩니다.</p>
+        </div>
+        <div class="diagram">
+   [Legacy — 외부 톰캣]                  [Boot — 내장 톰캣]
+
+   ┌──────────────────┐                  ┌──────────────────┐
+   │   Tomcat 설치     │                  │     app.jar       │
+   │  (별도 프로세스)   │                  │  ┌────────────┐  │
+   │  ┌────────────┐  │                  │  │   Tomcat   │  │
+   │  │ webapps/   │  │   ← war 배포 →    │  │  (내장)    │  │
+   │  │  app.war   │  │                  │  ├────────────┤  │
+   │  └────────────┘  │                  │  │  내 코드    │  │
+   └──────────────────┘                  │  └────────────┘  │
+          ↑                              └──────────────────┘
+   톰캣 켜고, war 옮기고, 재시작                 ↑
+                                       java -jar app.jar  (끝)
+        </div>
+        <p class="fragment" style="font-size: 0.85em; margin-top: 0.4em; color: var(--text-muted);">
+          IDE 에서도 마찬가지. 「Run on Server」 가 아니라 그냥 <strong>main() 실행</strong>.
+        </p>
+      </section>
+
+      <section>
+        <h2>💻 Hello World — Application.java</h2>
+        <pre><code class="language-java" data-trim>
+package com.example.demo;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class DemoApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(DemoApplication.class, args);
+    }
+}
+        </code></pre>
+        <p style="font-size: 0.85em; margin-top: 0.4em;">
+          이 <strong>10줄짜리 파일</strong> 이 — Legacy 의 web.xml + servlet-context.xml + root-context.xml + 톰캣 설정을 전부 대체합니다.
+        </p>
+        <aside class="notes">@SpringBootApplication 은 사실 3개의 어노테이션 묶음 (@Configuration, @EnableAutoConfiguration, @ComponentScan). 오늘은 깊이 안 들어감.</aside>
+      </section>
+
+      <section>
+        <h2>💻 Controller 는 그대로</h2>
+        <pre><code class="language-java" data-trim>
+@Controller
+public class HelloController {
+    @GetMapping("/hello")
+    public String hello(Model model) {
+        model.addAttribute("msg", "안녕, SpringBoot!");
+        return "hello";
+    }
+}
+        </code></pre>
+        <p style="font-size: 0.9em; margin-top: 0.5em;">
+          <strong>Controller 코드는 Legacy 와 100% 같습니다.</strong> @Controller, @GetMapping, Model — 우리가 v0 ~ v∞ 동안 익힌 모든 것이 그대로 살아있습니다.
+        </p>
+        <p style="font-size: 0.85em; margin-top: 0.3em; color: var(--text-muted);">
+          바뀐 건 <strong>설정의 무게</strong>, 코어 사용법은 그대로.
+        </p>
+      </section>
+
+      <section>
+        <h2>💻 pom.xml — Legacy 쪽</h2>
+        <div class="pain-point">
+          <div class="pain-title">Legacy — 약 50줄, 버전 직접 지정</div>
+          <pre style="font-size: 0.7em;"><code class="language-xml" data-trim>
+&lt;dependency&gt;
+  &lt;groupId&gt;org.springframework&lt;/groupId&gt;
+  &lt;artifactId&gt;spring-webmvc&lt;/artifactId&gt;
+  &lt;version&gt;5.3.20&lt;/version&gt;
+&lt;/dependency&gt;
+&lt;dependency&gt;
+  &lt;groupId&gt;jstl&lt;/groupId&gt;
+  &lt;artifactId&gt;jstl&lt;/artifactId&gt;
+  &lt;version&gt;1.2&lt;/version&gt;
+&lt;/dependency&gt;
+&lt;!-- ... 12개 더 ... --&gt;
+          </code></pre>
+        </div>
+        <p class="fragment" style="font-size: 0.85em; margin-top: 0.4em;">
+          버전을 손으로 적고 충돌은 직접 해결. <strong>의존성 12개 → 1개로</strong> — 다음 슬라이드에서 Boot 가 같은 자리를 어떻게 적는지 봅니다.
+        </p>
+      </section>
+
+      <section>
+        <h2>💻 pom.xml — Boot 쪽</h2>
+        <div class="new-tool">
+          <div class="tool-title">Boot — 약 5줄, 버전 자동</div>
+          <pre style="font-size: 0.8em;"><code class="language-xml" data-trim>
+&lt;dependency&gt;
+  &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+  &lt;artifactId&gt;spring-boot-starter-web&lt;/artifactId&gt;
+&lt;/dependency&gt;
+          </code></pre>
+        </div>
+        <p style="font-size: 0.85em; margin-top: 0.4em;">
+          버전 번호가 사라졌습니다. <strong>SpringBoot 버전 하나</strong> 가 spring-webmvc · jstl · jackson · 톰캣까지 호환 버전을 전부 보증합니다.
+        </p>
+        <p class="fragment" style="font-size: 0.9em; margin-top: 0.4em; color: var(--accent);">
+          <strong>의존성 12개 → 1개로</strong> 압축. 같은 화면이 같은 코드로 뜨는데, pom.xml 만 가벼워졌습니다.
+        </p>
+      </section>
+
+      <section>
+        <h2>💻 application.properties — 7개 XML 이 1개로</h2>
+        <pre><code class="language-properties" data-trim>
+server.port=8080
+spring.datasource.url=jdbc:mysql://localhost:3306/myapp
+spring.datasource.username=root
+spring.datasource.password=secret
+spring.mvc.view.prefix=/WEB-INF/views/
+spring.mvc.view.suffix=.jsp
+mybatis.mapper-locations=classpath:mappers/*.xml
+        </code></pre>
+        <p style="font-size: 0.85em; margin-top: 0.4em; color: var(--text-muted);">
+          <strong>키 = 값</strong> 형식의 평범한 텍스트. XML 의 중첩 태그가 사라지고, Legacy 의 root-context.xml + ViewResolver + SqlSessionFactory 가 이 한 파일로 압축됩니다.
+        </p>
+      </section>
+
+      <section>
+        <h2>🔄 Before / After — 한 화면</h2>
+        <table style="width: 100%; font-size: 0.78em; border-collapse: collapse; margin-top: 0.5em;">
+          <thead>
+            <tr style="border-bottom: 2px solid var(--border);">
+              <th style="padding: 0.5em; text-align: left; width: 22%;">항목</th>
+              <th style="padding: 0.5em; text-align: left; color: #ef4444;">⚠️ Spring Legacy</th>
+              <th style="padding: 0.5em; text-align: left; color: #22c55e;">✓ SpringBoot</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom: 1px solid var(--border);">
+              <td style="padding: 0.45em;"><strong>web.xml</strong></td>
+              <td style="padding: 0.45em;">~ 100 줄 직접 작성</td>
+              <td style="padding: 0.45em;"><strong>0 줄</strong> (자동)</td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--border);">
+              <td style="padding: 0.45em;"><strong>Spring 설정</strong></td>
+              <td style="padding: 0.45em;">servlet-context.xml + root-context.xml ~ 100 줄</td>
+              <td style="padding: 0.45em;">application.properties <strong>1 파일</strong></td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--border);">
+              <td style="padding: 0.45em;"><strong>pom.xml</strong></td>
+              <td style="padding: 0.45em;">~ 50 줄 (버전 직접 지정)</td>
+              <td style="padding: 0.45em;">~ 5 줄 (버전 자동)</td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--border);">
+              <td style="padding: 0.45em;"><strong>WAS</strong></td>
+              <td style="padding: 0.45em;">톰캣 별도 설치 + war 배포</td>
+              <td style="padding: 0.45em;">임베디드 톰캣 (jar 안)</td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--border);">
+              <td style="padding: 0.45em;"><strong>실행</strong></td>
+              <td style="padding: 0.45em;">Eclipse Server 등록 → Add → Start</td>
+              <td style="padding: 0.45em;"><code>java -jar app.jar</code></td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--border);">
+              <td style="padding: 0.45em;"><strong>버전 충돌</strong></td>
+              <td style="padding: 0.45em;">직접 해결 (검색·시행착오)</td>
+              <td style="padding: 0.45em;">SpringBoot 버전이 보증</td>
+            </tr>
+            <tr>
+              <td style="padding: 0.45em;"><strong>코드 (Controller)</strong></td>
+              <td style="padding: 0.45em; color: var(--text-muted);" colspan="2"><strong>↔ 동일</strong> — @Controller, @GetMapping, Model 그대로</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section>
+        <h2>🔄 실행 방법 비교</h2>
+        <div class="diagram">
+   [Legacy 실행]
+   ① 톰캣 다운로드 / 설치
+   ② Eclipse 에서 Server 등록
+   ③ 프로젝트를 Server 에 Add
+   ④ Server Start
+   ⑤ http://localhost:8080/myapp/hello
+
+   [Boot 실행]
+   ① main() 우클릭 → Run
+   ② http://localhost:8080/hello
+        </div>
+        <p style="font-size: 0.85em; margin-top: 0.4em;">
+          학생이 첫날 만나는 <strong>"환경 세팅의 벽"</strong> 자체가 사라집니다.
+        </p>
+      </section>
+
+      <section>
+        <h2>📋 SpringBoot 가 안 풀어주는 것</h2>
+        <div class="warning-box">
+          <div class="box-title">착각하기 쉬운 부분</div>
+          <p style="font-size: 0.9em;">SpringBoot 는 <strong>설정의 무게</strong> 만 줄여줍니다. 다음 것들은 여전히 우리 책임입니다:</p>
+          <ul style="font-size: 0.88em; margin-top: 0.4em;">
+            <li><strong>비즈니스 로직</strong> — 게시판 권한 체크, 결제 처리, 검증 규칙</li>
+            <li><strong>DB 스키마 설계</strong> — 어떤 테이블, 어떤 인덱스</li>
+            <li><strong>SQL</strong> — MyBatis 쿼리는 직접 작성</li>
+            <li><strong>화면 흐름</strong> — Controller → Service → Mapper 4 박스 사고는 그대로</li>
+          </ul>
+        </div>
+        <p style="font-size: 0.85em; margin-top: 0.4em; color: var(--text-muted);">
+          이전 과정에서 익힌 <strong>「데이터 흐름」 사고는 100% 그대로</strong> 살아있습니다. 오히려 더 잘 보입니다.
+        </p>
+      </section>
+
+      <section>
+        <h2>📊 한 그림 정리</h2>
+        <div data-infographic="boot-vs-legacy"></div>
+      </section>
+
+      <section>
+        <h2>이번 차시의 데이터 흐름</h2>
+        <div class="flow-diagram">
+          <div class="flow">
+            <div class="box">설정 7개 파일</div>
+            <span class="arrow">↓</span>
+            <div class="box new">@SpringBootApplication 1줄 + application.properties</div>
+            <span class="arrow">↓</span>
+            <div class="box">Controller → Service → Mapper → DB</div>
+          </div>
+          <div class="caption">
+            <span class="new-mark">●</span> 파란 칸 — Legacy 의 <strong>설정 7개 파일</strong> 이 SpringBoot 의 <strong>자동 설정 1개</strong> 로 대체. 그 아래의 4 박스 흐름은 그대로 유지.
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>정리</h2>
+        <div class="summary">
+          <h3>오늘 들고 가는 3가지</h3>
+          <ul>
+            <li><strong>SpringBoot = 설정이 미리 깔린 Spring</strong>. 코어는 그대로, 무게만 덜어냄</li>
+            <li><strong>@SpringBootApplication + Starter</strong> 두 단어가 핵심. 자동 설정 + 묶음 의존성</li>
+            <li><strong>비즈니스 로직은 여전히 우리 책임</strong> — 이전 과정의 흐름 사고가 그대로 살아있음</li>
+          </ul>
+        </div>
+        <p style="margin-top: 0.8em; font-size: 0.7em; color: var(--text-muted);">
+          다음 차시: <strong>SpringBoot 프로젝트 첫 실행</strong> — Spring Initializr 로 5분 안에 Hello.
+        </p>
+      </section>
+
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"></script>
+  <script>Reveal.initialize({hash:true,slideNumber:'c/t',width:1280,height:720,margin:0.06,transition:'slide',plugins:[RevealHighlight,RevealNotes]});</script>
+  <script src="../js/infographics.js?v=2"></script>
+  <script src="../js/screenshot.js?v=2"></script>
+</body>
+</html>

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>개발 환경 구축 | Spring 기초</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/night.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/custom.css"></head><body>
+<div class="reveal"><div class="slides">
+
+<section><div class="session-title"><span class="session-glyph">▣ PART · SPRING</span><h1>개발 환경 구축</h1><p class="subtitle">Eclipse + STS + Tomcat 연동</p></div></section>
+
+<section><h2>학습 목표</h2><div class="objectives"><ul>
+<li class="fragment fade-up">JDK · Eclipse · Tomcat 의 각각 역할을 안다</li>
+<li class="fragment fade-up">셋이 어떻게 연결되어야 하는지 안다</li>
+<li class="fragment fade-up">설치·연동 끝나면 빨간 줄(에러)이 사라진다</li>
+</ul></div></section>
+
+<section><h2>도구 3총사</h2>
+<div class="diagram">
+   ┌──────────────────────────────────────┐
+   │ JDK (Java Development Kit)           │  ← 자바 컴파일·실행
+   └──────────────────────────────────────┘
+                ↑
+   ┌──────────────────────────────────────┐
+   │ Eclipse (또는 STS)                    │  ← 코드 작성 IDE
+   │   └ 안에 Tomcat 등록해서 사용          │
+   └──────────────────────────────────────┘
+                ↑
+   ┌──────────────────────────────────────┐
+   │ Tomcat (WAS)                          │  ← Spring 코드 실행
+   └──────────────────────────────────────┘
+</div></section>
+
+<section><h2>각 도구의 자리</h2>
+<div class="info-box"><div class="box-title">📍 정리</div>
+<ul style="font-size:0.9em;">
+<li><strong>JDK</strong> — 자바 컴파일러(javac) + JVM. 모든 자바 작업의 전제.</li>
+<li><strong>Eclipse / STS</strong> — 통합 작업 공간. 코드 작성·디버깅·실행.</li>
+<li><strong>Tomcat</strong> — WAS. Spring 코드를 실행하는 곳.</li>
+<li><strong>STS</strong> = Spring 도구가 추가된 Eclipse. 둘 중 어느 쪽이든 OK.</li>
+</ul></div></section>
+
+<section><h2>설치·연동 4 단계</h2>
+<div class="step"><div class="step-number">1</div><div class="step-content">JDK 설치 → 자바 명령어 인식 확인</div></div>
+<div class="step"><div class="step-number">2</div><div class="step-content">Eclipse(또는 STS) 다운로드 + 압축 해제</div></div>
+<div class="step"><div class="step-number">3</div><div class="step-content">Tomcat 다운로드 + 압축 해제 (설치 X, 그냥 풀기만)</div></div>
+<div class="step"><div class="step-number">4</div><div class="step-content">Eclipse 안에 Tomcat 「Server Runtime」 등록</div></div>
+</section>
+
+<section><h2>⚠️ 자주 만나는 문제</h2>
+<table style="font-size:0.85em; width:100%; border-collapse:collapse;">
+<thead><tr style="background:rgba(255,255,255,0.05);">
+<th style="padding:8px;">증상</th><th style="padding:8px;">해결</th></tr></thead>
+<tbody>
+<tr><td style="padding:6px;"><code>java</code> 명령 인식 안 됨</td><td>PATH 환경변수 설정</td></tr>
+<tr><td style="padding:6px;">Eclipse 시작 안 됨</td><td>JDK 버전 mismatch</td></tr>
+<tr><td style="padding:6px;">8080 포트 충돌</td><td>다른 프로세스 종료 또는 포트 변경</td></tr>
+<tr><td style="padding:6px;">한글 깨짐</td><td>워크스페이스 인코딩 UTF-8</td></tr>
+</tbody></table></section>
+
+<section><h2>인코딩 설정 (필수)</h2>
+<div class="warning-box"><div class="box-title">처음 한 번만</div>
+<p>Eclipse 메뉴: <strong>Window → Preferences → General → Workspace</strong> → Text file encoding 을 <strong>UTF-8</strong> 로.</p>
+<p style="margin-top:0.3em; font-size:0.9em;">이걸 안 하면 한글 주석·문자열이 깨질 수 있음. 다시 설정하기 어려운 시점에 발견되면 고생.</p></div></section>
+
+<section><h2>🔄 Before / After</h2><div class="before-after">
+<div class="before"><div class="label">전 차시 끝</div><p>Maven 의 역할은 안다. IDE 에서 어떻게 연결되는지는 모름.</p></div>
+<div class="arrow">→</div>
+<div class="after"><div class="label">이번 차시 끝</div><p>JDK·Eclipse·Tomcat 이 한 데서 동작하는 환경을 갖췄다.</p></div>
+</div></section>
+
+<section><h2>이번 차시의 데이터 흐름</h2><div class="flow-diagram"><div class="flow">
+<div class="box new">JDK</div><span class="arrow">+</span>
+<div class="box new">Eclipse</div><span class="arrow">+</span>
+<div class="box new">Tomcat</div><span class="arrow">→</span>
+<div class="box">개발 가능</div></div>
+<div class="caption"><span class="new-mark">●</span> 작업 환경의 토대가 만들어졌습니다</div></div></section>
+
+<section><h2>정리</h2><div class="summary"><h3>오늘 들고 가는 것</h3><ul>
+<li>JDK = 자바 컴파일·실행 / Eclipse = IDE / Tomcat = WAS</li>
+<li>4 단계 설치 → 연동 → 인코딩 UTF-8</li>
+<li>다음 차시 — 실제 Spring 프로젝트 첫 생성</li>
+</ul></div>
+<p style="margin-top:0.8em; font-size:0.7em; color:var(--text-muted);">다음: <strong>▣ 첫 Spring 프로젝트 + Bean 주입</strong>.</p></section>
+
+</div></div>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"></script>
+<script>Reveal.initialize({hash:true,slideNumber:'c/t',width:1280,height:720,margin:0.06,transition:'slide',plugins:[RevealHighlight,RevealNotes]});</script>
+<script src="../js/infographics.js?v=2"></script>
+<script src="../js/screenshot.js?v=2"></script></body></html>

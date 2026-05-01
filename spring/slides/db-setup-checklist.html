@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DB 붙이려면 어디를 손대나 | Spring 기초</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/night.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/custom.css"></head><body>
+<div class="reveal"><div class="slides">
+
+<section><div class="session-title">
+<span class="session-glyph">◆ TURNING · DB</span>
+<h1>DB 붙이려면 어디를 손대나</h1>
+<p class="subtitle">5 단계 설정 변경 지도</p>
+</div>
+<aside class="notes">
+이 차시는 본 과정에서 가장 자주 들춰볼 「점검표」 가 될 것입니다.
+DB 안 됨 오류를 만나면 학생이 무의식 중에 이 5 곳을 떠올려야 합니다.
+</aside>
+</section>
+
+<section><h2>학습 목표</h2><div class="objectives"><ul>
+<li class="fragment fade-up">Spring 에 DB 를 연결할 때 손대야 하는 <span class="keyword">5 곳</span>을 외운다</li>
+<li class="fragment fade-up">각 곳의 역할과 「빠뜨리면 어떤 오류」를 안다</li>
+<li class="fragment fade-up">「DB 안 됨」 오류를 만나면 5 곳을 차례로 점검한다</li>
+</ul></div></section>
+
+<section><h2>⚠️ 진짜로 자주 마주치는 답답함</h2>
+<div class="pain-point">
+<div class="pain-title">학생들이 가장 많이 외치는 말</div>
+<p>"<strong>분명 코드대로 했는데 DB 가 안 돼요...</strong>"</p>
+<p style="margin-top:0.4em;">Spring 에서 DB 연결은 한 곳만 손대서 되는 일이 아닙니다. 여러 파일이 동시에 협업해야 합니다. 어디 하나가 빠지면 전체가 동작 안 합니다.</p>
+</div>
+</section>
+
+<section><h2>왜 이렇게 복잡한가</h2>
+<div class="info-box">
+<p>Spring Legacy 의 자동 설정은 거의 없습니다. 모든 부품을 우리가 직접 등록해줘야 합니다:</p>
+<ul style="font-size:0.85em; margin-top:0.4em;">
+<li>JDBC 드라이버 (Maven)</li>
+<li>커넥션 풀 (HikariCP)</li>
+<li>SqlSessionFactory (MyBatis 의 핵심)</li>
+<li>Mapper 자동 스캔</li>
+<li>각 Mapper 인터페이스 + XML</li>
+<li>Service 에서 Mapper 주입</li>
+</ul>
+<p style="margin-top:0.4em;"><strong>이걸 5 단계로 정리</strong>해 두면 매번 막막함이 줄어듭니다.</p>
+</div>
+</section>
+
+<section><h2>🛠️ 5 단계 지도</h2>
+<div class="diagram">
+   ┌──────────────────────────────────────────────┐
+   │ ① pom.xml          — 라이브러리 5 개          │
+   │ ② root-context.xml — 3 개 Bean 등록           │
+   │ ③ mybatis-config   — 카멜/스네이크 옵션       │
+   │ ④ Mapper 인터페이스 + XML                    │
+   │ ⑤ Service 에서 @Autowired                    │
+   └──────────────────────────────────────────────┘
+</div>
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 이 5 곳 중 한 곳이라도 빠지면 전체가 동작 안 함.
+</p>
+</section>
+
+<section><h2>① pom.xml — DB 드라이버와 풀</h2>
+<pre><code class="language-xml" data-trim>
+&lt;!-- MySQL 드라이버 --&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;mysql&lt;/groupId&gt;
+    &lt;artifactId&gt;mysql-connector-j&lt;/artifactId&gt;
+    &lt;version&gt;8.0.33&lt;/version&gt;
+&lt;/dependency&gt;
+
+&lt;!-- HikariCP 커넥션 풀 --&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;com.zaxxer&lt;/groupId&gt;
+    &lt;artifactId&gt;HikariCP&lt;/artifactId&gt;
+    &lt;version&gt;5.0.1&lt;/version&gt;
+&lt;/dependency&gt;
+</code></pre>
+</section>
+
+<section><h2>① pom.xml — MyBatis 와 Spring JDBC</h2>
+<pre><code class="language-xml" data-trim>
+&lt;!-- MyBatis + Spring 통합 --&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;org.mybatis&lt;/groupId&gt;
+    &lt;artifactId&gt;mybatis&lt;/artifactId&gt;
+    &lt;version&gt;3.5.13&lt;/version&gt;
+&lt;/dependency&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;org.mybatis&lt;/groupId&gt;
+    &lt;artifactId&gt;mybatis-spring&lt;/artifactId&gt;
+    &lt;version&gt;3.0.2&lt;/version&gt;
+&lt;/dependency&gt;
+
+&lt;!-- Spring 의 JDBC 추상화 --&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;org.springframework&lt;/groupId&gt;
+    &lt;artifactId&gt;spring-jdbc&lt;/artifactId&gt;
+    &lt;version&gt;5.3.30&lt;/version&gt;
+&lt;/dependency&gt;
+</code></pre>
+</section>
+
+<section><h2>① pom.xml 빠뜨리면</h2>
+<div class="danger-box">
+<div class="box-title">증상</div>
+<ul style="font-size:0.85em;">
+<li>"Cannot find class: com.mysql.cj.jdbc.Driver"</li>
+<li>"BeanCreationException: ... HikariConfig"</li>
+<li>"NoClassDefFoundError"</li>
+</ul>
+</div>
+<div class="warning-box" style="margin-top:0.5em;">
+<div class="box-title">⚠️ Maven Update 잊지 말기</div>
+<p style="font-size:0.85em;">pom.xml 수정 후 반드시 <strong>프로젝트 우클릭 → Maven → Update Project</strong>. 안 하면 빨간 줄이 안 사라짐.</p>
+</div>
+</section>
+
+<section><h2>② root-context.xml — DataSource</h2>
+<pre><code class="language-xml" data-trim>
+&lt;!-- (1) HikariCP 설정 객체 --&gt;
+&lt;bean id="hikariConfig" class="com.zaxxer.hikari.HikariConfig"&gt;
+    &lt;property name="driverClassName" value="com.mysql.cj.jdbc.Driver" /&gt;
+    &lt;property name="jdbcUrl"
+        value="jdbc:mysql://localhost:3306/spring_db?serverTimezone=UTC" /&gt;
+    &lt;property name="username" value="root" /&gt;
+    &lt;property name="password" value="1234" /&gt;
+&lt;/bean&gt;
+
+&lt;!-- (2) DataSource (실제 DB 연결의 진입점) --&gt;
+&lt;bean id="dataSource" class="com.zaxxer.hikari.HikariDataSource"
+      destroy-method="close"&gt;
+    &lt;constructor-arg ref="hikariConfig" /&gt;
+&lt;/bean&gt;
+</code></pre>
+</section>
+
+<section><h2>② root-context.xml — MyBatis 연결</h2>
+<pre><code class="language-xml" data-trim>
+&lt;!-- (3) MyBatis SqlSessionFactory --&gt;
+&lt;bean id="sqlSessionFactory"
+      class="org.mybatis.spring.SqlSessionFactoryBean"&gt;
+    &lt;property name="dataSource" ref="dataSource" /&gt;
+    &lt;property name="configLocation"
+        value="classpath:mybatis-config.xml" /&gt;
+    &lt;property name="mapperLocations"
+        value="classpath:com/smhrd/mapper/*Mapper.xml" /&gt;
+&lt;/bean&gt;
+
+&lt;!-- (4) Mapper 자동 스캔 --&gt;
+&lt;bean class="org.mybatis.spring.mapper.MapperScannerConfigurer"&gt;
+    &lt;property name="basePackage" value="com.smhrd.mapper" /&gt;
+&lt;/bean&gt;
+</code></pre>
+</section>
+
+<section><h2>② 각 Bean 의 역할</h2>
+<table style="font-size:0.7em; width:100%; border-collapse:collapse;">
+<thead><tr style="background:rgba(255,255,255,0.05);">
+<th style="padding:6px;">Bean</th><th>역할</th></tr></thead>
+<tbody>
+<tr><td style="padding:5px;"><code>hikariConfig</code></td><td>DB 연결 정보(URL, 계정 등)</td></tr>
+<tr><td style="padding:5px;"><code>dataSource</code></td><td>실제 연결을 만들고 풀로 관리</td></tr>
+<tr><td style="padding:5px;"><code>sqlSessionFactory</code></td><td>MyBatis 의 핵심. SQL 실행을 책임</td></tr>
+<tr><td style="padding:5px;"><code>MapperScannerConfigurer</code></td><td>지정 패키지의 Mapper 인터페이스를 자동 스캔하고 Bean 으로 등록</td></tr>
+</tbody></table>
+<p style="font-size:0.85em; margin-top:0.5em;">
+👉 <code>MapperScannerConfigurer</code> 덕분에 우리가 매 Mapper 를 일일이 등록 안 해도 됨.
+</p>
+</section>
+
+<section><h2>② 빠뜨리면</h2>
+<div class="danger-box">
+<div class="box-title">증상</div>
+<ul style="font-size:0.85em;">
+<li>"BeanCreationException: dataSource"</li>
+<li>"No qualifying bean of type 'SqlSessionFactory'"</li>
+<li>"Mapper 인터페이스가 자동 주입 안 됨"</li>
+</ul>
+<p style="margin-top:0.4em;">DB 연결 정보 자체가 틀린 건지(URL/계정), Bean 등록이 빠진 건지를 가려야 합니다.</p>
+</div>
+</section>
+
+<section><h2>③ mybatis-config.xml</h2>
+<pre><code class="language-xml" data-trim>
+&lt;?xml version="1.0" encoding="UTF-8" ?&gt;
+&lt;!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-config.dtd"&gt;
+&lt;configuration&gt;
+
+    &lt;settings&gt;
+        &lt;!-- ⭐ 카멜 ↔ 스네이크 자동 변환 --&gt;
+        &lt;setting name="mapUnderscoreToCamelCase" value="true" /&gt;
+
+        &lt;!-- SQL 로그 출력 (개발 시) --&gt;
+        &lt;setting name="logImpl" value="STDOUT_LOGGING" /&gt;
+    &lt;/settings&gt;
+
+&lt;/configuration&gt;
+</code></pre>
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 <code>mapUnderscoreToCamelCase=true</code> 가 핵심.
+</p>
+</section>
+
+<section><h2>③ 빠뜨리면 가장 흔한 함정</h2>
+<div class="danger-box">
+<div class="box-title">증상 — "데이터가 모두 null 이에요"</div>
+<pre><code data-trim>
+DB:    created_at = '...'  (스네이크)
+VO:    LocalDateTime createdAt   (카멜)
+결과:  b.getCreatedAt() == null!
+</code></pre>
+<p style="margin-top:0.4em;">SELECT 는 성공하는데 객체 필드가 null 이면 → <strong>이름 매핑 실패</strong>.</p>
+<p style="font-size:0.85em; margin-top:0.3em;"><code>mapUnderscoreToCamelCase=true</code> 로 해결. 상세는 다음 차시(◆ 카멜·스네이크 함정).</p>
+</div>
+</section>
+
+<section><h2>④ Mapper 인터페이스 (자바)</h2>
+<pre><code class="language-java" data-trim>
+// src/main/java/com/smhrd/mapper/MemberMapper.java
+package com.smhrd.mapper;
+
+import com.smhrd.domain.Member;
+import org.apache.ibatis.annotations.Mapper;
+
+@Mapper
+public interface MemberMapper {
+    Member selectOne(String id);
+    void   insert(Member m);
+}
+</code></pre>
+</section>
+
+<section><h2>④ Mapper XML (SQL)</h2>
+<pre><code class="language-xml" data-trim>
+&lt;!-- src/main/resources/com/smhrd/mapper/MemberMapper.xml --&gt;
+&lt;mapper namespace="com.smhrd.mapper.MemberMapper"&gt;
+
+    &lt;select id="selectOne"
+            parameterType="string"
+            resultType="com.smhrd.domain.Member"&gt;
+        SELECT id, pwd FROM mymember WHERE id = #{id}
+    &lt;/select&gt;
+
+    &lt;insert id="insert" parameterType="com.smhrd.domain.Member"&gt;
+        INSERT INTO mymember(id, pwd)
+        VALUES(#{id}, #{pwd})
+    &lt;/insert&gt;
+
+&lt;/mapper&gt;
+</code></pre>
+</section>
+
+<section><h2>④ 매칭 규칙 4 가지</h2>
+<ul style="font-size:0.85em;">
+<li class="fragment"><strong>패키지·풀클래스명</strong>: 인터페이스의 풀 클래스명 = XML 의 <code>namespace</code></li>
+<li class="fragment"><strong>메서드명</strong>: 인터페이스 메서드명 = XML 의 <code>id</code></li>
+<li class="fragment"><strong>파일 위치</strong>: XML 은 <code>root-context.xml</code> 의 <code>mapperLocations</code> 가 가리키는 경로</li>
+<li class="fragment"><strong>패키지 스캔</strong>: 인터페이스는 <code>MapperScannerConfigurer</code> 의 <code>basePackage</code> 안에</li>
+</ul>
+<div class="warning-box" style="margin-top:0.5em;">
+<div class="box-title">한 글자라도 어긋나면</div>
+<p style="font-size:0.85em;">"Invalid bound statement" 또는 "Method not found" 오류. 가장 빈번한 함정.</p>
+</div>
+</section>
+
+<section><h2>④ 빠뜨리면</h2>
+<div class="danger-box">
+<div class="box-title">증상별 의심할 곳</div>
+<table style="font-size:0.75em; width:100%; border-collapse:collapse;">
+<thead><tr><th style="padding:5px;">증상</th><th>의심</th></tr></thead>
+<tbody>
+<tr><td style="padding:4px;">No qualifying bean of type 'XxxMapper'</td><td>인터페이스가 스캔 패키지 밖에 있음</td></tr>
+<tr><td style="padding:4px;">Invalid bound statement (not found)</td><td>namespace 또는 id 오타</td></tr>
+<tr><td style="padding:4px;">XML 자체를 못 찾음</td><td><code>mapperLocations</code> 경로 틀림</td></tr>
+</tbody>
+</table>
+</div>
+</section>
+
+<section><h2>⑤ Service 에서 @Autowired</h2>
+<pre><code class="language-java" data-trim>
+@Service
+public class MemberService {
+
+    @Autowired
+    private MemberMapper mapper;     // ← 이 한 줄
+
+    public Member find(String id) {
+        return mapper.selectOne(id);
+    }
+}
+</code></pre>
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 <code>MapperScannerConfigurer</code> 가 자동 등록한 Mapper Bean 을 받음.
+</p>
+</section>
+
+<section><h2>⑤ 빠뜨리면</h2>
+<div class="danger-box">
+<div class="box-title">증상</div>
+<p>NullPointerException — <code>mapper</code> 변수가 null 인 채로 메서드 호출됨.</p>
+<p style="font-size:0.85em; margin-top:0.4em;">@Autowired 가 빠지면 그 자리는 그냥 null. 그래도 컴파일은 되니 실행해야 알 수 있음.</p>
+</div>
+</section>
+
+<section><h2>5 단계 한눈에 다시</h2>
+<div class="diagram">
+   ┌─────────────────────────────────────────────────────┐
+   │ ① pom.xml                                           │
+   │   ├─ mysql-connector-j                              │
+   │   ├─ HikariCP                                       │
+   │   ├─ mybatis + mybatis-spring                       │
+   │   └─ spring-jdbc                                    │
+   │                                                     │
+   │ ② root-context.xml                                  │
+   │   ├─ hikariConfig (DB 정보)                         │
+   │   ├─ dataSource                                     │
+   │   ├─ sqlSessionFactory                              │
+   │   └─ MapperScannerConfigurer                        │
+   │                                                     │
+   │ ③ mybatis-config.xml                                │
+   │   └─ mapUnderscoreToCamelCase = true                │
+   │                                                     │
+   │ ④ Mapper 인터페이스 + XML (namespace/id 매칭)       │
+   │                                                     │
+   │ ⑤ Service @Autowired Mapper                         │
+   └─────────────────────────────────────────────────────┘
+</div>
+</section>
+
+<section><h2>「DB 안 됨」 오류 시 점검 흐름</h2>
+<table style="font-size:0.75em; width:100%; border-collapse:collapse;">
+<thead><tr style="background:rgba(255,255,255,0.05);">
+<th style="padding:6px;">증상</th><th>1순위 의심</th><th>점검 단계</th></tr></thead>
+<tbody>
+<tr><td style="padding:5px;">Cannot create connection</td><td>DB URL/계정/MySQL 가동</td><td>②</td></tr>
+<tr><td style="padding:5px;">No class found</td><td>의존성 누락</td><td>①</td></tr>
+<tr><td style="padding:5px;">No qualifying bean</td><td>Bean 등록 누락</td><td>② or ④</td></tr>
+<tr><td style="padding:5px;">Invalid bound statement</td><td>namespace·id 오타</td><td>④</td></tr>
+<tr><td style="padding:5px;">필드값 모두 null</td><td>매핑 옵션</td><td>③</td></tr>
+<tr><td style="padding:5px;">NullPointerException at mapper</td><td>@Autowired 누락</td><td>⑤</td></tr>
+</tbody></table>
+</section>
+
+<section><h2>실전 디버깅 팁</h2>
+<ul>
+<li class="fragment"><strong>Tomcat 시작 로그를 끝까지 보기</strong> — Bean 생성 실패는 시작 시 발생</li>
+<li class="fragment"><strong>SQL 로그 켜기</strong> — 실제 SQL 이 실행됐는지 즉시 확인</li>
+<li class="fragment"><strong>DB 도구로 SQL 직접 실행</strong> — Mapper 의 SQL 이 진짜 동작하는지 분리해서 확인</li>
+<li class="fragment"><strong>한 단계씩 좁혀가기</strong> — 5 단계를 머리부터 차례로</li>
+</ul>
+</section>
+
+<section><h2>🔄 Before / After</h2><div class="before-after">
+<div class="before"><div class="label">전 차시</div>
+<p>DB 가 안 되면 어디부터 봐야 할지 막막했다. 한 곳 고치면 다른 곳이 또 깨졌다.</p>
+</div>
+<div class="arrow">→</div>
+<div class="after"><div class="label">이번 차시 끝</div>
+<p>5 단계 지도를 외운다. DB 안 됨 오류를 만나면 5 곳을 차례로 점검한다.</p>
+</div>
+</div></section>
+
+<section><h2>이번 차시의 데이터 흐름</h2>
+<div class="flow-diagram"><div class="flow">
+<div class="box new">5 단계 설정</div><span class="arrow">→</span>
+<div class="box">Spring 컨테이너</div><span class="arrow">→</span>
+<div class="box">Mapper 자동 등록</div><span class="arrow">→</span>
+<div class="box">Service 주입</div></div>
+<div class="caption">
+<span class="new-mark">●</span> 「설정 지도」가 흐름 시작점에 자리잡음 — 모든 DB 연동의 토대
+</div></div>
+</section>
+
+<section><h2>정리</h2><div class="summary"><h3>오늘 들고 가는 것</h3><ul>
+<li>DB 연결의 5 단계: pom.xml → root-context.xml → mybatis-config.xml → Mapper(I/F+XML) → Service @Autowired</li>
+<li>각 단계별 빠뜨리면 어떤 오류가 나는지 외운다</li>
+<li>오류 메시지로 어느 단계인지 역추적할 수 있다</li>
+<li><strong>「DB 안 됨」 오류 디버깅 1순위 점검표</strong></li>
+</ul></div>
+<p style="margin-top:0.8em; font-size:0.7em; color:var(--text-muted);">
+다음: <strong>HikariCP 커넥션 풀</strong> — 풀이 왜 필요한가.
+</p>
+</section>
+
+</div></div>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"></script>
+<script>Reveal.initialize({hash:true,slideNumber:'c/t',width:1280,height:720,margin:0.06,transition:'slide',plugins:[RevealHighlight,RevealNotes]});</script>
+<script src="../js/infographics.js?v=2"></script>
+<script src="../js/screenshot.js?v=2"></script></body></html>

@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HTTP 해부 | Spring 기초</title>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/night.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+  <link rel="stylesheet" href="css/custom.css">
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+      <!-- ================== 1. 타이틀 ================== -->
+      <section>
+        <div class="session-title">
+          <span class="session-glyph">◇ PART · WEB</span>
+          <h1>HTTP 해부</h1>
+          <p class="subtitle">웹의 동작 원리 — 요청·응답 메시지의 진짜 모습</p>
+        </div>
+        <aside class="notes">
+          전 차시에서 「클라이언트 ↔ 서버가 요청·응답을 주고받는다」는 큰 그림을 봤습니다.
+          오늘은 그 요청과 응답이 실제로 어떤 글자로 생겼는지 F12 로 직접 뜯어봅니다.
+        </aside>
+      </section>
+
+      <!-- ================== 2. 학습 목표 ================== -->
+      <section>
+        <h2>학습 목표</h2>
+        <div class="objectives">
+          <ul>
+            <li class="fragment fade-up">HTTP <span class="keyword">요청 메시지</span>가 어떻게 생겼는지 한 줄씩 짚을 수 있다</li>
+            <li class="fragment fade-up">HTTP <span class="keyword">응답 메시지</span>의 상태 코드(200·404·500)가 무엇을 뜻하는지 안다</li>
+            <li class="fragment fade-up">F12 네트워크 탭에서 헤더와 바디를 직접 찾아볼 수 있다</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- ================== 3. 이전 버전의 불편 ================== -->
+      <section>
+        <h2>⚠️ 어디가 답답한가</h2>
+        <div class="pain-point">
+          <div class="pain-title">전 차시까지 우리가 본 것</div>
+          <p>"손님이 가게에 부탁하면, 가게가 결과를 돌려준다."</p>
+          <p style="margin-top: 0.5em;">그런데 — <strong>그 부탁은 뭐라고 적혀 있나요?</strong> "이거 주세요"가 글자로는 어떻게 생겼을까요?</p>
+        </div>
+        <p class="fragment" style="margin-top: 0.6em; font-size: 0.85em; color: var(--text-muted);">
+          이걸 모르면 나중에 컨트롤러에서 데이터가 안 들어올 때 「내가 뭘 보냈는데?」를 확인할 수가 없습니다.
+        </p>
+        <aside class="notes">
+          이 차시의 가장 큰 가치는 디버깅 사고의 첫 도구를 학생에게 쥐어주는 것입니다. F12 네트워크 탭 = 학생이 4주 내내 가장 자주 쓸 도구.
+        </aside>
+      </section>
+
+      <!-- ================== 4. 새 도구 — HTTP 메시지 ================== -->
+      <section>
+        <h2>🛠️ HTTP 메시지의 정체</h2>
+        <div class="new-tool">
+          <div class="tool-title">HTTP (HyperText Transfer Protocol)</div>
+          <p>웹에서 클라이언트와 서버가 대화할 때 쓰는 <strong>약속된 글자 형식</strong>입니다. 한국어도 영어도 아닌, 둘만 통하는 「대화 규칙」.</p>
+        </div>
+        <p class="fragment" style="margin-top: 0.5em;">메시지는 항상 <strong>두 종류</strong>:</p>
+        <ul class="fragment">
+          <li><strong>요청(Request) 메시지</strong> — 클라이언트가 보내는 것</li>
+          <li><strong>응답(Response) 메시지</strong> — 서버가 돌려주는 것</li>
+        </ul>
+      </section>
+
+      <!-- ================== 5. 요청 메시지 해부 ================== -->
+      <section>
+        <h2>요청 메시지의 구조</h2>
+        <div class="diagram">
+GET /search?q=spring HTTP/1.1     ← ① 요청 라인 (메서드 + 경로 + 버전)
+Host: www.naver.com               ← ② 헤더들 (한 줄에 하나씩)
+User-Agent: Chrome/...            ←
+Accept: text/html
+Cookie: session=abc123
+
+(여기는 비어있음)                  ← ③ 바디 (GET 은 보통 없음)
+        </div>
+        <ul style="font-size: 0.85em; margin-top: 0.5em;">
+          <li class="fragment"><strong>요청 라인</strong> — "어떤 방법으로 어디를 부르는가"</li>
+          <li class="fragment"><strong>헤더</strong> — "이 부탁에 대한 부가 정보"</li>
+          <li class="fragment"><strong>바디</strong> — "보낼 내용물" (POST 일 때만 채워짐)</li>
+        </ul>
+        <aside class="notes">학생들에게 이 세 부분을 손가락으로 짚게 하세요. F12 에서 그대로 보입니다.</aside>
+      </section>
+
+      <!-- ================== 6. 응답 메시지 해부 ================== -->
+      <section>
+        <h2>응답 메시지의 구조</h2>
+        <div class="diagram">
+HTTP/1.1 200 OK                   ← ① 상태 라인 (버전 + 상태 코드 + 메시지)
+Content-Type: text/html           ← ② 헤더들
+Content-Length: 12345
+Set-Cookie: session=abc123
+
+&lt;!DOCTYPE html&gt;                  ← ③ 바디 (HTML, JSON, 이미지 등 실제 내용)
+&lt;html&gt;...
+        </div>
+        <p class="fragment" style="margin-top: 0.5em;">
+          요청과 거의 같은 모양인데, <strong>첫 줄</strong>이 다릅니다.
+        </p>
+      </section>
+
+      <!-- ================== 7. 상태 코드 ================== -->
+      <section>
+        <h2>상태 코드 — 한 자리 숫자로 결과 보고</h2>
+        <div class="columns">
+          <div class="col">
+            <div class="tip-box">
+              <div class="box-title">2xx — 성공</div>
+              <ul style="font-size: 0.9em;">
+                <li><strong>200 OK</strong> — 정상</li>
+                <li>201 Created — 새로 만들었음</li>
+              </ul>
+            </div>
+            <div class="warning-box">
+              <div class="box-title">3xx — 다른 곳으로</div>
+              <ul style="font-size: 0.9em;">
+                <li>302 Found — 옮겨감 (로그인 후 리다이렉트)</li>
+              </ul>
+            </div>
+          </div>
+          <div class="col">
+            <div class="danger-box">
+              <div class="box-title">4xx — 클라이언트 잘못</div>
+              <ul style="font-size: 0.9em;">
+                <li><strong>404 Not Found</strong> — 그런 주소 없음</li>
+                <li>403 Forbidden — 권한 없음</li>
+              </ul>
+            </div>
+            <div class="danger-box">
+              <div class="box-title">5xx — 서버 잘못</div>
+              <ul style="font-size: 0.9em;">
+                <li><strong>500 Internal Server Error</strong> — 서버 코드가 터짐</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <aside class="notes">
+          외울 4개: 200·302·404·500. 디버깅의 첫 신호등.
+          500 보면 「내 서버 코드가 잘못」, 404 보면 「URL 이 잘못」, 302 보면 「리다이렉트」, 200 이면 「정상」.
+        </aside>
+      </section>
+
+      <!-- ================== 8. 메서드 종류 ================== -->
+      <section>
+        <h2>요청 메서드 — 동사</h2>
+        <div class="info-box">
+          <p style="margin: 0;"><strong>오늘은 두 개만</strong>: <code>GET</code> 과 <code>POST</code>. 나머지(PUT/DELETE)는 Part 6 REST API 에서.</p>
+        </div>
+        <div class="diagram">
+GET    /board/list           ← "보여줘" (조회)
+POST   /board/write          ← "저장해줘" (작성/제출)
+
+PUT    /board/3              ← "수정해줘"      (Part 6 에서)
+DELETE /board/3              ← "지워줘"        (Part 6 에서)
+        </div>
+        <p class="fragment" style="font-size: 0.85em; color: var(--text-muted); margin-top: 0.5em;">
+          GET 과 POST 의 차이는 다음 차시에서 직접 보냅니다.
+        </p>
+      </section>
+
+      <!-- ================== 9. F12 로 실측 ================== -->
+      <section>
+        <h2>💻 F12 로 직접 확인</h2>
+        <ol style="font-size: 0.95em;">
+          <li>크롬에서 <code>www.naver.com</code> 접속</li>
+          <li><code>F12</code> → <strong>Network</strong> 탭</li>
+          <li>새로고침 → 첫 줄(<code>www.naver.com</code>) 클릭</li>
+          <li>오른쪽 패널에서 <strong>Headers</strong> 탭 확인</li>
+        </ol>
+
+        <div class="screenshot">
+          <div class="label">스크린샷</div>
+          <div class="desc">F12 → Network → 첫 항목 클릭 → Headers 탭. General(상태 코드) / Response Headers / Request Headers 가 위에서부터 나란히 보임</div>
+        </div>
+
+        <p class="fragment" style="font-size: 0.85em; color: var(--text-muted);">
+          앞 슬라이드의 다이어그램이 글자 그대로 거기 있습니다.
+        </p>
+      </section>
+
+      <!-- ================== 10. Before / After ================== -->
+      <section>
+        <h2>🔄 Before / After</h2>
+        <div class="before-after">
+          <div class="before">
+            <div class="label">전 차시 끝</div>
+            <p style="font-size: 0.9em;">웹 = 클라이언트 ↔ 서버의 요청·응답.</p>
+            <p style="font-size: 0.9em; opacity: 0.7;">(요청·응답이 무슨 글자인지는 모름)</p>
+          </div>
+          <div class="arrow">→</div>
+          <div class="after">
+            <div class="label">이번 차시 끝</div>
+            <p style="font-size: 0.9em;">요청 메시지 = 라인 + 헤더 + 바디.<br>응답 메시지 = 상태 라인 + 헤더 + 바디.</p>
+            <p style="font-size: 0.9em;">상태 코드 4개로 결과를 1초 만에 판단.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================== 11. 데이터 흐름도 ================== -->
+      
+      <section>
+        <h2>📊 한 그림 정리</h2>
+        <div data-infographic="http-anatomy"></div>
+      </section>
+
+      <section>
+        <h2>이번 차시의 데이터 흐름</h2>
+        <div class="flow-diagram">
+          <div class="flow">
+            <div class="box">브라우저</div>
+            <span class="arrow">→</span>
+            <div class="box new">HTTP 요청<br><small>라인+헤더+바디</small></div>
+            <span class="arrow">→</span>
+            <div class="box">서버</div>
+            <span class="arrow">→</span>
+            <div class="box new">HTTP 응답<br><small>상태+헤더+바디</small></div>
+            <span class="arrow">→</span>
+            <div class="box">브라우저</div>
+          </div>
+          <div class="caption">
+            <span class="new-mark">●</span> 화살표가 「HTTP 메시지」라는 글자 봉투로 채워졌습니다
+          </div>
+        </div>
+      </section>
+
+      <!-- ================== 12. 정리 ================== -->
+      <section>
+        <h2>정리</h2>
+        <div class="summary">
+          <h3>오늘 들고 가는 것</h3>
+          <ul>
+            <li>HTTP 메시지 = <strong>요청 라인(또는 상태 라인) + 헤더 + 바디</strong></li>
+            <li>외울 상태 코드: <strong>200 / 302 / 404 / 500</strong></li>
+            <li>F12 → Network → Headers 면 모든 게 보인다</li>
+          </ul>
+        </div>
+        <p style="margin-top: 0.8em; font-size: 0.7em; color: var(--text-muted);">
+          다음 차시: <strong>GET vs POST</strong> — 같은 폼을 두 방법으로 보내며 어디가 다른지 직접 확인합니다.
+        </p>
+      </section>
+
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"></script>
+  <script>
+    Reveal.initialize({
+      hash: true,
+      slideNumber: 'c/t',
+      width: 1280,
+      height: 720,
+      margin: 0.06,
+      transition: 'slide',
+      plugins: [RevealHighlight, RevealNotes]
+    });
+  </script>
+  <script src="../js/infographics.js?v=2"></script>
+<script src="../js/screenshot.js?v=2"></script>
+</body>
+</html>

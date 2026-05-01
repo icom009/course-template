@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SQL 핵심 4종 — 읽기 자료</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/example.css"></head><body>
+<div class="container">
+
+<div class="header"><div class="session-num">▣ PART · DB</div>
+<h1>SQL 핵심 4종</h1><p class="subtitle">데이터와 MyBatis — 읽기 자료</p></div>
+
+<div class="minimap"><div class="minimap-title">📍 지금 어디를 만지고 있나요?</div><div class="flow">
+<div class="box">브라우저</div><span class="arrow">→</span>
+<div class="box active">데이터와 MyBatis</div><span class="arrow">→</span>
+<div class="box">DB</div></div></div>
+
+<div class="terms"><h3>핵심 용어</h3><div class="term-item"><span class="term-name">CRUD</span><span class="term-desc">Create·Read·Update·Delete. 데이터의 4 가지 기본 동작.</span></div>
+<div class="term-item"><span class="term-name">WHERE</span><span class="term-desc">조회·수정·삭제 시 조건 지정.</span></div></div>
+
+<h2>1. 문제</h2>
+<div class="pain-point"><div class="pain-title">전 차시까지의 답답함</div><p>SQL 책 한 권을 다 봐야 할 것 같지만 — 사실 4 가지가 80% 다.</p></div>
+
+<h2>2. 새 도구</h2>
+<div class="new-tool"><div class="tool-title">CRUD 4 종</div><p>Create·Read·Update·Delete = INSERT·SELECT·UPDATE·DELETE. 이 네 가지로 게시판이 만들어진다.</p></div>
+
+<h2>3. 코드</h2>
+<pre><code>-- READ (조회)
+SELECT id, pwd FROM mymember WHERE id = 'hong';
+
+-- CREATE (입력)
+INSERT INTO mymember (id, pwd) VALUES ('hong', 'temp1234');
+
+-- UPDATE (수정)
+UPDATE mymember SET pwd = 'newpw' WHERE id = 'hong';
+
+-- DELETE (삭제)
+DELETE FROM mymember WHERE id = 'hong';
+
+-- 게시판 (myboard) 도 같은 4 동작
+SELECT num, title, writer, content FROM myboard ORDER BY num DESC;
+INSERT INTO myboard (title, writer, content)
+VALUES ('첫 글', 'hong', '안녕하세요');</code></pre>
+
+<h2>4. 정리</h2>
+<ul><li>SELECT — 조회 (가장 많이 씀)</li>
+<li>INSERT — 추가</li>
+<li>UPDATE — 수정</li>
+<li>DELETE — 삭제</li>
+<li>WHERE 가 핵심</li></ul>
+
+<h2>5. Before / After</h2>
+<div class="before-after">
+<div class="before"><div class="label">전 차시 끝</div><p>SQL 책 한 권을 다 봐야 할 것 같지만 — 사실 4 가지가 80% 다.</p></div>
+<div class="arrow">→</div>
+<div class="after"><div class="label">이번 차시 끝</div><p>4 가지 쿼리만으로 회원·게시판 기본 동작을 다 만들 수 있음을 안다.</p></div>
+</div>
+
+<div class="nav"><a href="db-basics.html">&larr; 이전</a><a href="../index.html">메인으로</a><a href="db-mysql-tables.html">다음 &rarr;</a></div>
+</div><script src="../js/screenshot.js?v=2"></script></body></html>

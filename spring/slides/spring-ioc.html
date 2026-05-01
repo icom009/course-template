@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IoC — 제어 역전 | Spring 기초</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/night.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/custom.css"></head><body>
+<div class="reveal"><div class="slides">
+
+<section><div class="session-title">
+<span class="session-glyph">◇ PART · SPRING</span>
+<h1>IoC — 제어 역전</h1>
+<p class="subtitle">제어권은 누구에게 있는가</p>
+</div></section>
+
+<section><h2>학습 목표</h2><div class="objectives"><ul>
+<li class="fragment fade-up"><span class="keyword">IoC</span> 의 의미를 한 문장으로 말한다</li>
+<li class="fragment fade-up">제어권이 개발자에서 컨테이너로 어떻게 넘어가는지 안다</li>
+<li class="fragment fade-up">IoC 가 강한 결합을 어떻게 푸는지 이해</li>
+<li class="fragment fade-up">「Bean」 이라는 용어를 안다</li>
+</ul></div></section>
+
+<section><h2>⚠️ 전 차시의 답답함 — 강한 결합</h2>
+<div class="pain-point">
+<div class="pain-title">문제의 원인</div>
+<p>"내가 직접 <code>new</code> 로 객체를 만든다" → 만든 객체에 꽉 묶임</p>
+<p style="margin-top:0.4em;">발상의 전환: <strong>"누군가 만들어주면 되지 않나?"</strong> 누가? 외부의 누군가가요.</p>
+</div>
+</section>
+
+<section><h2>🛠️ IoC (Inversion of Control)</h2>
+<div class="new-tool">
+<div class="tool-title">「내가」 → 「외부에서」</div>
+<p>객체의 생성·관리 권한을 개발자에서 외부 컨테이너로 넘기는 설계 원칙. 제어권이 뒤집혔다고 해서 「Inversion of Control = 역전」.</p>
+<p style="margin-top:0.4em; font-size:0.85em; color: var(--text-muted);">택시 뒷좌석에 앉은 손님처럼 — 운전대를 잡지 않아도 목적지에 도착합니다.</p>
+<img src="../images/taxi-backseat.jpg" alt="택시 뒷좌석" style="max-width: 380px; border-radius: 12px; margin: 1em auto 0; display: block; opacity: 0.9;">
+</div>
+</section>
+
+<section><h2>비유 — 택시 뒷좌석</h2>
+<table style="font-size:0.75em; width:100%; border-collapse:collapse;">
+<thead><tr style="background:rgba(255,255,255,0.05);">
+<th style="padding:6px;">기존 방식</th><th>IoC 방식</th></tr></thead>
+<tbody>
+<tr><td style="padding:5px; vertical-align:top;">내가 운전자<br>핸들을 잡고 직접 운전<br>길 막히면 내가 새 길 찾기<br><br><strong>= 객체를 직접 new</strong></td>
+<td style="padding:5px; vertical-align:top;">나는 뒷좌석 손님<br>목적지만 말함<br>택시(컨테이너) 가 알아서 운전<br><br><strong>= 컨테이너가 객체 관리</strong></td></tr>
+</tbody></table>
+</section>
+
+<section><h2>코드의 변화</h2>
+<div class="before-after">
+<div class="before"><div class="label">BEFORE — 직접 new</div>
+<pre><code data-trim>
+public class OrderService {
+    private MailSender mail
+        = new GmailSender();
+    // 내가 직접 만들고 관리
+}
+</code></pre>
+</div>
+<div class="arrow">→</div>
+<div class="after"><div class="label">AFTER — IoC</div>
+<pre><code data-trim>
+public class OrderService {
+    private MailSender mail;
+    // 받기만 한다
+    // 만드는 건 컨테이너가
+}
+</code></pre>
+</div>
+</div>
+
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 <code>new</code> 가 사라졌습니다. 「누가 객체를 만들어주는지」를 클래스 안에서는 모릅니다.
+</p>
+</section>
+
+<section><h2>누가 만들어주는가 — Spring 컨테이너</h2>
+<div class="info-box">
+<p><strong>Spring 컨테이너</strong> 가 합니다. 애플리케이션 시작 시:</p>
+<ol style="font-size:0.85em;">
+<li>컨테이너가 우리 코드를 스캔</li>
+<li>등록할 클래스 (<code>@Component</code>, <code>@Service</code> 등) 발견</li>
+<li>각 클래스의 인스턴스를 미리 만들어 보관</li>
+<li>필요한 곳 (다른 클래스의 필드) 에 자동 주입</li>
+</ol>
+</div>
+</section>
+
+<section><h2>Bean — 컨테이너가 관리하는 객체</h2>
+<div class="info-box">
+<p>이 컨테이너가 관리하는 객체를 <strong>Bean</strong> 이라 부릅니다.</p>
+<ul style="font-size:0.85em;">
+<li>애플리케이션 시작 시 한 번 만들어짐 (싱글톤 기본)</li>
+<li>이후 어디서든 같은 객체를 주입받음</li>
+<li>컨테이너가 의존성 그래프를 자동 해결</li>
+</ul>
+</div>
+
+<pre><code data-trim>
+컨테이너 안의 Bean 들:
+   ┌──────────────────────────┐
+   │  BoardController (Bean)  │
+   │  BoardService (Bean)     │
+   │  BoardMapper (Bean)      │
+   │  ... 등                  │
+   └──────────────────────────┘
+</code></pre>
+</section>
+
+<section><h2>IoC 의 효과</h2>
+<table style="font-size:0.75em; width:100%; border-collapse:collapse;">
+<thead><tr style="background:rgba(255,255,255,0.05);">
+<th style="padding:6px;">항목</th><th>변화</th></tr></thead>
+<tbody>
+<tr><td style="padding:5px;">결합도</td><td>↓ — 인터페이스에만 의존</td></tr>
+<tr><td style="padding:5px;">유연성</td><td>↑ — 부품 교체 시 클래스 수정 없음</td></tr>
+<tr><td style="padding:5px;">테스트 용이성</td><td>↑ — Mock 으로 쉽게 갈아끼움</td></tr>
+<tr><td style="padding:5px;">코드 간결화</td><td><code>new</code> 가 사라짐</td></tr>
+<tr><td style="padding:5px;">싱글톤 관리</td><td>자동 — 메모리 효율</td></tr>
+</tbody></table>
+</section>
+
+<section><h2>왜 「역전」 인가</h2>
+<div class="diagram">
+   기존 흐름 (개발자가 제어)
+       개발자 코드 → new 로 객체 생성
+                  → 메서드 호출
+                  → 다른 객체도 new
+       (개발자가 모든 결정)
+
+   IoC 흐름 (컨테이너가 제어)
+       컨테이너 → 객체 생성·등록
+                  → 의존성 분석
+                  → 필요한 곳에 주입
+       개발자 → 「쓸 수 있는 객체를 받음」
+       (컨테이너가 결정의 주체)
+</div>
+</section>
+
+<section><h2>구현 방법 — IoC 의 종류</h2>
+<table style="font-size:0.75em; width:100%; border-collapse:collapse;">
+<thead><tr style="background:rgba(255,255,255,0.05);">
+<th style="padding:6px;">방식</th><th>설명</th></tr></thead>
+<tbody>
+<tr><td style="padding:5px;"><strong>DI (의존성 주입)</strong></td><td>의존 객체를 외부에서 주입 ⭐</td></tr>
+<tr><td style="padding:5px;">Service Locator</td><td>레지스트리에서 찾아서 사용</td></tr>
+<tr><td style="padding:5px;">Template Method</td><td>틀이 흐름 통제, 변경 부분만 구현</td></tr>
+</tbody></table>
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 Spring 의 IoC 는 주로 <strong>DI</strong> 로 구현. 다음 차시에서 자세히.
+</p>
+</section>
+
+<section><h2>실험 — 수동 IoC 흉내</h2>
+<pre><code class="language-java" data-trim>
+// 우리가 컨테이너 역할을 함
+public class App {
+    public static void main(String[] args) {
+        // 부품 결정
+        MessageSender sender = new GmailSender();   // 또는 KakaoSender
+
+        // 주입
+        OrderService service = new OrderService(sender);
+
+        service.order();
+    }
+}
+</code></pre>
+
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 OrderService 코드는 한 줄도 수정 X. 부품 결정은 <strong>main 메서드(외부)</strong> 가.
+</p>
+</section>
+
+<section><h2>다음 차시 — Spring 의 자동 IoC</h2>
+<pre><code class="language-java" data-trim>
+@Service
+public class OrderService {
+    @Autowired
+    private MessageSender sender;    // 컨테이너가 자동 주입
+}
+</code></pre>
+
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 main 에서 직접 주입하지 않아도 — Spring 컨테이너가 자동으로.
+</p>
+</section>
+
+<section><h2>🔄 Before / After</h2><div class="before-after">
+<div class="before"><div class="label">전 차시 끝</div>
+<p style="font-size:0.85em;">강한 결합의 답답함을 체감했다.</p>
+</div>
+<div class="arrow">→</div>
+<div class="after"><div class="label">이번 차시 끝</div>
+<p style="font-size:0.85em;">「제어권을 외부 컨테이너에 위임」 의 발상을 안다. Bean 이라는 용어 이해.</p>
+</div>
+</div></section>
+
+<section><h2>이번 차시의 데이터 흐름</h2>
+<div class="flow-diagram"><div class="flow">
+<div class="box new">Spring 컨테이너</div><span class="arrow">→</span>
+<div class="box">Bean 자동 생성·관리</div><span class="arrow">→</span>
+<div class="box">우리 코드에 주입</div></div>
+<div class="caption">
+<span class="new-mark">●</span> 「누가 객체를 만들어주는지」 — 컨테이너가 등장
+</div></div>
+</section>
+
+<section><h2>정리</h2><div class="summary"><h3>오늘 들고 가는 것</h3><ul>
+<li>IoC = 객체 제어권을 외부에 위임</li>
+<li>비유: 택시 뒷좌석</li>
+<li>Spring 컨테이너 = IoC 의 실행자</li>
+<li>Bean = 컨테이너가 관리하는 객체</li>
+<li>다음 차시 — DI 로 실제 코드 작성</li>
+</ul></div>
+</section>
+
+</div></div>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"></script>
+<script>Reveal.initialize({hash:true,slideNumber:'c/t',width:1280,height:720,margin:0.06,transition:'slide',plugins:[RevealHighlight,RevealNotes]});</script>
+<script src="../js/infographics.js?v=2"></script>
+<script src="../js/screenshot.js?v=2"></script></body></html>

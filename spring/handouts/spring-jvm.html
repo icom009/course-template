@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JVM 한눈에 — 핸드아웃</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/print.css"></head><body>
+<div class="container">
+<div class="header"><div class="header-left"><div class="session-num">◇ PART · SPRING</div><h1>JVM 한눈에</h1></div><div class="header-right">Spring 기초<br>SMHRD</div></div>
+
+<div class="objectives"><h3>학습 목표</h3><ul>
+<li>JVM 이 무엇이고 왜 필요한지 안다</li>
+<li>컴파일·로딩·실행 흐름을 그릴 수 있다</li>
+<li>GC 가 자동으로 무엇을 하는지 안다</li>
+</ul></div>
+
+<h2>1. JVM</h2>
+<p>OS 별 차이를 숨기는 가상 머신. 윈도우용·맥용 JVM 이 따로 있고, 자바 바이트 코드를 받아 자기 OS 명령어로 변환해 실행.</p>
+
+<h2>2. 실행 흐름</h2>
+<div class="diagram">
+.java → [javac] → .class (바이트 코드) → [JVM] → OS 명령어
+                                          │
+                                          ├─ Class Loader
+                                          ├─ Execution Engine (인터프리터 + JIT)
+                                          └─ Garbage Collector
+</div>
+
+<h2>3. 핵심 부품</h2>
+<table>
+<thead><tr><th style="width:25%;">부품</th><th>역할</th></tr></thead>
+<tbody>
+<tr><td><strong>Class Loader</strong></td><td><code>.class</code> 를 메모리에 적재 (로드→검증→준비→분석→초기화)</td></tr>
+<tr><td><strong>Execution Engine</strong></td><td>인터프리터(한 줄씩) + JIT 컴파일러(자주 쓰는 부분 통째로)</td></tr>
+<tr><td><strong>GC</strong></td><td>참조 없는 객체 자동 회수. 개발자가 메모리 해제 신경 안 써도 됨</td></tr>
+</tbody>
+</table>
+
+<div class="note"><strong>실용 팁:</strong> OutOfMemoryError 가 뜨면 GC 가 회수할 수 없는 참조가 어딘가 살아있다는 뜻. 「누가 객체를 계속 들고 있나」를 의심.</div>
+
+<h2>4. 커맨드라인 실습</h2>
+<div class="diagram">
+$ javac Hello.java   ← 컴파일
+$ java Hello         ← JVM 실행
+Hello, JVM!
+</div>
+
+<div class="checklist"><h3>학습 확인 체크리스트</h3><ul>
+<li>JVM 의 역할을 한 문장으로 설명할 수 있다</li>
+<li>바이트 코드(<code>.class</code>) 가 무엇인지 안다</li>
+<li>인터프리터와 JIT 컴파일러의 차이를 안다</li>
+<li>GC 가 자동으로 무엇을 청소하는지 안다</li>
+</ul></div>
+
+<div class="nav"><a href="web-hello-servlet.html">&larr; 이전</a><a href="../index.html">메인으로</a><a href="spring-call-by-value.html">다음 &rarr;</a></div>
+</div></body></html>

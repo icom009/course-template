@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HTTP 해부 — 핸드아웃</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+  <link rel="stylesheet" href="css/print.css">
+</head>
+<body>
+  <div class="container">
+
+    <div class="header">
+      <div class="header-left">
+        <div class="session-num">◇ PART · WEB</div>
+        <h1>HTTP 해부</h1>
+      </div>
+      <div class="header-right">Spring 기초<br>SMHRD</div>
+    </div>
+
+    <div class="objectives">
+      <h3>학습 목표</h3>
+      <ul>
+        <li>HTTP 요청·응답 메시지의 3단 구조(라인 + 헤더 + 바디)를 손가락으로 짚을 수 있다</li>
+        <li>상태 코드 200 / 302 / 404 / 500 의 의미를 한 문장으로 말할 수 있다</li>
+        <li>F12 Network 탭에서 헤더와 바디를 직접 찾을 수 있다</li>
+      </ul>
+    </div>
+
+    <div class="key-terms">
+      <h3>핵심 용어 정리</h3>
+      <table>
+        <thead><tr><th style="width:22%;">용어</th><th style="width:78%;">설명</th></tr></thead>
+        <tbody>
+          <tr><td><strong>HTTP</strong></td><td>클라이언트와 서버가 대화할 때 쓰는 약속된 글자 형식. 둘만 통하는 「대화 규칙」.</td></tr>
+          <tr><td><strong>요청 메시지</strong></td><td>요청 라인 + 헤더들 + (바디). GET 은 보통 바디 없음, POST 는 바디에 폼 데이터.</td></tr>
+          <tr><td><strong>응답 메시지</strong></td><td>상태 라인 + 헤더들 + 바디. 바디에 HTML/JSON/이미지 등이 담겨 옴.</td></tr>
+          <tr><td><strong>메서드</strong></td><td>요청의 「동사」. <code>GET</code>(보여줘), <code>POST</code>(저장해줘) 가 본 과정의 핵심.</td></tr>
+          <tr><td><strong>상태 코드</strong></td><td>응답 첫 줄의 세 자리 숫자. 결과를 한눈에 알리는 신호등.</td></tr>
+          <tr><td><strong>헤더</strong></td><td>「이름: 값」 형식의 부가 정보 (Content-Type, Cookie, User-Agent 등).</td></tr>
+          <tr><td><strong>바디</strong></td><td>메시지의 실제 내용물.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>1. 메시지의 3단 구조</h2>
+
+    <h3>요청 메시지</h3>
+    <div class="diagram">
+GET /search?q=spring HTTP/1.1     ← ① 요청 라인 (메서드 + 경로 + 버전)
+Host: www.naver.com               ← ② 헤더 (한 줄에 하나씩)
+User-Agent: Chrome/...
+Accept: text/html
+                                  ← ③ 바디 (GET 은 보통 비어있음)
+    </div>
+
+    <h3>응답 메시지</h3>
+    <div class="diagram">
+HTTP/1.1 200 OK                   ← ① 상태 라인
+Content-Type: text/html           ← ② 헤더
+Content-Length: 12345
+
+&lt;!DOCTYPE html&gt;...               ← ③ 바디 (실제 HTML/JSON/이미지)
+    </div>
+
+    <h2>2. 외울 상태 코드 4개</h2>
+
+    <table>
+      <thead><tr><th style="width:18%;">코드</th><th style="width:30%;">의미</th><th style="width:52%;">디버깅 방향</th></tr></thead>
+      <tbody>
+        <tr><td><code>200 OK</code></td><td>잘 됐다</td><td>(평소엔 이거)</td></tr>
+        <tr><td><code>302 Found</code></td><td>다른 곳으로 가라</td><td>로그인 후 리다이렉트 등</td></tr>
+        <tr><td><code>404 Not Found</code></td><td>그런 주소 없다</td><td><strong>요청 URL 의심</strong></td></tr>
+        <tr><td><code>500 Server Error</code></td><td>서버 코드가 터졌다</td><td><strong>내 서버 코드 의심</strong></td></tr>
+      </tbody>
+    </table>
+
+    <div class="note">
+      <strong>디버깅 첫 단계:</strong> 화면이 안 뜨면 F12 Network 탭에서 <strong>먼저 상태 코드부터</strong> 확인. 4xx 는 클라이언트 잘못, 5xx 는 서버 잘못 신호.
+    </div>
+
+    <h2>3. 메서드 — GET / POST</h2>
+    <div class="diagram">
+GET    /board/list      "보여줘"     조회 (URL 에 데이터 노출)
+POST   /board/write     "저장해줘"   작성/제출 (바디에 데이터 숨김)
+    </div>
+    <p>나머지(PUT/DELETE)는 Part 6 REST API 에서 만남.</p>
+
+    <h2>4. F12 Network 사용법</h2>
+    <ol>
+      <li>크롬에서 <code>F12</code> → <strong>Network</strong> 탭</li>
+      <li>새로고침 → 표 첫 줄 클릭</li>
+      <li>오른쪽 패널 <strong>Headers</strong> 탭에서 General / Response Headers / Request Headers 확인</li>
+      <li><strong>Response</strong> 탭에서 응답 바디(실제 HTML) 확인</li>
+    </ol>
+
+    <h2>5. Before / After</h2>
+    <div class="before-after">
+      <div class="before"><div class="label">전 차시 끝</div><p>웹 = 클라이언트 ↔ 서버의 요청·응답이라는 추상적 그림.</p></div>
+      <div class="after"><div class="label">이번 차시 끝</div><p>실제 메시지 글자 모양을 알고, 상태 코드로 1초 만에 결과를 판단한다.</p></div>
+    </div>
+
+    <div class="checklist">
+      <h3>학습 확인 체크리스트</h3>
+      <ul>
+        <li>요청·응답 메시지의 3단 구조를 그림으로 그릴 수 있다</li>
+        <li>상태 코드 200 · 302 · 404 · 500 의 의미와 디버깅 방향을 말할 수 있다</li>
+        <li>F12 Network 탭에서 Headers / Response 패널을 찾을 수 있다</li>
+        <li>일부러 잘못된 URL 로 404 응답을 만들어볼 수 있다</li>
+      </ul>
+    </div>
+
+    <div class="nav">
+      <a href="web-client-server.html">&larr; 이전</a>
+      <a href="../index.html">메인으로</a>
+      <a href="web-get-vs-post.html">다음 &rarr;</a>
+    </div>
+
+  </div>
+</body>
+</html>

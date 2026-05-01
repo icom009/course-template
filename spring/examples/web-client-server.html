@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>클라이언트와 서버 — 읽기 자료</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+  <link rel="stylesheet" href="css/example.css">
+</head>
+<body>
+  <div class="container">
+
+    <!-- ============== 헤더 ============== -->
+    <div class="header">
+      <div class="session-num">◇ PART · WEB</div>
+      <h1>클라이언트와 서버</h1>
+      <p class="subtitle">웹의 동작 원리 — 읽기 자료</p>
+    </div>
+
+    <!-- ============== 미니맵 ============== -->
+    <div class="minimap">
+      <div class="minimap-title">📍 지금 어디를 만지고 있나요?</div>
+      <div class="flow">
+        <div class="box active">브라우저</div>
+        <span class="arrow">⇄</span>
+        <div class="box active">서버</div>
+        <span class="arrow">→</span>
+        <div class="box">Controller</div>
+        <span class="arrow">→</span>
+        <div class="box">Service</div>
+        <span class="arrow">→</span>
+        <div class="box">DB</div>
+      </div>
+    </div>
+
+    <!-- ============== 핵심 용어 ============== -->
+    <div class="terms">
+      <h3>이 차시의 핵심 용어</h3>
+      <div class="term-item">
+        <span class="term-name">클라이언트 (Client)</span>
+        <span class="term-desc">먼저 "이거 주세요"라고 요청을 보내는 쪽. 카페의 <strong>손님</strong>에 해당합니다. 우리가 매일 쓰는 크롬·사파리·배달앱·게임이 전부 클라이언트입니다.</span>
+      </div>
+      <div class="term-item">
+        <span class="term-name">서버 (Server)</span>
+        <span class="term-desc">요청을 묵묵히 기다리다가 응답을 돌려주는 쪽. 카페의 <strong>바리스타</strong>입니다. 언제 손님이 올지 모르므로 24시간 켜져 있어야 합니다.</span>
+      </div>
+      <div class="term-item">
+        <span class="term-name">요청 (Request)</span>
+        <span class="term-desc">손님이 가게에 보내는 주문서. "이 페이지 줘", "이 글 저장해줘" 같은 부탁입니다.</span>
+      </div>
+      <div class="term-item">
+        <span class="term-name">응답 (Response)</span>
+        <span class="term-desc">가게가 손님에게 돌려주는 결과물. HTML 화면, 이미지, JSON 데이터 등이 응답으로 옵니다.</span>
+      </div>
+      <div class="term-item">
+        <span class="term-name">네트워크 (Network)</span>
+        <span class="term-desc">통신 장비들이 그물망처럼 엮여서 데이터를 주고받는 구조 자체. 손님과 가게가 대화할 수 있는 길.</span>
+      </div>
+    </div>
+
+    <!-- ============== 본문 ============== -->
+
+    <h2>1. 매일 보는 풍경, 들여다본 적 있나요?</h2>
+
+    <p>주소창에 <code>naver.com</code> 을 치면 1초 안에 화면이 뜹니다. 그 1초 동안 <strong>여러 대의 컴퓨터 사이에서 무슨 일</strong>이 일어났을까요?</p>
+
+    <div class="pain-point">
+      <div class="pain-title">왜 이걸 알아야 하나</div>
+      <p>이걸 모른 채로 코드를 짜다가 무언가 안 되면 — <strong>어디에서 막혔는지 짐작할 수가 없습니다.</strong> 화면이 안 뜨는데 그 원인이 내 컴퓨터인지, 인터넷인지, 서버인지, 데이터베이스인지를 가려내려면 먼저 「누가 누구에게 무엇을 보내고 받는지」 그림이 머릿속에 있어야 합니다.</p>
+    </div>
+
+    <p>좋은 소식: 이 그림은 우리가 <strong>매일 카페에서 하는 일</strong>과 똑같이 생겼습니다.</p>
+
+    <h2>2. 웹은 카페와 똑같다</h2>
+
+    <div class="new-tool">
+      <div class="tool-title">핵심 비유</div>
+      <p>모든 웹사이트는 「<strong>손님이 가게에 주문하고 가게가 결과를 내준다</strong>」는 카페의 풍경을 그대로 따릅니다.</p>
+    </div>
+
+    <div class="diagram">
+        ┌─────────────┐                        ┌──────────────┐
+        │             │   "아메리카노 주세요"  │              │
+        │   손  님    │ ─────────────────────→ │   바리스타   │
+        │ (Client)    │       (요청)           │  (Server)    │
+        │             │                        │              │
+        │             │ ←───────────────────── │              │
+        │             │     ☕ 한 잔           │              │
+        └─────────────┘       (응답)           └──────────────┘
+    </div>
+
+    <h3>2-1. 손님은 누구인가요?</h3>
+
+    <p>손님은 <strong>먼저 말을 거는 쪽</strong>입니다. 가만히 있는 가게에 "이거 주세요"라고 부탁합니다. 웹에서는:</p>
+
+    <ul>
+      <li><strong>크롬·사파리·엣지</strong> — 가장 흔한 클라이언트(웹 브라우저)</li>
+      <li><strong>배달의민족 앱</strong> — 음식점 서버에게 메뉴를 요청하는 클라이언트</li>
+      <li><strong>카카오톡 앱</strong> — 메시지를 보내고 받는 클라이언트</li>
+      <li><strong>게임</strong> — 매번 게임 서버에 점수를 보내는 클라이언트</li>
+    </ul>
+
+    <div class="box box-info">
+      <div class="box-title">한 줄 정리</div>
+      <p>"먼저 부탁하는 쪽" 이면 모두 클라이언트입니다.</p>
+    </div>
+
+    <h3>2-2. 가게(서버)는 누구인가요?</h3>
+
+    <p>서버는 <strong>묵묵히 기다리는 쪽</strong>입니다. 손님이 언제 올지 모르므로 항상 켜져 있어야 합니다. 웹에서는:</p>
+
+    <ul>
+      <li><strong>네이버 서버</strong> — 검색을 부탁하면 결과를 돌려주는 컴퓨터</li>
+      <li><strong>유튜브 서버</strong> — 영상을 부탁하면 영상 데이터를 돌려주는 컴퓨터</li>
+      <li><strong>은행 서버</strong> — 송금 요청에 응답하는 컴퓨터</li>
+    </ul>
+
+    <div class="box box-warn">
+      <div class="box-title">⏰ 중요한 차이</div>
+      <p>서버는 <strong>먼저 말을 걸지 않습니다</strong>. 손님이 부탁하지 않으면 가만히 있습니다. 인터넷은 항상 클라이언트가 먼저입니다.</p>
+    </div>
+
+    <h2>3. 요청과 응답 — 두 단계의 반복</h2>
+
+    <p>웹사이트에서 일어나는 모든 일은 결국 두 단계로 압축됩니다:</p>
+
+    <div class="diagram">
+   1단계.  손님 → 가게:  "아메리카노 한 잔 주세요"   ← 요청 (Request)
+
+   2단계.  가게 → 손님:  "여기 있습니다 ☕"           ← 응답 (Response)
+    </div>
+
+    <p>웹에서 말하는 「요청」은 단순히 <strong>"이 페이지 줘"</strong> 같은 부탁입니다. 그리고 「응답」은 그 결과로 돌아오는 <strong>HTML 화면, 이미지, 데이터</strong>입니다.</p>
+
+    <div class="box box-tip">
+      <div class="box-title">🎯 외워둘 것</div>
+      <p>웹의 모든 동작 = <strong>요청(Request) + 응답(Response)</strong>의 반복. 이게 끝입니다.</p>
+    </div>
+
+    <h2>4. 네이버에 접속하는 그 1초</h2>
+
+    <p>주소창에 <code>naver.com</code> 을 치고 엔터를 누르면, 1초 안에 다음 일이 일어납니다:</p>
+
+    <div class="diagram">
+   ① 주소창에 naver.com 입력
+              │
+              ▼
+   ② 브라우저(클라이언트)가 네이버 서버에게 요청을 보냄
+              │
+              ▼
+   ③ 네이버 서버가 HTML 화면을 응답으로 돌려줌
+              │
+              ▼
+   ④ 브라우저가 HTML을 해석해서 그림을 그림
+              │
+              ▼
+   ⑤ 우리 눈에 네이버 화면이 보임
+    </div>
+
+    <p>이게 안 되면 — "인터넷이 안 돼요"가 됩니다. 어느 단계가 문제인지에 따라 해결법이 다르죠. <strong>그래서 흐름을 알아야 합니다.</strong></p>
+
+    <h2>5. 진짜로 일어나는지 보고 싶다면</h2>
+
+    <p>크롬을 열고 <strong>F12</strong> 를 누르세요. 「Network」 탭을 켠 다음 새로고침을 해보면, 한 페이지를 띄우는 데 사실은 <strong>수십 번의 요청·응답</strong>이 오간다는 걸 직접 볼 수 있습니다.</p>
+
+    <div class="screenshot">
+      <div class="label">스크린샷</div>
+      <div class="desc">크롬에서 네이버에 접속한 뒤 F12 → Network 탭. 수십 개의 요청·응답이 줄지어 보임</div>
+    </div>
+
+    <div class="box box-info">
+      <div class="box-title">실습으로 직접 해보기</div>
+      <p>같은 차시의 <strong>실습(Lab)</strong> 자료에서 단계별로 따라가며 직접 F12 를 눌러보게 됩니다.</p>
+    </div>
+
+    <h2>6. 다음 차시로 넘어가기 전에</h2>
+
+    <p>오늘 우리는 <strong>웹은 손님과 가게가 대화하는 사이</strong>라는 것까지만 봤습니다. 다음 차시부터는 그 대화에 어떤 「<strong>글자</strong>」들이 오가는지 — HTTP 라는 약속을 뜯어볼 거예요.</p>
+
+    <div class="before-after">
+      <div class="before">
+        <div class="label">전 차시까지</div>
+        <p>(없음 — 우리 과정의 첫 차시)</p>
+      </div>
+      <div class="arrow">→</div>
+      <div class="after">
+        <div class="label">이번 차시 끝</div>
+        <p>웹 = 손님(클라이언트) ↔ 가게(서버) 의 요청·응답이라는 그림이 머릿속에 박혔다.</p>
+      </div>
+    </div>
+
+    <!-- ============== 네비게이션 ============== -->
+    <div class="nav">
+      <a href="#" style="opacity:0.4; pointer-events:none;">&larr; 이전</a>
+      <a href="../index.html">메인으로</a>
+      <a href="#" style="opacity:0.4; pointer-events:none;">다음: HTTP 해부 &rarr;</a>
+    </div>
+
+  </div>
+  <script src="../js/screenshot.js?v=2"></script>
+</body>
+</html>

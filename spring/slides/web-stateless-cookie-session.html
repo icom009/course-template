@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>무상태성과 쿠키·세션 | Spring 기초</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/night.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+  <link rel="stylesheet" href="css/custom.css">
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+      <section>
+        <div class="session-title">
+          <span class="session-glyph">◇ PART · WEB</span>
+          <h1>무상태성과 쿠키·세션</h1>
+          <p class="subtitle">서버가 사용자를 기억하지 못하는 이유</p>
+        </div>
+        <aside class="notes">
+          오늘은 개념만. 실제 쿠키·세션 코드는 Part 5 에서 본격적으로 다룹니다.
+          오늘의 목적은 「왜 쿠키·세션이라는 도구가 만들어졌는가」를 학생이 이해하는 것.
+        </aside>
+      </section>
+
+      <section>
+        <h2>학습 목표</h2>
+        <div class="objectives">
+          <ul>
+            <li class="fragment fade-up">HTTP 의 <span class="keyword">무상태성(Stateless)</span>이 무엇인지 안다</li>
+            <li class="fragment fade-up">왜 <span class="keyword">쿠키</span>와 <span class="keyword">세션</span>이라는 도구가 등장했는지 설명할 수 있다</li>
+            <li class="fragment fade-up">두 도구가 어디에 정보를 저장하는지 큰 그림으로 안다</li>
+          </ul>
+        </div>
+      </section>
+
+      <section>
+        <h2>⚠️ 이상한 일</h2>
+        <div class="pain-point">
+          <div class="pain-title">서버 입장에서 보면</div>
+          <p>"방금 로그인하신 분이 또 페이지를 누르네 — 누구셨더라?"</p>
+          <p style="margin-top: 0.5em;">HTTP 는 한 번 응답을 돌려준 뒤 손님과의 연결을 끊습니다. 다음 요청이 오면 — <strong>같은 사람인지 알 길이 없습니다.</strong></p>
+        </div>
+      </section>
+
+      <section>
+        <h2>🛠️ 무상태성 (Stateless)</h2>
+        <div class="new-tool">
+          <div class="tool-title">HTTP 의 본래 성질</div>
+          <p>매번 잊어버리는 점원과 같습니다. 한 손님이 방금 주문해도, 다음 주문 때는 처음 본 사람처럼 응대합니다.</p>
+        </div>
+        <div class="diagram">
+   ① 손님 : "아메리카노 주세요"
+      가게 : "여기요" (응대 끝, 손님 잊음)
+
+   ② 같은 손님 : "이번엔 라떼 주세요"
+      가게 : "처음 뵙겠습니다" ← 또 처음부터
+        </div>
+        <p class="fragment" style="font-size: 0.85em; color: var(--text-muted);">
+          이게 본래 모습. 그러면 로그인은 어떻게 유지될까요?
+        </p>
+      </section>
+
+      <section>
+        <h2>🛠️ 해결책 ① 쿠키 (Cookie)</h2>
+        <div class="info-box">
+          <div class="box-title">🍪 손님(브라우저) 쪽 저장</div>
+          <p style="font-size: 0.95em;"><strong>브라우저</strong>에 저장하는 작은 메모. "이 손님은 ID 가 abc123 입니다" 같은 정보를 손님이 들고 다닙니다.</p>
+          <img src="../images/receipt.jpg" alt="영수증" style="max-width: 320px; border-radius: 12px; margin: 0.8em auto 0; display: block; opacity: 0.9;">
+        </div>
+      </section>
+
+      <section>
+        <h2>🛠️ 해결책 ② 세션 (Session)</h2>
+        <div class="tip-box">
+          <div class="box-title">🔑 가게(서버) 쪽 저장</div>
+          <p style="font-size: 0.95em;"><strong>서버</strong>에 정보 보관함을 두고, 손님에게는 「손목 도장」만 찍어 줍니다. 민감한 정보는 가게 안 금고에 남습니다.</p>
+          <img src="../images/wristband-stamp.jpg" alt="손목 도장" style="max-width: 320px; border-radius: 12px; margin: 0.8em auto 0; display: block; opacity: 0.9;">
+        </div>
+        <p style="margin-top: 0.5em; font-size: 0.85em; color: var(--text-muted);">
+          <strong>저장 위치가 다릅니다.</strong> 이게 쿠키·세션의 본질적 차이.
+        </p>
+      </section>
+
+      <section>
+        <h2>쿠키의 흐름</h2>
+        <div class="diagram">
+   ① 처음 방문
+      손님 → 가게 : "안녕"
+      가게 → 손님 : "안녕. 이 메모 들고 다니세요" (Set-Cookie: id=abc123)
+
+   ② 다음 요청
+      손님 → 가게 : "왔어요. 이 메모 가지고 있어요" (Cookie: id=abc123)
+      가게 → 손님 : "아, 그 손님이군요! 어서 오세요"
+        </div>
+        <p style="font-size: 0.85em; margin-top: 0.4em; color: var(--text-muted);">
+          쿠키는 브라우저에 저장됩니다. F12 → Application → Cookies 에서 직접 볼 수 있어요.
+        </p>
+      </section>
+
+      <section>
+        <h2>세션의 흐름</h2>
+        <div class="diagram">
+   ① 로그인 성공
+      가게 : 금고에 정보 넣음 (이름, 권한, ...)
+      가게 → 손님 : "이 손목 도장만 들고 다니세요" (JSESSIONID=xyz789)
+
+   ② 다음 요청
+      손님 → 가게 : "도장 보여드려요" (JSESSIONID=xyz789)
+      가게 : 금고에서 xyz789 의 정보를 꺼냄 → "환영합니다 OO님"
+        </div>
+        <p style="font-size: 0.85em; margin-top: 0.4em; color: var(--text-muted);">
+          민감한 정보는 가게(서버)에만 있고, 손님은 도장(세션 ID)만 들고 다닙니다.
+        </p>
+      </section>
+
+      <section>
+        <h2>쿠키 vs 세션 — 한 줄 비교</h2>
+        <table style="font-size: 0.85em; width: 100%; border-collapse: collapse;">
+          <thead><tr style="background: rgba(255,255,255,0.05);">
+            <th style="padding:8px;">항목</th><th style="padding:8px;">쿠키</th><th style="padding:8px;">세션</th>
+          </tr></thead>
+          <tbody>
+            <tr><td style="padding:6px;">저장 위치</td><td>브라우저</td><td>서버</td></tr>
+            <tr><td style="padding:6px;">보안</td><td>약함 (사용자가 볼 수 있음)</td><td>강함 (서버 안에)</td></tr>
+            <tr><td style="padding:6px;">용량</td><td>작음 (~4KB)</td><td>큼 (서버 메모리)</td></tr>
+            <tr><td style="padding:6px;">대표 용도</td><td>장바구니, 다크모드 설정</td><td>로그인 상태</td></tr>
+          </tbody>
+        </table>
+        <p class="fragment" style="margin-top: 0.5em; font-size: 0.8em;">
+          <strong>※ 사실은 세션도 쿠키를 씁니다</strong> — 손목 도장(JSESSIONID) 자체가 쿠키에 담겨 다니거든요.
+        </p>
+      </section>
+
+      <section>
+        <h2>오늘은 여기까지</h2>
+        <div class="warning-box">
+          <div class="box-title">중요</div>
+          <p style="font-size: 0.95em;">실제 코드로 쿠키·세션을 다루는 건 <strong>Part 5(회원과 게시판)</strong> 에서 합니다. 오늘은 「왜 이런 도구가 필요한가」 의 그림만 머릿속에 그려두면 충분합니다.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2>🔄 Before / After</h2>
+        <div class="before-after">
+          <div class="before">
+            <div class="label">전 차시 끝</div>
+            <p style="font-size: 0.9em;">HTTP 메시지의 글자 모양은 알지만, 페이지를 옮길 때마다 처음 보는 사람이 되는 문제는 모름.</p>
+          </div>
+          <div class="arrow">→</div>
+          <div class="after">
+            <div class="label">이번 차시 끝</div>
+            <p style="font-size: 0.9em;">HTTP 가 무상태성이라는 걸 알고, 쿠키·세션이 「그래서 만들어진 도구」라는 걸 안다.</p>
+          </div>
+        </div>
+      </section>
+
+      
+      <section>
+        <h2>📊 한 그림 정리</h2>
+        <div data-infographic="cookie-vs-session"></div>
+      </section>
+
+      <section>
+        <h2>이번 차시의 데이터 흐름</h2>
+        <div class="flow-diagram">
+          <div class="flow">
+            <div class="box">브라우저</div>
+            <span class="arrow">⇄</span>
+            <div class="box">서버</div>
+            <span class="arrow">↔</span>
+            <div class="box new">쿠키 / 세션</div>
+          </div>
+          <div class="caption">
+            <span class="new-mark">●</span> 「상태 유지 도구」가 새로 등장 — 어디에 저장되느냐가 핵심
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>정리</h2>
+        <div class="summary">
+          <h3>오늘 들고 가는 것</h3>
+          <ul>
+            <li>HTTP 는 본래 <strong>무상태성</strong> — 서버는 매번 잊어버린다</li>
+            <li><strong>쿠키</strong> = 브라우저 쪽 저장 / <strong>세션</strong> = 서버 쪽 저장</li>
+            <li>실제 코드는 <strong>Part 5</strong> 에서. 오늘은 그림만</li>
+          </ul>
+        </div>
+        <p style="margin-top: 0.8em; font-size: 0.7em; color: var(--text-muted);">
+          다음 차시: <strong>정적 vs 동적 / WAS</strong> — 같은 HTML 인데 어떨 때 매번 다르게 보일까.
+        </p>
+      </section>
+
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"></script>
+  <script>Reveal.initialize({hash:true,slideNumber:'c/t',width:1280,height:720,margin:0.06,transition:'slide',plugins:[RevealHighlight,RevealNotes]});</script>
+  <script src="../js/infographics.js?v=2"></script>
+<script src="../js/screenshot.js?v=2"></script>
+</body>
+</html>

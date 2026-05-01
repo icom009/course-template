@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HTTP 메서드 어노테이션 | Spring 기초</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/night.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/custom.css"></head><body>
+<div class="reveal"><div class="slides">
+
+<section><div class="session-title">
+<span class="session-glyph">◇ PART · REST</span>
+<h1>HTTP 메서드 어노테이션</h1>
+<p class="subtitle">Get / Post / Put / Delete Mapping</p>
+</div></section>
+
+<section><h2>학습 목표</h2><div class="objectives"><ul>
+<li class="fragment fade-up">HTTP 4 가지 메서드 (GET·POST·PUT·DELETE) 의 역할을 안다</li>
+<li class="fragment fade-up">Spring 의 매핑 어노테이션을 메서드별로 안다</li>
+<li class="fragment fade-up"><span class="keyword">RESTful URL 디자인</span> 의 기본을 안다</li>
+<li class="fragment fade-up">같은 URL 에 다른 메서드로 다른 동작을 분기시킨다</li>
+</ul></div></section>
+
+<section><h2>⚠️ 옛 스타일 URL 의 문제</h2>
+<div class="pain-point">
+<div class="pain-title">전통적인 게시판 URL</div>
+<pre><code data-trim>
+GET  /board/list            ← 목록
+GET  /board/view?num=3      ← 상세
+GET  /board/writeForm       ← 작성 폼
+POST /board/write           ← 작성 처리
+GET  /board/editForm?num=3  ← 수정 폼
+POST /board/update          ← 수정 처리
+POST /board/delete?num=3    ← 삭제 처리
+</code></pre>
+<p style="margin-top:0.4em;">규칙이 없습니다. URL 만 봐서는 무엇을 하는지 알기 어렵고 — 다른 시스템과 연동할 때 매번 「우리 사이트는 어떻게 짰는가」 설명서를 써야 합니다.</p>
+</div>
+</section>
+
+<section><h2>🛠️ RESTful 의 발상</h2>
+<div class="new-tool">
+<div class="tool-title">「리소스 = URL, 동작 = HTTP 메서드」</div>
+<p>URL 은 「<strong>무엇</strong>」(boards) 만 표현하고, 「<strong>어떤 동작</strong>」(조회·생성·수정·삭제) 은 HTTP 메서드로 표현.</p>
+</div>
+
+<table style="font-size:0.75em; width:100%; border-collapse:collapse; margin-top:0.4em;">
+<thead><tr style="background:rgba(255,255,255,0.05);">
+<th style="padding:6px;">동작</th><th>옛 스타일</th><th>RESTful</th></tr></thead>
+<tbody>
+<tr><td style="padding:5px;">목록</td><td>GET /board/list</td><td><strong>GET /api/boards</strong></td></tr>
+<tr><td style="padding:5px;">상세</td><td>GET /board/view?num=3</td><td><strong>GET /api/boards/3</strong></td></tr>
+<tr><td style="padding:5px;">작성</td><td>POST /board/write</td><td><strong>POST /api/boards</strong></td></tr>
+<tr><td style="padding:5px;">수정</td><td>POST /board/update?num=3</td><td><strong>PUT /api/boards/3</strong></td></tr>
+<tr><td style="padding:5px;">삭제</td><td>POST /board/delete?num=3</td><td><strong>DELETE /api/boards/3</strong></td></tr>
+</tbody></table>
+</section>
+
+<section><h2>4 가지 핵심 HTTP 메서드</h2>
+<table style="font-size:0.75em; width:100%; border-collapse:collapse;">
+<thead><tr style="background:rgba(255,255,255,0.05);">
+<th style="padding:6px;">메서드</th><th>의미</th><th>Spring 어노테이션</th></tr></thead>
+<tbody>
+<tr><td style="padding:5px;"><strong>GET</strong></td><td>조회 — 데이터 가져오기</td><td><code>@GetMapping</code></td></tr>
+<tr><td style="padding:5px;"><strong>POST</strong></td><td>생성 — 새 데이터 만들기</td><td><code>@PostMapping</code></td></tr>
+<tr><td style="padding:5px;"><strong>PUT</strong></td><td>수정 — 기존 데이터 변경 (전체)</td><td><code>@PutMapping</code></td></tr>
+<tr><td style="padding:5px;"><strong>DELETE</strong></td><td>삭제 — 데이터 지우기</td><td><code>@DeleteMapping</code></td></tr>
+<tr><td style="padding:5px;">PATCH</td><td>부분 수정</td><td><code>@PatchMapping</code></td></tr>
+</tbody></table>
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 본 과정은 4 개로 충분. PATCH 는 후속 과정.
+</p>
+</section>
+
+<section><h2>같은 URL, 다른 메서드</h2>
+<pre><code class="language-java" data-trim>
+@RestController
+@RequestMapping("/api/boards")
+public class BoardApiController {
+
+    @GetMapping("/{num}")            // GET /api/boards/3
+    public Board view(@PathVariable int num) {
+        return service.selectOne(num);
+    }
+
+    @PutMapping("/{num}")            // PUT /api/boards/3
+    public Board update(@PathVariable int num,
+                         @RequestBody Board b) {
+        b.setNum(num);
+        return service.update(b);
+    }
+
+    @DeleteMapping("/{num}")         // DELETE /api/boards/3
+    public void delete(@PathVariable int num) {
+        service.delete(num);
+    }
+}
+</code></pre>
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 같은 URL <code>/api/boards/3</code> 에서 메서드만 다르면 다른 처리.
+</p>
+</section>
+
+<section><h2>각 메서드의 약속 — 멱등성</h2>
+<table style="font-size:0.7em; width:100%; border-collapse:collapse;">
+<thead><tr style="background:rgba(255,255,255,0.05);">
+<th style="padding:6px;">메서드</th><th>안전한가?<br>(데이터 변경 X)</th><th>멱등?<br>(여러 번 = 한 번)</th></tr></thead>
+<tbody>
+<tr><td style="padding:5px;">GET</td><td>✓</td><td>✓</td></tr>
+<tr><td style="padding:5px;">POST</td><td>✗</td><td>✗</td></tr>
+<tr><td style="padding:5px;">PUT</td><td>✗</td><td>✓</td></tr>
+<tr><td style="padding:5px;">DELETE</td><td>✗</td><td>✓</td></tr>
+</tbody></table>
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 <strong>멱등 (idempotent)</strong> = 같은 요청을 여러 번 보내도 결과가 같음.<br>
+PUT 으로 같은 데이터를 100 번 전송 = 한 번 전송과 결과 같음.<br>
+POST 는 100 번 전송 = 글이 100 개 생성.
+</p>
+</section>
+
+<section><h2>왜 멱등성이 중요한가</h2>
+<div class="info-box">
+<p>네트워크가 불안하면 클라이언트가 「응답이 안 와서」 같은 요청을 다시 보낼 수 있습니다.</p>
+<ul style="font-size:0.85em;">
+<li>POST 재전송 = 글 두 번 등록 (위험!)</li>
+<li>PUT 재전송 = 같은 결과 (안전)</li>
+<li>DELETE 재전송 = 이미 지워진 것 또 지움 (안전)</li>
+</ul>
+<p style="margin-top:0.4em;">그래서 「<strong>새 데이터 만들기</strong>」 만 POST 로 하고, 「<strong>특정 데이터 변경</strong>」 은 PUT 으로 합니다. 안전성의 차이.</p>
+</div>
+</section>
+
+<section><h2>RESTful URL 설계 규칙</h2>
+
+<h3>① 명사를 사용 (동사 X)</h3>
+<pre><code data-trim>
+✗ POST /api/createBoard
+✓ POST /api/boards
+
+✗ GET  /api/getBoard?id=3
+✓ GET  /api/boards/3
+</code></pre>
+
+<h3>② 복수형 사용</h3>
+<pre><code data-trim>
+✗ /api/board/3
+✓ /api/boards/3      ← 「게시판들 중 3 번」
+</code></pre>
+
+<h3>③ 계층 구조 표현</h3>
+<pre><code data-trim>
+GET  /api/boards/3/replies        ← 3 번 글의 댓글들
+POST /api/boards/3/replies         ← 3 번 글에 댓글 추가
+DELETE /api/boards/3/replies/7     ← 3 번 글의 7 번 댓글 삭제
+</code></pre>
+</section>
+
+<section><h2>실제 예시 — 게시판 + 댓글 API</h2>
+<table style="font-size:0.7em; width:100%; border-collapse:collapse;">
+<thead><tr style="background:rgba(255,255,255,0.05);">
+<th style="padding:6px;">메서드</th><th>URL</th><th>동작</th></tr></thead>
+<tbody>
+<tr><td style="padding:5px;">GET</td><td>/api/boards</td><td>게시글 목록</td></tr>
+<tr><td style="padding:5px;">GET</td><td>/api/boards/3</td><td>3 번 게시글</td></tr>
+<tr><td style="padding:5px;">POST</td><td>/api/boards</td><td>새 게시글 작성</td></tr>
+<tr><td style="padding:5px;">PUT</td><td>/api/boards/3</td><td>3 번 게시글 수정</td></tr>
+<tr><td style="padding:5px;">DELETE</td><td>/api/boards/3</td><td>3 번 게시글 삭제</td></tr>
+<tr><td style="padding:5px;">GET</td><td>/api/boards/3/replies</td><td>3 번 글의 댓글들</td></tr>
+<tr><td style="padding:5px;">POST</td><td>/api/boards/3/replies</td><td>3 번 글에 댓글 추가</td></tr>
+<tr><td style="padding:5px;">DELETE</td><td>/api/boards/3/replies/7</td><td>3 번 글의 7 번 댓글 삭제</td></tr>
+</tbody></table>
+</section>
+
+<section><h2>POST vs PUT — 헷갈리기 쉬움</h2>
+<div class="info-box">
+<p>둘 다 「변경」 같지만 용도가 다릅니다:</p>
+<table style="font-size:0.85em; width:100%; border-collapse:collapse; margin-top:0.4em;">
+<thead><tr style="background:rgba(255,255,255,0.05);">
+<th style="padding:6px;">POST</th><th>PUT</th></tr></thead>
+<tbody>
+<tr><td style="padding:5px;">새로 만들기 (id 모름)</td><td>특정 id 의 데이터 변경</td></tr>
+<tr><td style="padding:5px;">/api/boards (id 없음)</td><td>/api/boards/3 (id 있음)</td></tr>
+<tr><td style="padding:5px;">서버가 id 부여</td><td>클라이언트가 id 지정</td></tr>
+<tr><td style="padding:5px;">멱등 X</td><td>멱등 ✓</td></tr>
+</tbody></table>
+</div>
+</section>
+
+<section><h2>응답 상태 코드 — 메서드별 표준</h2>
+<table style="font-size:0.7em; width:100%; border-collapse:collapse;">
+<thead><tr style="background:rgba(255,255,255,0.05);">
+<th style="padding:6px;">메서드</th><th>성공 시</th><th>실패 시</th></tr></thead>
+<tbody>
+<tr><td style="padding:5px;">GET</td><td>200 OK</td><td>404 Not Found / 401 Unauthorized</td></tr>
+<tr><td style="padding:5px;">POST</td><td>201 Created (또는 200)</td><td>400 Bad Request</td></tr>
+<tr><td style="padding:5px;">PUT</td><td>200 OK / 204 No Content</td><td>404 / 400</td></tr>
+<tr><td style="padding:5px;">DELETE</td><td>204 No Content</td><td>404 / 403</td></tr>
+</tbody></table>
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 본 과정에서는 기본 200 으로 충분. 상세한 응답 상태 코드 디자인은 후속 과정.
+</p>
+</section>
+
+<section><h2>본 과정의 변환 — v6 → v8</h2>
+<div class="diagram">
+   v6 (전통)                   v8 (REST)
+   ─────────                   ─────────
+   GET  /board/list            GET    /api/boards
+   GET  /board/view?num=3      GET    /api/boards/3
+   POST /board/write           POST   /api/boards
+   POST /board/update          PUT    /api/boards/3
+   POST /board/delete?num=3    DELETE /api/boards/3
+
+   ※ 둘 다 같은 BoardService 호출
+   ※ 둘 다 우리 게시판의 핵심 동작 동일
+   ※ URL 표현 방식만 변경
+</div>
+</section>
+
+<section><h2>실험 — Postman 으로 PUT/DELETE 보내기</h2>
+<ol style="font-size:0.9em;">
+<li class="fragment">Postman 설치 (또는 VS Code REST Client 확장)</li>
+<li class="fragment">PUT 요청 작성:
+<pre><code data-trim>
+URL: http://localhost:8080/.../api/boards/3
+Method: PUT
+Headers: Content-Type: application/json
+Body: {"title": "수정된 제목", "content": "수정된 내용"}
+</code></pre></li>
+<li class="fragment">「Send」 클릭 → 수정 결과 확인</li>
+<li class="fragment">DELETE 요청도 같은 방식으로 테스트</li>
+</ol>
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 브라우저 주소창은 GET 만 가능. PUT/DELETE 는 Postman 또는 fetch.
+</p>
+</section>
+
+<section><h2>F12 fetch 로 직접 호출</h2>
+<pre><code class="language-javascript" data-trim>
+// PUT — F12 Console 에서 실행
+await fetch('/api/boards/3', {
+    method: 'PUT',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({title: '새 제목', content: '새 내용'})
+}).then(r =&gt; r.json());
+
+// DELETE — F12 Console
+await fetch('/api/boards/3', {
+    method: 'DELETE'
+});
+</code></pre>
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 Postman 없어도 F12 콘솔에서 즉시 테스트 가능.
+</p>
+</section>
+
+<section><h2>주의 — HTML form 의 한계</h2>
+<div class="warning-box">
+<div class="box-title">form 은 GET / POST 만</div>
+<p style="font-size:0.85em;">HTML 의 <code>&lt;form&gt;</code> 태그는 method="get" 또는 method="post" 만 지원. PUT/DELETE 를 form 으로 직접 보낼 수 없음.</p>
+<pre><code data-trim>
+&lt;form method="put"&gt; ... &lt;/form&gt;   ← 무시되고 GET 으로 처리됨
+</code></pre>
+<p style="margin-top:0.4em;">PUT/DELETE 를 보내려면 — JS 의 fetch 사용. 이게 REST API 가 자연스럽게 비동기와 어울리는 이유.</p>
+</div>
+</section>
+
+<section><h2>실수하기 쉬운 함정</h2>
+<table style="font-size:0.7em; width:100%; border-collapse:collapse;">
+<thead><tr style="background:rgba(255,255,255,0.05);">
+<th style="padding:6px;">증상</th><th>원인</th></tr></thead>
+<tbody>
+<tr><td style="padding:5px;">405 Method Not Allowed</td><td>매핑된 메서드와 요청 메서드 불일치</td></tr>
+<tr><td style="padding:5px;">404 Not Found</td><td>URL 오타 / @PathVariable 이름 다름</td></tr>
+<tr><td style="padding:5px;">PUT 으로 보냈는데 처리 안 됨</td><td>HTML form 으로 보냈을 가능성 (form 은 PUT 안 됨)</td></tr>
+<tr><td style="padding:5px;">@RequestBody null</td><td>Content-Type: application/json 누락</td></tr>
+<tr><td style="padding:5px;">@PathVariable 못 찾음</td><td>URL의 {num} 과 매개변수 이름 불일치</td></tr>
+</tbody></table>
+</section>
+
+<section><h2>다음 차시 — v8 변환</h2>
+<div class="info-box">
+<p>★ v8 차시에서 우리는 v6 의 BoardController 를 통째로 BoardApiController 로 옮깁니다. 그때 필요한 것이 오늘 배운:</p>
+<ul style="font-size:0.85em;">
+<li>4 가지 메서드별 어노테이션 (@GetMapping ~ @DeleteMapping)</li>
+<li>RESTful URL 디자인 (리소스는 명사·복수형)</li>
+<li>POST vs PUT 의 차이</li>
+<li>같은 URL 에 여러 메서드 매핑</li>
+</ul>
+</div>
+</section>
+
+<section><h2>🔄 Before / After</h2><div class="before-after">
+<div class="before"><div class="label">전 차시 끝</div>
+<p style="font-size:0.85em;">@GetMapping, @PostMapping 정도만 안다. PUT/DELETE 는 들어본 정도.</p>
+</div>
+<div class="arrow">→</div>
+<div class="after"><div class="label">이번 차시 끝</div>
+<p style="font-size:0.85em;">RESTful URL 디자인 패턴을 안다. 4 가지 메서드의 멱등성·용도·매핑 어노테이션 모두.</p>
+</div>
+</div></section>
+
+
+      <section>
+        <h2>📊 한 그림 정리</h2>
+        <div data-infographic="restful-urls"></div>
+      </section>
+
+      <section><h2>이번 차시의 데이터 흐름</h2>
+<div class="flow-diagram"><div class="flow">
+<div class="box">URL + Method</div><span class="arrow">→</span>
+<div class="box new">@GetMapping<br>@PostMapping<br>@PutMapping<br>@DeleteMapping</div><span class="arrow">→</span>
+<div class="box">알맞은 메서드</div></div>
+<div class="caption">
+<span class="new-mark">●</span> 「URL + 메서드」 두 차원으로 분기 — 같은 URL 도 메서드만 다르면 다른 처리
+</div></div>
+</section>
+
+<section><h2>정리</h2><div class="summary"><h3>오늘 들고 가는 것</h3><ul>
+<li>4 가지 메서드: GET (조회), POST (생성), PUT (수정), DELETE (삭제)</li>
+<li>Spring 어노테이션: @GetMapping/@PostMapping/@PutMapping/@DeleteMapping</li>
+<li>RESTful URL: 명사·복수형·계층 구조</li>
+<li>POST 멱등 X / PUT·DELETE 멱등 ✓</li>
+<li>HTML form 은 GET/POST 만 — PUT/DELETE 는 fetch 로</li>
+</ul></div>
+<p style="margin-top:0.8em; font-size:0.7em; color:var(--text-muted);">
+다음: <strong>★ v8 REST 컨트롤러로 변환</strong> — v6 게시판을 통째로 REST 로.
+</p>
+</section>
+
+</div></div>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"></script>
+<script>Reveal.initialize({hash:true,slideNumber:'c/t',width:1280,height:720,margin:0.06,transition:'slide',plugins:[RevealHighlight,RevealNotes]});</script>
+<script src="../js/infographics.js?v=2"></script>
+<script src="../js/screenshot.js?v=2"></script></body></html>

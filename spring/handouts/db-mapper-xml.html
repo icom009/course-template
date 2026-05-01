@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mapper 인터페이스 ↔ XML — 핸드아웃</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/print.css"></head><body>
+<div class="container">
+
+<div class="header">
+<div class="header-left"><div class="session-num">▣ PART · DB</div>
+<h1>Mapper 인터페이스 ↔ XML</h1></div>
+<div class="header-right">Spring 기초<br>SMHRD</div></div>
+
+<div class="objectives"><h3>학습 목표</h3>
+<ul><li>Mapper 인터페이스 ↔ XML 의 핵심 개념을 안다</li><li>namespace + id 로 매칭 의 동작을 안다</li><li>Mapper 인터페이스 메서드와 XML 의 SQL 이 어떻게 짝지어지는지 안다.</li></ul></div>
+
+<h2>1. 문제</h2>
+<p>인터페이스와 XML 두 파일이 어떻게 연결되는지 마법 같다.</p>
+
+<h2>2. 새 도구</h2>
+<div class="note"><strong>namespace + id 로 매칭:</strong> XML 의 namespace = 인터페이스의 풀 클래스명. 각 메서드 = 같은 id 의 SQL.</div>
+
+<h2>3. 코드 — BoardMapper v5 형태</h2>
+<div class="diagram">// com/smhrd/mapper/BoardMapper.java
+package com.smhrd.mapper;
+
+@Mapper
+public interface BoardMapper {
+    List&lt;Board&gt; selectList();
+    Board     selectOne(int num);
+    void      insert(Board b);
+}
+
+&lt;!-- com/smhrd/mapper/BoardMapper.xml --&gt;
+&lt;mapper namespace="com.smhrd.mapper.BoardMapper"&gt;
+
+    &lt;select id="selectList" resultType="com.smhrd.domain.Board"&gt;
+        SELECT num, title, writer, content
+        FROM myboard ORDER BY num DESC
+    &lt;/select&gt;
+
+    &lt;select id="selectOne"
+            parameterType="int"
+            resultType="com.smhrd.domain.Board"&gt;
+        SELECT num, title, writer, content
+        FROM myboard WHERE num = #{num}
+    &lt;/select&gt;
+
+    &lt;insert id="insert" parameterType="com.smhrd.domain.Board"&gt;
+        INSERT INTO myboard(title, writer, content)
+        VALUES(#{title}, #{writer}, #{content})
+    &lt;/insert&gt;
+&lt;/mapper&gt;</div>
+
+<h2>4. 정리</h2>
+<ul><li>namespace = 인터페이스의 풀 클래스명</li>
+<li>id = 메서드 이름과 정확히 일치</li>
+<li>둘 중 하나만 어긋나면 동작 안 함</li></ul>
+
+<h2>5. Before / After</h2>
+<div class="before-after">
+<div class="before"><div class="label">전 차시</div><p>인터페이스와 XML 두 파일이 어떻게 연결되는지 마법 같다.</p></div>
+<div class="after"><div class="label">이번 차시</div><p>Mapper 인터페이스 메서드와 XML 의 SQL 이 어떻게 짝지어지는지 안다.</p></div>
+</div>
+
+<div class="checklist"><h3>학습 확인 체크리스트</h3>
+<ul><li>namespace = 인터페이스의 풀 클래스명</li>
+<li>id = 메서드 이름과 정확히 일치</li>
+<li>둘 중 하나만 어긋나면 동작 안 함</li></ul></div>
+
+<div class="nav"><a href="db-hikari-pool.html">&larr; 이전</a><a href="../index.html">메인으로</a><a href="db-camel-snake-trap.html">다음 &rarr;</a></div>
+</div></body></html>

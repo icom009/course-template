@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>깔끔한 로그인 — 실습</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/lab.css"></head><body>
+<div class="container">
+
+<div class="header"><div class="version-badge">v4</div><div class="badge">★ LAB · BOARD</div>
+<h1>깔끔한 로그인</h1><p class="subtitle">회원과 게시판 — 실습</p></div>
+
+<div class="minimap"><div class="minimap-title">📍 지금 어디를 만지고 있나요?</div><div class="flow">
+<div class="box">브라우저</div><span class="arrow">→</span>
+<div class="box active">회원과 게시판</div><span class="arrow">→</span>
+<div class="box">DB</div></div></div>
+
+<div class="prerequisites"><h3>사전 준비</h3>
+<ul><li>전 차시 완료</li><li>Eclipse + Tomcat 동작 환경</li></ul></div>
+
+<div class="box box-info"><div class="box-title">이번 실습의 목표</div>
+<p>로그인 가드를 인터셉터로 자동화. 헤더는 공통 JSP 로 분리.</p></div>
+
+<div class="step"><div class="step-header"><div class="step-num">1</div><div class="step-title">스키마 마이그레이션 — nick 컬럼 추가</div></div>
+<pre><code>-- 표시용 닉네임 컬럼 추가
+ALTER TABLE mymember ADD COLUMN nick VARCHAR(30) AFTER pwd;
+
+-- 기존 회원에게 임시 nick 채우기
+UPDATE mymember SET nick = id WHERE nick IS NULL;</code></pre>
+<pre><code>// com.smhrd.domain.Member — 필드 추가
+@Data @AllArgsConstructor @NoArgsConstructor
+public class Member {
+    private String id;
+    private String pwd;
+    private String nick;     // ← 추가
+}</code></pre>
+<div class="checkpoint"><div class="check-title">CHECKPOINT</div>
+<ul><li><code>DESC mymember;</code> 에 <code>nick varchar(30)</code> 이 보이는가?</li></ul></div></div>
+
+<div class="step"><div class="step-header"><div class="step-num">2</div><div class="step-title">인터셉터 + 공통 레이아웃</div></div>
+<pre><code>// com.smhrd.interceptor.LoginInterceptor
+public class LoginInterceptor implements HandlerInterceptor {
+    @Override
+    public boolean preHandle(HttpServletRequest req, HttpServletResponse resp, Object h)
+            throws Exception {
+        HttpSession session = req.getSession();
+        if (session.getAttribute("loginUser") == null) {
+            resp.sendRedirect(req.getContextPath() + "/login");
+            return false;     // 컨트롤러 호출 안 함
+        }
+        return true;
+    }
+}
+
+&lt;!-- servlet-context.xml --&gt;
+&lt;interceptors&gt;
+    &lt;interceptor&gt;
+        &lt;mapping path="/board/write"/&gt;
+        &lt;mapping path="/mypage/**"/&gt;
+        &lt;beans:bean class="com.smhrd.interceptor.LoginInterceptor"/&gt;
+    &lt;/interceptor&gt;
+&lt;/interceptors&gt;
+
+&lt;!-- header.jsp (공통) --&gt;
+&lt;c:choose&gt;
+    &lt;c:when test="${not empty sessionScope.loginUser}"&gt;
+        ${sessionScope.loginUser.nick}님 |
+        &lt;a href="/logout"&gt;로그아웃&lt;/a&gt;
+    &lt;/c:when&gt;
+    &lt;c:otherwise&gt;
+        &lt;a href="/login"&gt;로그인&lt;/a&gt;
+    &lt;/c:otherwise&gt;
+&lt;/c:choose&gt;
+
+&lt;!-- board/list.jsp --&gt;
+&lt;%@ include file="/WEB-INF/views/header.jsp" %&gt;
+... 본문 ...</code></pre>
+<div class="checkpoint"><div class="check-title">CHECKPOINT</div>
+<ul><li>코드를 작성한 뒤 빨간 줄(컴파일 오류)이 없는가?</li></ul></div></div>
+
+<div class="step"><div class="step-header"><div class="step-num">3</div><div class="step-title">실행 + 결과 확인</div></div>
+<p>로그아웃 상태에서 보호 URL 직접 접근 → 자동 리다이렉트 확인.</p>
+<div class="checkpoint"><div class="check-title">CHECKPOINT</div>
+<ul><li>비로그인 상태로 <code>/board/write</code> 직접 접속 시 — F12 Network 응답 Status <strong>302</strong>, Location 이 <code>/login</code> 인가?</li><li>로그인 후 헤더에 <code>${nick}님</code> 이 표시되는가?</li></ul></div></div>
+
+<div class="checklist"><h3>실습 완료 체크리스트</h3>
+<div class="check-item"><input type="checkbox"> Interceptor = 컨트롤러 진입 전 가드</div>
+<div class="check-item"><input type="checkbox"> JSP include = 공통 레이아웃</div>
+<div class="check-item"><input type="checkbox"> sessionScope 로 JSP 에서 세션 접근</div>
+<div class="check-item"><input type="checkbox"> v4 — 깔끔한 코드</div></div>
+
+<div class="nav"><a href="auth-v3-secure.html">&larr; 이전</a><a href="../index.html">메인으로</a><a href="board-v5-minimal.html">다음 &rarr;</a></div>
+</div><script src="../js/screenshot.js?v=2"></script></body></html>

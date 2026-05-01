@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>@RestController | Spring 기초</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/night.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/custom.css"></head><body>
+<div class="reveal"><div class="slides">
+
+<section><div class="session-title">
+<span class="session-glyph">◆ TURNING · REST</span>
+<h1>@RestController</h1>
+<p class="subtitle">View 가 빠진 흐름도</p>
+</div></section>
+
+<section><h2>학습 목표</h2><div class="objectives"><ul>
+<li class="fragment fade-up"><span class="keyword">@Controller</span> 와 <span class="keyword">@RestController</span> 의 차이를 안다</li>
+<li class="fragment fade-up"><span class="keyword">@ResponseBody</span> 가 어떤 마법을 하는지 이해한다</li>
+<li class="fragment fade-up">자바 객체가 <span class="keyword">JSON</span> 으로 자동 변환되는 과정을 안다</li>
+<li class="fragment fade-up">REST API 를 만드는 토대를 갖춘다</li>
+</ul></div></section>
+
+<section><h2>⚠️ 지금까지의 한계</h2>
+<div class="pain-point">
+<div class="pain-title">@Controller 의 흐름</div>
+<p>지금까지 우리가 만든 컨트롤러는 다음 패턴이었습니다:</p>
+<pre><code data-trim>
+@Controller
+public class BoardController {
+    @GetMapping("/board/view")
+    public String view(@RequestParam int num, Model model) {
+        model.addAttribute("board", service.selectOne(num));
+        return "board/view";    // → JSP 로 그림
+    }
+}
+</code></pre>
+<p style="margin-top:0.4em;">결과는 항상 「<strong>HTML 페이지</strong>」 — JSP 가 그려준 화면.</p>
+<p>문제는 — 모바일 앱이 우리 서비스를 쓰려면? JSON 만 받고 싶을 때는? 다른 시스템과 연동하려면?</p>
+</div>
+</section>
+
+<section><h2>🛠️ @RestController 의 등장</h2>
+<div class="new-tool">
+<div class="tool-title">@RestController = @Controller + @ResponseBody</div>
+<p>모든 메서드의 반환값을 <strong>JSON 으로 자동 변환</strong>해서 응답 바디로 보내는 컨트롤러. View 단계가 흐름에서 빠집니다.</p>
+</div>
+
+<div class="diagram">
+   @Controller (기존)
+       Controller → Model → ViewResolver → JSP → HTML 응답
+
+   @RestController (REST)
+       Controller → 객체 반환 → Jackson → JSON 응답
+                                          (View 없음)
+</div>
+</section>
+
+<section><h2>한 글자 차이의 큰 변화 — 기존 @Controller</h2>
+<pre><code class="language-java" data-trim>
+@Controller
+public class BoardController {
+
+    @GetMapping("/board/view")
+    public String view(
+        @RequestParam int num,
+        Model model
+    ) {
+        Board b = service.selectOne(num);
+        model.addAttribute("board", b);
+        return "board/view";
+        //     ↑ JSP ViewName
+    }
+}
+
+// → 응답: HTML 페이지 ( /board/view?num=3 )
+</code></pre>
+</section>
+
+<section><h2>한 글자 차이의 큰 변화 — 새 @RestController</h2>
+<pre><code class="language-java" data-trim>
+@RestController
+public class BoardApiController {
+
+    @GetMapping("/api/boards/{num}")
+    public Board view(
+        @PathVariable int num
+    ) {
+        return service.selectOne(num);
+        //     ↑ 객체 그대로 반환
+    }
+}
+
+// → 응답: JSON
+</code></pre>
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 <code>@Controller</code> → <code>@RestController</code>, <code>Model</code> 매개변수와 ViewName 반환이 사라지고 <strong>도메인 객체를 그대로 반환</strong>.
+</p>
+</section>
+
+<section><h2>JSON 응답의 모습</h2>
+<div class="diagram">
+   클라이언트 GET /api/boards/3
+        ↓
+   Controller.view(3) 실행
+        ↓
+   service.selectOne(3) 호출
+        ↓
+   Board {
+       num: 3,
+       title: "첫 글",
+       content: "안녕하세요",
+       writer: "hong",
+       createdAt: 2024-...
+   }
+        ↓ Jackson 자동 변환
+   {
+       "num": 3,
+       "title": "첫 글",
+       "content": "안녕하세요",
+       "writer": "hong",
+       "createdAt": "2024-08-15T10:30:00"
+   }
+        ↓
+   응답 Content-Type: application/json
+</div>
+</section>
+
+<section><h2>Jackson — JSON 자동 변환의 마법사</h2>
+<div class="info-box">
+<p><strong>Jackson</strong> 은 자바 진영의 표준 JSON 라이브러리. Spring MVC 의 기본 의존성에 포함되어 있어서 별도 설정 없이 사용 가능합니다.</p>
+<ul style="font-size:0.85em;">
+<li>자바 객체 → JSON 문자열 (Serialize)</li>
+<li>JSON 문자열 → 자바 객체 (Deserialize)</li>
+<li>List·Map·중첩 객체도 자동</li>
+<li>날짜·시간 형식 등 옵션 가능</li>
+</ul>
+</div>
+</section>
+
+<section><h2>@ResponseBody — @RestController 의 진짜 정체</h2>
+<pre><code class="language-java" data-trim>
+// @RestController 는 사실 다음 두 어노테이션의 합집합
+@Controller
+@ResponseBody
+public class BoardApiController { ... }
+
+// 위는 아래와 동일
+@RestController
+public class BoardApiController { ... }
+</code></pre>
+
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 <code>@ResponseBody</code> = 「반환값을 ViewName 으로 해석하지 말고, 응답 바디에 직접 넣어라」.
+</p>
+</section>
+
+<section><h2>@ResponseBody — 메서드 단위 혼용</h2>
+<pre><code class="language-java" data-trim>
+// 메서드 단위로도 가능 — 일부만 REST 스타일
+@Controller
+public class MixedController {
+
+    @GetMapping("/page")
+    public String page() { return "page"; }   // JSP
+
+    @GetMapping("/api/data")
+    @ResponseBody
+    public Data data() { return service.get(); }  // JSON
+}
+</code></pre>
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 한 컨트롤러 안에서도 메서드별로 화면용·API 용을 섞어 쓸 수 있습니다.
+</p>
+</section>
+
+<section><h2>JSON 받기 — @RequestBody</h2>
+<pre><code class="language-java" data-trim>
+@PostMapping("/api/boards")
+public Board create(@RequestBody Board b) {
+    //               ↑ JSON → 자바 객체 자동 변환
+    return service.insert(b);
+}
+</code></pre>
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 <code>@RequestBody</code> 는 요청 바디의 JSON 을 자바 객체로 거꾸로 변환합니다. <code>@ResponseBody</code> 의 정확한 짝.
+</p>
+</section>
+
+<section><h2>@RequestBody — 변환 흐름</h2>
+<div class="diagram">
+   클라이언트 fetch:
+       fetch('/api/boards', {
+           method: 'POST',
+           headers: {'Content-Type': 'application/json'},
+           body: JSON.stringify({
+               title: '새 글',
+               content: '안녕하세요'
+           })
+       });
+
+   요청 바디 (HTTP):
+       { "title": "새 글", "content": "안녕하세요" }
+        ↓ Jackson 거꾸로 변환
+   매개변수:
+       Board b {
+           title = "새 글",
+           content = "안녕하세요",
+           num = 0, writer = null  (안 보낸 필드는 기본값)
+       }
+</div>
+</section>
+
+<section><h2>@RequestBody 의 필수 조건</h2>
+<div class="warning-box">
+<div class="box-title">클라이언트 측</div>
+<ul style="font-size:0.85em;">
+<li>요청 헤더에 <code>Content-Type: application/json</code></li>
+<li>요청 바디에 JSON 형식 문자열</li>
+<li>일반 form 제출은 <code>@RequestBody</code> 매핑 안 됨 (form encoded ↔ JSON 다름)</li>
+</ul>
+</div>
+
+<div class="warning-box" style="margin-top:0.4em;">
+<div class="box-title">서버 측</div>
+<ul style="font-size:0.85em;">
+<li>VO 에 기본 생성자 필요 (Jackson 이 새 객체를 만들기 위해)</li>
+<li>setter 또는 Lombok @Data 필요</li>
+<li>JSON 의 키 이름과 자바 필드 이름이 일치 (Jackson 자동 매핑)</li>
+</ul>
+</div>
+</section>
+
+<section><h2>응답·요청 정리</h2>
+<table style="font-size:0.75em; width:100%; border-collapse:collapse;">
+<thead><tr style="background:rgba(255,255,255,0.05);">
+<th style="padding:6px;">방향</th><th>어노테이션</th><th>변환</th></tr></thead>
+<tbody>
+<tr><td style="padding:5px;">서버 → 클라이언트<br>(응답)</td><td><code>@ResponseBody</code><br>(또는 @RestController 자동)</td><td>자바 객체 → JSON</td></tr>
+<tr><td style="padding:5px;">클라이언트 → 서버<br>(요청 바디)</td><td><code>@RequestBody</code></td><td>JSON → 자바 객체</td></tr>
+</tbody></table>
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 두 어노테이션이 짝. <strong>@RestController</strong> 안에서 매개변수에 <strong>@RequestBody</strong> 만 따로 붙이면 됨.
+</p>
+</section>
+
+<section><h2>전체 컨트롤러 예시 — 조회</h2>
+<pre><code class="language-java" data-trim>
+@RestController
+@RequestMapping("/api/boards")
+public class BoardApiController {
+
+    @Autowired
+    private BoardService service;
+
+    @GetMapping
+    public List&lt;Board&gt; list() {            // JSON 배열 응답
+        return service.selectList();
+    }
+
+    @GetMapping("/{num}")
+    public Board view(@PathVariable int num) {  // JSON 객체 응답
+        return service.selectOne(num);
+    }
+}
+</code></pre>
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 GET 두 개. 반환 타입이 곧 JSON 모양 (배열 ↔ 객체).
+</p>
+</section>
+
+<section><h2>전체 컨트롤러 예시 — 등록·수정·삭제</h2>
+<pre><code class="language-java" data-trim>
+    @PostMapping
+    public Board create(@RequestBody Board b) {  // JSON 받음
+        service.insert(b);
+        return b;                                 // JSON 응답
+    }
+
+    @PutMapping("/{num}")
+    public Board update(@PathVariable int num,
+                        @RequestBody Board b) {
+        b.setNum(num);
+        return service.update(b);
+    }
+
+    @DeleteMapping("/{num}")
+    public void delete(@PathVariable int num) {
+        service.delete(num);
+    }
+}
+</code></pre>
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 변경 메서드 3종. <code>@RequestBody</code> 로 JSON 을 받아서 객체로 응답.
+</p>
+</section>
+
+<section><h2>흐름도 — View 가 사라진다</h2>
+<div class="diagram">
+   @Controller 흐름
+   ─────────────────
+   요청
+     ↓
+   Controller
+     ↓ Service 호출
+     ↓ Service 결과를 Model 에 담기
+     ↓ return ViewName
+     ↓
+   ViewResolver → JSP → HTML
+     ↓
+   응답 (HTML)
+
+   @RestController 흐름
+   ──────────────────
+   요청
+     ↓
+   Controller
+     ↓ Service 호출
+     ↓ return 객체
+     ↓
+   Jackson → JSON
+     ↓
+   응답 (JSON)
+
+   ※ Model · ViewResolver · JSP 가 흐름에서 빠짐
+</div>
+</section>
+
+<section><h2>브라우저로 테스트</h2>
+<ol style="font-size:0.9em;">
+<li class="fragment">Tomcat 시작</li>
+<li class="fragment">크롬 주소창: <code>http://localhost:8080/.../api/boards</code></li>
+<li class="fragment">화면에 JSON 배열 그대로 출력
+<pre><code data-trim>
+[{"num":1,"title":"첫 글",...}, {"num":2,...}]
+</code></pre></li>
+<li class="fragment">F12 → Network → 응답 헤더 확인:
+<pre><code data-trim>Content-Type: application/json;charset=UTF-8</code></pre></li>
+</ol>
+</section>
+
+<section><h2>POST 테스트는 어떻게?</h2>
+<div class="info-box">
+<p>브라우저 주소창은 GET 만 가능. POST 테스트는 다음 방법:</p>
+<ul style="font-size:0.85em;">
+<li><strong>F12 Console 에서 fetch</strong>:
+<pre><code data-trim>fetch('/api/boards', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({title: '테스트', content: '안녕'})
+}).then(r =&gt; r.json()).then(console.log);</code></pre></li>
+<li><strong>Postman</strong> — REST API 테스트 표준 도구</li>
+<li><strong>curl</strong> 명령:
+<pre><code data-trim>curl -X POST -H "Content-Type: application/json" \
+  -d '{"title":"테스트","content":"안녕"}' \
+  http://localhost:8080/.../api/boards</code></pre></li>
+</ul>
+</div>
+</section>
+
+<section><h2>@Controller 와 @RestController 공존</h2>
+<pre><code class="language-java" data-trim>
+// 사람 보기 — JSP 화면
+@Controller
+@RequestMapping("/board")
+public class BoardController {
+    @GetMapping("/list")
+    public String list(Model m) {
+        m.addAttribute("boards", service.selectList());
+        return "board/list";
+    }
+}
+
+// 다른 시스템 / 모바일 앱이 사용 — JSON
+@RestController
+@RequestMapping("/api/boards")
+public class BoardApiController {
+    @GetMapping
+    public List&lt;Board&gt; list() {
+        return service.selectList();
+    }
+}
+</code></pre>
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 <strong>같은 Service</strong> 를 두 컨트롤러가 호출. 데이터는 같고, 응답 형식만 다름.
+</p>
+</section>
+
+<section><h2>Jackson 의 자동 변환 규칙</h2>
+<table style="font-size:0.7em; width:100%; border-collapse:collapse;">
+<thead><tr style="background:rgba(255,255,255,0.05);">
+<th style="padding:6px;">자바 타입</th><th>JSON 표현</th></tr></thead>
+<tbody>
+<tr><td style="padding:5px;">String</td><td>"문자열"</td></tr>
+<tr><td style="padding:5px;">int / long / double</td><td>숫자</td></tr>
+<tr><td style="padding:5px;">boolean</td><td>true / false</td></tr>
+<tr><td style="padding:5px;">null</td><td>null</td></tr>
+<tr><td style="padding:5px;">List · 배열</td><td>[ ... ]</td></tr>
+<tr><td style="padding:5px;">Map · 객체</td><td>{ "key": value }</td></tr>
+<tr><td style="padding:5px;">LocalDateTime</td><td>"2024-08-15T10:30:00" (ISO 8601)</td></tr>
+</tbody></table>
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 옵션으로 형식 변경 가능. 본 과정은 기본값으로 충분.
+</p>
+</section>
+
+<section><h2>주의 — Jackson 함정</h2>
+<div class="warning-box">
+<div class="box-title">민감 정보 노출</div>
+<p style="font-size:0.85em;">VO 에 password 필드가 있고 그대로 JSON 변환 → 비밀번호 응답에 포함됨!</p>
+<pre><code data-trim>
+public class Member {
+    private String id;
+    @JsonIgnore     // ⭐ 이 필드는 JSON 에 포함 안 함
+    private String pwd;
+    private String nick;
+}
+</code></pre>
+</div>
+
+<div class="warning-box" style="margin-top:0.4em;">
+<div class="box-title">순환 참조</div>
+<p style="font-size:0.85em;">Board 가 Member 를 참조하고, Member 가 Board 의 List 를 참조하면 → 무한 루프 → StackOverflow.<br>해결: <code>@JsonManagedReference</code> + <code>@JsonBackReference</code> 또는 DTO 분리.</p>
+</div>
+</section>
+
+<section><h2>RESTful URL 디자인</h2>
+<table style="font-size:0.7em; width:100%; border-collapse:collapse;">
+<thead><tr style="background:rgba(255,255,255,0.05);">
+<th style="padding:6px;">동작</th><th>전통 (옛 스타일)</th><th>RESTful</th></tr></thead>
+<tbody>
+<tr><td style="padding:5px;">목록</td><td>GET /board/list</td><td>GET /api/boards</td></tr>
+<tr><td style="padding:5px;">상세</td><td>GET /board/view?num=3</td><td>GET /api/boards/3</td></tr>
+<tr><td style="padding:5px;">작성</td><td>POST /board/write</td><td>POST /api/boards</td></tr>
+<tr><td style="padding:5px;">수정</td><td>POST /board/update</td><td>PUT /api/boards/3</td></tr>
+<tr><td style="padding:5px;">삭제</td><td>POST /board/delete</td><td>DELETE /api/boards/3</td></tr>
+</tbody></table>
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 RESTful = 「리소스(boards)」 를 URL 로, 「동작」 을 HTTP 메서드로. 다음 차시에서 자세히.
+</p>
+</section>
+
+<section><h2>실험 — 직접 JSON 응답 보기</h2>
+<ol style="font-size:0.9em;">
+<li class="fragment">기존 BoardController 를 BoardApiController 로 복사</li>
+<li class="fragment">@Controller → @RestController 변경</li>
+<li class="fragment">@RequestMapping("/board") → @RequestMapping("/api/boards")</li>
+<li class="fragment">return ViewName → return 객체 (Model 사용 X)</li>
+<li class="fragment">브라우저에서 새 URL 접속 — JSON 응답 확인</li>
+<li class="fragment">F12 Network 의 Response 탭에서 정확한 JSON 모양 확인</li>
+</ol>
+</section>
+
+<section><h2>다음 차시 미리보기</h2>
+<div class="info-box">
+<ul style="font-size:0.85em;">
+<li><strong>HTTP 메서드 어노테이션</strong> — Get/Post/Put/Delete Mapping 자세히</li>
+<li><strong>★ v8 REST 컨트롤러로 변환</strong> — v6 게시판을 통째로 REST 로</li>
+<li><strong>★ v9 비동기 댓글</strong> — JS 가 우리 REST API 를 fetch 로 호출</li>
+<li><strong>★ v10 자잘한 비동기 + 첨부파일</strong></li>
+<li><strong>★ v∞ 디버깅 워크숍</strong> — 4 주 학습의 마무리</li>
+</ul>
+</div>
+</section>
+
+<section><h2>🔄 Before / After</h2><div class="before-after">
+<div class="before"><div class="label">전 차시 끝</div>
+<p style="font-size:0.85em;">Ajax / JSON 의 개념은 알았다. 서버 쪽 구현은 막연.</p>
+</div>
+<div class="arrow">→</div>
+<div class="after"><div class="label">이번 차시 끝</div>
+<p style="font-size:0.85em;">@RestController 한 줄로 JSON API 를 만들 수 있다. 응답·요청 모두 JSON 자동 변환.</p>
+</div>
+</div></section>
+
+
+      <section>
+        <h2>📊 한 그림 정리</h2>
+        <div data-infographic="json-conversion"></div>
+      </section>
+
+      <section><h2>이번 차시의 데이터 흐름</h2>
+<div class="flow-diagram"><div class="flow">
+<div class="box">클라이언트</div><span class="arrow">→</span>
+<div class="box new">@RestController</div><span class="arrow">→</span>
+<div class="box">Service</div><span class="arrow">→</span>
+<div class="box">DB</div><span class="arrow">↑</span>
+<div class="box new">Jackson<br>JSON 변환</div><span class="arrow">→</span>
+<div class="box">JSON 응답</div></div>
+<div class="caption">
+<span class="new-mark">●</span> View · ViewResolver 가 사라지고 Jackson 박스가 자리 — REST 의 본질
+</div></div>
+</section>
+
+<section><h2>정리</h2><div class="summary"><h3>오늘 들고 가는 것</h3><ul>
+<li>@RestController = @Controller + @ResponseBody</li>
+<li>객체 반환 → Jackson 이 자동 JSON 변환</li>
+<li>@RequestBody = JSON → 자바 객체 자동 변환</li>
+<li>View · ViewResolver · JSP 가 흐름에서 빠짐</li>
+<li>같은 Service 를 두 컨트롤러가 공유 가능</li>
+</ul></div>
+<p style="margin-top:0.8em; font-size:0.7em; color:var(--text-muted);">
+다음: <strong>HTTP 메서드 어노테이션</strong> — RESTful URL 디자인.
+</p>
+</section>
+
+</div></div>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"></script>
+<script>Reveal.initialize({hash:true,slideNumber:'c/t',width:1280,height:720,margin:0.06,transition:'slide',plugins:[RevealHighlight,RevealNotes]});</script>
+<script src="../js/infographics.js?v=2"></script>
+<script src="../js/screenshot.js?v=2"></script></body></html>

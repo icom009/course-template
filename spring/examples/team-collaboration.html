@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>팀 분업 시뮬레이션 — 읽기 자료</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/example.css"></head><body>
+<div class="container">
+
+<div class="header"><div class="session-num">◆ PART · TEAM</div>
+<h1>팀 분업 시뮬레이션</h1><p class="subtitle">세 트랙이 「같은 이름」 으로 만나는 자리 — 읽기 자료</p></div>
+
+<div class="minimap"><div class="minimap-title">📍 지금 어디를 만지고 있나요?</div><div class="flow">
+<div class="box">회원과 게시판</div><span class="arrow">→</span>
+<div class="box active">팀 분업 (전환점)</div><span class="arrow">→</span>
+<div class="box">REST API</div></div></div>
+
+<div class="terms"><h3>핵심 용어</h3>
+<div class="term-item"><span class="term-name">요구사항정의서</span><span class="term-desc">기능이 어떤 데이터를 다룰지 처음 적는 문서. 회원가입이라면 「id, pwd, nick」 이 여기서 정해진다.</span></div>
+<div class="term-item"><span class="term-name">유스케이스</span><span class="term-desc">사용자가 어떤 입력을 하고 어떤 결과를 받는지 한 줄 시나리오.</span></div>
+<div class="term-item"><span class="term-name">트랙(Track)</span><span class="term-desc">팀 안에서 한 사람이 맡는 작업 흐름. Front / Back / DB 세 갈래.</span></div>
+<div class="term-item"><span class="term-name">데이터 약속</span><span class="term-desc">세 트랙이 공유하는 「같은 이름」. 폼 name = DTO 필드 = 컬럼명.</span></div>
+<div class="term-item"><span class="term-name">자동 바인딩</span><span class="term-desc">Spring 이 폼 입력값을 DTO 의 같은 이름 필드에 채워주는 기능.</span></div>
+<div class="term-item"><span class="term-name">합치기(Integration)</span><span class="term-desc">세 트랙의 산출물을 처음 한 줄로 연결하는 시점.</span></div>
+</div>
+
+<h2>0. 도입 — 회원가입은 모든 프로젝트의 공통 기능</h2>
+<p>쇼핑몰, SNS, 게시판, 예약 시스템, 배달앱, 동영상 사이트 — 어떤 서비스든 처음 만나는 화면은 거의 같습니다. 회원가입 폼. 입력칸 몇 개와 가입 버튼 하나. 수많은 프로젝트가 같은 모양을 다시 만들고 있고, 그래서 이 흔한 화면을 <strong>한 번 제대로 들여다 보면 다음 모든 프로젝트가 쉬워집니다.</strong></p>
+<p>이미 v2~v4 에서 회원가입을 따라하기로 한 번 완성했습니다. 코드는 동작합니다. 오늘은 그 코드가 「어떻게 만들어지는가」 를 위에서 한 번 내려다봅니다 — 실제 팀 프로젝트라면 이 화면 하나가 어떤 단계를 거쳐 나오는가?</p>
+
+<h2>1. 프로젝트가 굴러가는 단계 — 기획 → 구현</h2>
+<p>실제 팀 프로젝트는 코드 짜기 전에 다음 단계를 모두 지납니다. 우리는 한 차시에 압축해서 한번 훑어봅니다.</p>
+<pre><code>① 기획         ② 요구사항          ③ 유스케이스       ④ 화면 스케치     ⑤ 구현
+──────         ─────────           ──────────         ───────────       ──────
+뭘 만들지     무슨 데이터를         사용자가 어떻게     화면 어떻게        Front
+   결정         저장할지              쓸지 한 줄          그릴지            Back
+                                                                            DB
+   ↓               ↓                    ↓                  ↓                ↓
+"회원가입을      ★ id, pwd, nick     "폼 입력 →           입력 3칸          폼 / 컨트롤러
+  만들자"     ← 데이터 약속          가입 버튼 →          + 버튼 1개        / 테이블
+                처음 정해짐!          redirect"</code></pre>
+<table style="width:100%; border-collapse:collapse; margin-top:0.5em;">
+<thead><tr style="background:#1f2937; color:#fff;">
+<th style="padding:8px; text-align:left;">단계</th>
+<th style="padding:8px; text-align:left;">하는 일</th>
+<th style="padding:8px; text-align:left;">회원가입 예</th>
+</tr></thead>
+<tbody>
+<tr><td style="padding:8px; border-bottom:1px solid #333;"><strong>① 기획</strong></td>
+<td style="padding:8px; border-bottom:1px solid #333;">기능을 만들기로 정함</td>
+<td style="padding:8px; border-bottom:1px solid #333;">"회원가입 기능을 만들자"</td></tr>
+<tr><td style="padding:8px; border-bottom:1px solid #333; background:rgba(251,191,36,0.08);"><strong>② 요구사항정의서</strong></td>
+<td style="padding:8px; border-bottom:1px solid #333; background:rgba(251,191,36,0.08);">어떤 데이터를 저장할까</td>
+<td style="padding:8px; border-bottom:1px solid #333; background:rgba(251,191,36,0.08);"><strong>id, pwd, nick</strong> ← 데이터 약속이 처음 정해진다</td></tr>
+<tr><td style="padding:8px; border-bottom:1px solid #333;"><strong>③ 유스케이스</strong></td>
+<td style="padding:8px; border-bottom:1px solid #333;">사용자가 어떻게 쓰는지 한 줄</td>
+<td style="padding:8px; border-bottom:1px solid #333;">"폼에 3칸 입력 → 가입 버튼 → 로그인 페이지로 이동"</td></tr>
+<tr><td style="padding:8px; border-bottom:1px solid #333;"><strong>④ 화면 스케치</strong></td>
+<td style="padding:8px; border-bottom:1px solid #333;">디자이너가 그림으로</td>
+<td style="padding:8px; border-bottom:1px solid #333;">입력칸 3개 + 버튼 1개</td></tr>
+<tr><td style="padding:8px;"><strong>⑤ 구현</strong></td>
+<td style="padding:8px;">Front + Back + DB</td>
+<td style="padding:8px;">JSP 폼 / Controller / mymember 테이블</td></tr>
+</tbody></table>
+<p style="margin-top:0.6em;"><strong>핵심: ② 단계에서 정해진 「id, pwd, nick」 이라는 약속은 ⑤ 구현 단계의 모든 트랙(Front·Back·DB)을 통과합니다.</strong> 이 한 줄기 흐름이 보이는 것이 오늘 차시의 첫 목표입니다.</p>
+
+<h2>2. 문제 — 혼자 다 짠 코드, 팀에선 어떻게 나누지?</h2>
+<div class="pain-point"><div class="pain-title">지금까지의 답답함</div>
+<p>회원가입 화면, Controller, Service, Mapper, MySQL 테이블 — 모두 한 사람 손으로 짰습니다. 그런데 실제 팀 프로젝트는 보통 3~5 명이 같이 합니다. 누가 무엇을 맡고, <strong>어떻게 동시에 일할 수 있는지</strong> 가 막막합니다.</p>
+<p>상식적으로는 「DB → Backend → Frontend」 순서로 차례차례 짜야 할 것 같습니다. 그런데 현실 팀은 같은 시간에 세 사람이 따로 일합니다. 화면 디자이너는 서버가 없는데도 폼을 만들고, Backend 는 DB 가 비어있는데도 Controller 를 짭니다.</p>
+</div>
+
+<h2>3. 새 도구 — 「같은 이름」 한 가지 약속</h2>
+<div class="new-tool"><div class="tool-title">설계 회의 첫 30 분</div>
+<p>팀 프로젝트의 첫 회의에서 결정해야 할 단 한 가지: <strong>이 데이터를 어떤 이름으로 부를까?</strong> 세 사람이 같은 양식의 종이를 들고 시작하는 것과 같습니다. 칸 이름이 같으면 누가 어떤 칸을 채워와도 자연스럽게 합쳐집니다.</p>
+</div>
+
+<h3>세 트랙의 출현 위치</h3>
+<table style="width:100%; border-collapse:collapse; margin-top:0.5em;">
+<thead><tr style="background:#1f2937; color:#fff;">
+<th style="padding:8px; text-align:left;">트랙</th>
+<th style="padding:8px; text-align:left;">어디에 등장</th>
+<th style="padding:8px; text-align:left;">예시</th>
+</tr></thead>
+<tbody>
+<tr><td style="padding:8px; border-bottom:1px solid #333;"><strong>Frontend</strong></td>
+<td style="padding:8px; border-bottom:1px solid #333;"><code>&lt;input name="..."&gt;</code></td>
+<td style="padding:8px; border-bottom:1px solid #333;"><code>name="id"</code>, <code>name="pwd"</code>, <code>name="nick"</code></td></tr>
+<tr><td style="padding:8px; border-bottom:1px solid #333;"><strong>Backend</strong></td>
+<td style="padding:8px; border-bottom:1px solid #333;">DTO 필드명</td>
+<td style="padding:8px; border-bottom:1px solid #333;"><code>private String id;</code> · <code>private String pwd;</code> · <code>private String nick;</code></td></tr>
+<tr><td style="padding:8px;"><strong>DB</strong></td>
+<td style="padding:8px;">테이블 컬럼명</td>
+<td style="padding:8px;"><code>mymember(id, pwd, nick)</code></td></tr>
+</tbody></table>
+
+<h2>4. 코드 — 세 트랙 산출물</h2>
+
+<h3>(1) Frontend 트랙 — 디자인 폼</h3>
+<pre><code>&lt;!-- signup.html — Frontend 멤버가 짠 산출물 --&gt;
+&lt;form action="/signup" method="post" class="signup-form"&gt;
+  &lt;h2&gt;회원가입&lt;/h2&gt;
+  &lt;input name="id"   placeholder="아이디"&gt;
+  &lt;input name="pwd"  type="password" placeholder="비밀번호"&gt;
+  &lt;input name="nick" placeholder="닉네임"&gt;
+  &lt;button&gt;가입하기&lt;/button&gt;
+&lt;/form&gt;
+
+&lt;style&gt;
+  .signup-form { max-width: 360px; padding: 24px;
+                 border-radius: 12px; background: #fafafa; }
+  .signup-form input { display:block; width:100%; padding:10px;
+                       margin:8px 0; border:1px solid #ddd; }
+  .signup-form button { width:100%; padding:12px;
+                        background:#3b82f6; color:#fff; border:0; }
+&lt;/style&gt;</code></pre>
+<p>Frontend 멤버는 <strong>디자인과 UX 에 집중</strong>합니다. 서버가 한 줄도 없어도 만들 수 있습니다. 한 가지만 약속을 지키면 됩니다 — <code>name</code> 속성을 팀이 정한 이름으로.</p>
+
+<h3>(2) Backend 트랙 — DTO + Controller + Service + Mapper</h3>
+<pre><code>// com/smhrd/domain/Member.java
+package com.smhrd.domain;
+import lombok.*;
+
+@Data @AllArgsConstructor @NoArgsConstructor
+public class Member {
+    private String id;     // ← 약속의 첫 칸
+    private String pwd;    // ← 약속의 둘째 칸
+    private String nick;   // ← 약속의 셋째 칸
+}
+
+// com/smhrd/controller/SignupController.java
+@Controller
+public class SignupController {
+    @Autowired private MemberService service;
+
+    @PostMapping("/signup")
+    public String signup(Member m) {       // 자동 바인딩
+        System.out.println("받은 데이터: " + m);
+        service.signup(m);
+        return "redirect:/login";
+    }
+}
+
+// com/smhrd/mapper/MemberMapper.xml
+&lt;insert id="insert" parameterType="com.smhrd.domain.Member"&gt;
+  INSERT INTO mymember (id, pwd, nick)
+  VALUES (#{id}, #{pwd}, #{nick})
+&lt;/insert&gt;</code></pre>
+<p>Backend 멤버는 <strong>로직 정확성</strong> 에 집중합니다. 화면은 빈 HTML 만 있어도 동작 시험이 됩니다. 한 가지만 약속을 지키면 됩니다 — <strong>DTO 필드명</strong> 을 팀이 정한 이름으로.</p>
+
+<h3>(3) DB 트랙 — 테이블 + 가데이터 + 검증</h3>
+<pre><code>-- DB 멤버가 짠 산출물 — 화면도 서버도 없는 상태에서 작성 가능
+CREATE TABLE mymember (
+  id   VARCHAR(50)  PRIMARY KEY,
+  pwd  VARCHAR(100) NOT NULL,
+  nick VARCHAR(30)
+);
+
+-- 검증용 가데이터 3 건
+INSERT INTO mymember VALUES ('hong123', 'hashed_pw_1', '홍길동');
+INSERT INTO mymember VALUES ('kim456',  'hashed_pw_2', '김영희');
+INSERT INTO mymember VALUES ('lee789',  'hashed_pw_3', '이철수');
+
+-- DBA 혼자서 동작 검증
+SELECT * FROM mymember WHERE id = 'hong123';
+UPDATE mymember SET nick = '홍길순' WHERE id = 'hong123';
+DELETE FROM mymember WHERE id = 'lee789';</code></pre>
+<p>DB 멤버는 <strong>데이터 모델</strong> 에 집중합니다. 가데이터와 SELECT 만으로 「테이블이 약속대로 동작하는가」 를 미리 확인할 수 있습니다. 한 가지만 약속을 지키면 됩니다 — <strong>컬럼명</strong> 을 팀이 정한 이름으로.</p>
+
+<h2>5. 합치는 순간 — 「같은 이름」 이 핵심</h2>
+<p>세 트랙의 산출물이 처음 만나는 자리. 코드 한 줄도 새로 짜지 않습니다 — <strong>이름이 같으니 자동 바인딩이 알아서 다리를 놓습니다.</strong></p>
+<pre><code>브라우저                    Controller                    MySQL
+─────────                   ───────────                   ─────
+&lt;form action="/signup"&gt;   @PostMapping("/signup")     INSERT INTO
+  name="id"      ───→       Member m { id  ───→         mymember(
+  name="pwd"     ───→                   pwd ───→           id, pwd,
+  name="nick"    ───→                   nick }───→          nick) ...
+
+         ↑                       ↑                      ↑
+         └───────────── 같은 단어 ─────────────────────┘
+                        (팀이 정한 약속)</code></pre>
+
+<h2>6. 폼만 갈아끼우기 — 같은 데이터, 다른 디자인</h2>
+<p>이 차시의 가장 중요한 깨달음 한 가지: <strong>같은 데이터를 받는 화면은 디자인이 갈아끼워질 수 있습니다.</strong> 폼의 <code>action</code>, <code>method</code>, <code>name</code> 세 가지만 약속대로면 — 화면 디자인은 무엇이든 가능합니다. Backend 와 DB 는 한 줄도 바뀌지 않습니다.</p>
+
+<h3>디자인 A — 따라하기에서 만든 단순 폼</h3>
+<pre><code>&lt;form action="/signup" method="post"&gt;
+  &lt;input name="id"&gt;
+  &lt;input name="pwd" type="password"&gt;
+  &lt;input name="nick"&gt;
+  &lt;button&gt;가입&lt;/button&gt;
+&lt;/form&gt;</code></pre>
+
+<h3>디자인 B — 카드형 + 그래디언트 (디자이너 산출물)</h3>
+<pre><code>&lt;form action="/signup" method="post" class="card-form"&gt;
+  &lt;h2&gt;Welcome 👋&lt;/h2&gt;
+  &lt;label&gt;아이디&lt;/label&gt;
+  &lt;input name="id"   class="rounded"&gt;
+  &lt;label&gt;비밀번호&lt;/label&gt;
+  &lt;input name="pwd"  class="rounded" type="password"&gt;
+  &lt;label&gt;닉네임&lt;/label&gt;
+  &lt;input name="nick" class="rounded"&gt;
+  &lt;button class="gradient-btn"&gt;가입하고 시작하기&lt;/button&gt;
+&lt;/form&gt;</code></pre>
+<p>두 폼 모두 같은 Controller (<code>@PostMapping("/signup")</code>) 에 들어갑니다. <strong>Backend 코드는 단 한 글자도 바꾸지 않습니다.</strong> 이게 「데이터 약속」 이 가져다 주는 자유 — 화면을 통째로 다른 페이지에 옮겨도, 서버 입장에서는 같은 요청입니다.</p>
+
+<h2>7. 약속이 깨지면 — 사고 사례 3 가지</h2>
+
+<h3>사고 ① 폼 name 과 DTO 필드명 불일치 → null 바인딩</h3>
+<pre><code>&lt;!-- Frontend 가 만든 폼 --&gt;
+&lt;input name="userId" /&gt;
+
+// Backend 의 DTO
+public class Member { private String id; ... }
+
+// 결과:
+받은 데이터: Member(id=null, pwd=*, nick=*)
+//                  ^^^^^^^ "userId" → "id" 매핑 실패</code></pre>
+<p>로그인 시도 → DB 에 INSERT 됐는데 id 가 null. 컴파일도 되고 화면도 동작하지만 「데이터만 비어있는」 가장 헷갈리는 류의 사고입니다.</p>
+
+<h3>사고 ② DTO 필드명과 컬럼명 불일치 → NoSuchColumn 오류</h3>
+<pre><code>// Backend DTO
+public class Member { private String password; ... }
+
+&lt;-- Mapper XML --&gt;
+INSERT INTO mymember (id, password, nick) VALUES (#{id}, #{password}, #{nick})
+
+-- 그러나 DB 는 컬럼명이 pwd
+mysql&gt; DESC mymember;
++-------+--------------+
+| id    | varchar(50)  |
+| pwd   | varchar(100) |  ← password 가 아님
+| nick  | varchar(30)  |
++-------+--------------+
+
+// 결과:
+SQLException: Unknown column 'password' in 'field list'</code></pre>
+
+<h3>사고 ③ 화면-DB 이름 불일치 → 화면에 값이 안 뜬다</h3>
+<pre><code>&lt;!-- list.jsp --&gt;
+&lt;c:forEach var="m" items="${members}"&gt;
+  ${m.nickname}     &lt;!-- 그러나 DTO 는 String nick --&gt;
+&lt;/c:forEach&gt;
+
+// 결과: 닉네임 자리가 모두 빈 칸. 에러도 안 남.</code></pre>
+
+<h2>8. 처음부터 약속을 잘 정하기 — 팀 프로젝트 시작 체크리스트</h2>
+<ol>
+<li><strong>네이밍 약속</strong> — 폼 <code>name</code> = DTO 필드 = 컬럼명. 한 표에 정리해서 공유.</li>
+<li><strong>ERD 합의</strong> — 테이블 / 컬럼명 / 타입 / 관계. 그림으로 출력.</li>
+<li><strong>API 명세 합의</strong> — 어떤 URL 에 어떤 데이터가 오가는지 한 페이지에.</li>
+<li><strong>Git 저장소 합의</strong> — 브랜치 전략, 커밋 메시지 규칙.</li>
+<li><strong>합치기 시점 합의</strong> — 처음 셋이 만나는 날을 미리 정한다.</li>
+</ol>
+<p>이 5 가지를 첫날 30 분 안에 정해놓으면 사고의 90% 가 사라집니다. 「합쳐서 깨지는」 일은 보통 약속이 없거나 모호해서 생깁니다.</p>
+
+<div class="info-box" style="border-left:4px solid #3b82f6; padding:1em; margin:1em 0; background:rgba(59,130,246,0.05);">
+<div class="box-title" style="font-weight:bold; color:#3b82f6;">📚 자료 참고</div>
+<p>이 과정에서 학생이 직접 짠 두 프로젝트 — <code>자료/code/MavenMember</code>, <code>자료/code/MavenBoard</code> — 는 <strong>한 사람이 모든 트랙을 다 짠 결과물</strong>입니다. 그러나 이 차시 관점에서 다시 보면, 두 프로젝트는 정확히 「Front 트랙 산출물 + Back 트랙 산출물 + DB 트랙 산출물」 의 합산입니다. 같은 코드를 「혼자」 가 아니라 「세 사람」 이 했다고 상상하면, 누가 어떤 파일을 맡았을지가 자연스럽게 그려집니다.</p>
+</div>
+
+<h2>9. 정리</h2>
+<ul>
+<li>회원가입은 <strong>모든 프로젝트의 공통 기능</strong> — 한 번 살펴두면 다음이 쉽다</li>
+<li>프로젝트는 <strong>기획 → 요구사항 → 유스케이스 → 화면 스케치 → 구현</strong> 단계로 굴러간다</li>
+<li>요구사항의 데이터 약속(<code>id, pwd, nick</code>) 이 모든 트랙을 통과한다</li>
+<li>같은 데이터 약속이면 <strong>화면 디자인은 갈아끼울 수 있다</strong> — Backend 는 그대로</li>
+<li>첫 회의 30 분 안에 네이밍·ERD·API·Git·합치기 시점 합의</li>
+</ul>
+
+<h2>10. Before / After</h2>
+<div class="before-after">
+<div class="before"><div class="label">따라하기 직후</div><p>회원가입 코드는 동작한다. 그러나 「왜 그렇게 짜는지」 와 「화면이 바뀌면 어떻게 되는지」 는 안 보였다.</p></div>
+<div class="arrow">→</div>
+<div class="after"><div class="label">한 번 내려다본 후</div><p>기획 → 요구사항 → 화면 → 구현 단계가 보인다. 데이터 약속이 모든 트랙을 잇고, 화면 디자인은 갈아끼울 수 있다는 것을 직접 본다.</p></div>
+</div>
+
+<div class="nav"><a href="board-v7-paging.html">&larr; 이전</a><a href="../index.html">메인으로</a><a href="rest-v8-conversion.html">다음 &rarr;</a></div>
+</div><script src="../js/screenshot.js?v=2"></script></body></html>

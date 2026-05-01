@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>v7 페이징 게시판 | Spring 기초</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/night.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/custom.css"></head><body>
+<div class="reveal"><div class="slides">
+
+<section>
+<div class="version-badge">v7</div>
+<div class="session-title">
+<span class="session-glyph">★ MILESTONE · BOARD</span>
+<h1>페이징 게시판</h1>
+<p class="subtitle">대용량 대비</p>
+</div></section>
+
+<section><h2>학습 목표</h2><div class="objectives"><ul>
+<li class="fragment fade-up">페이징의 필요성을 직접 체감</li>
+<li class="fragment fade-up"><span class="keyword">LIMIT 시작행, 개수</span> 로 SQL 페이징 (MySQL)</li>
+<li class="fragment fade-up">스키마는 그대로 — SQL 만 바뀐다</li>
+<li class="fragment fade-up">페이지 번호 UI 구현</li>
+</ul></div></section>
+
+<section><h2>⚠️ 글이 100 개가 되면</h2>
+<div class="pain-point">
+<div class="pain-title">v6 의 한계</div>
+<p>v6 는 <code>SELECT * FROM myboard ORDER BY num DESC</code> 로 모든 글을 한 번에 가져옴.</p>
+<ul style="font-size:0.85em;">
+<li>글 100 개 → 화면이 아래로 끝없이</li>
+<li>글 1000 개 → DB 와 네트워크 부담</li>
+<li>글 10000 개 → 응답 시간 폭발</li>
+</ul>
+<p style="margin-top:0.4em;">실험 — 100 개 INSERT 후 list 진입. 직접 부하 체감.</p>
+</div>
+</section>
+
+<section><h2>🛠️ 페이징 — 한 페이지에 N 개씩</h2>
+<div class="new-tool">
+<div class="tool-title">LIMIT 시작행, 개수 (MySQL)</div>
+<p>SQL 의 <code>LIMIT startRow, pageSize</code> 로 일부분만 가져옴. <strong>스키마 변경 없음</strong> — 쿼리만 바뀌는 단계.</p>
+</div>
+
+<div class="diagram">
+   페이지 1 (글 1~10)   :  LIMIT 0,  10
+   페이지 2 (글 11~20)  :  LIMIT 10, 10
+   페이지 3 (글 21~30)  :  LIMIT 20, 10
+   ...
+   페이지 N             :  LIMIT (N-1)*10, 10
+</div>
+</section>
+
+<section><h2>① Mapper — 페이지 단위 조회</h2>
+<pre><code class="language-xml" data-trim>
+&lt;select id="selectListPaging" parameterType="map"
+        resultType="com.smhrd.domain.Board"&gt;
+    SELECT num, title, writer, content, created_at
+    FROM myboard
+    ORDER BY num DESC
+    LIMIT #{startRow}, #{pageSize}
+&lt;/select&gt;
+
+&lt;select id="count" resultType="int"&gt;
+    SELECT COUNT(*) FROM myboard
+&lt;/select&gt;
+</code></pre>
+<div class="info-box" style="margin-top:0.4em;">
+<p>v6 의 <code>selectList</code> 는 그대로 두고 <code>selectListPaging</code> 을 신설. 「예전 화면도 살아있고 새 화면이 추가된」 형태.</p>
+</div>
+</section>
+
+<section><h2>② Paging 보조 클래스 (도메인 아님)</h2>
+<pre><code class="language-java" data-trim>
+package com.smhrd.domain;
+
+// 화면 페이징 계산 전용 — DB 와 1:1 매핑되는 도메인이 아님
+public class Paging {
+    private int pageNo;       // 현재 페이지 (1부터)
+    private int pageSize;     // 한 페이지 행 수 (예: 10)
+    private int totalCount;   // 전체 글 수
+
+    public Paging(int pageNo, int pageSize, int totalCount) {
+        this.pageNo = pageNo &lt; 1 ? 1 : pageNo;
+        this.pageSize = pageSize;
+        this.totalCount = totalCount;
+    }
+    public int getStartRow() { return (pageNo - 1) * pageSize; }
+    public int getTotalPages() {
+        return (int) Math.ceil((double) totalCount / pageSize);
+    }
+    public int getPageNo()     { return pageNo; }
+    public int getPageSize()   { return pageSize; }
+    public int getTotalCount() { return totalCount; }
+}
+</code></pre>
+</section>
+
+<section><h2>③ Service — 페이징 처리</h2>
+<pre><code class="language-java" data-trim>
+@Service
+public class BoardService {
+    @Autowired private BoardMapper mapper;
+
+    private static final int PAGE_SIZE = 10;
+
+    public List&lt;Board&gt; selectListPaging(Paging paging) {
+        Map&lt;String, Integer&gt; param = new HashMap&lt;&gt;();
+        param.put("startRow", paging.getStartRow());
+        param.put("pageSize", paging.getPageSize());
+        return mapper.selectListPaging(param);
+    }
+
+    public Paging buildPaging(int pageNo) {
+        int total = mapper.count();
+        return new Paging(pageNo, PAGE_SIZE, total);
+    }
+}
+</code></pre>
+</section>
+
+<section><h2>④ Controller</h2>
+<pre><code class="language-java" data-trim>
+@GetMapping("/board/list")
+public String list(@RequestParam(defaultValue = "1") int page,
+                    Model model) {
+    Paging paging = service.buildPaging(page);
+    List&lt;Board&gt; boards = service.selectListPaging(paging);
+
+    model.addAttribute("boards", boards);
+    model.addAttribute("paging", paging);
+    return "board/list";
+}
+</code></pre>
+</section>
+
+<section><h2>⑤ JSP — 목록과 이전/다음</h2>
+<pre><code class="language-jsp" data-trim>
+&lt;table&gt;
+    &lt;c:forEach var="b" items="${boards}"&gt;
+        &lt;tr&gt;&lt;td&gt;${b.num}&lt;/td&gt;&lt;td&gt;${b.title}&lt;/td&gt;&lt;td&gt;${b.writer}&lt;/td&gt;&lt;/tr&gt;
+    &lt;/c:forEach&gt;
+&lt;/table&gt;
+
+&lt;div class="pagination"&gt;
+    &lt;c:if test="${paging.pageNo &gt; 1}"&gt;
+        &lt;a href="?page=${paging.pageNo - 1}"&gt;이전&lt;/a&gt;
+    &lt;/c:if&gt;
+
+    &lt;c:if test="${paging.pageNo &lt; paging.totalPages}"&gt;
+        &lt;a href="?page=${paging.pageNo + 1}"&gt;다음&lt;/a&gt;
+    &lt;/c:if&gt;
+&lt;/div&gt;
+</code></pre>
+</section>
+
+<section><h2>⑤ JSP — 페이지 번호 출력</h2>
+<pre><code class="language-jsp" data-trim>
+&lt;c:forEach begin="1" end="${paging.totalPages}" var="p"&gt;
+    &lt;c:choose&gt;
+        &lt;c:when test="${p == paging.pageNo}"&gt;
+            &lt;strong&gt;${p}&lt;/strong&gt;
+        &lt;/c:when&gt;
+        &lt;c:otherwise&gt;
+            &lt;a href="?page=${p}"&gt;${p}&lt;/a&gt;
+        &lt;/c:otherwise&gt;
+    &lt;/c:choose&gt;
+&lt;/c:forEach&gt;
+</code></pre>
+<div class="info-box" style="margin-top:0.6em;">
+<p>현재 페이지면 <strong>강조</strong>, 그 외에는 링크. 한 줄 안에 모든 페이지 숫자가 나열됩니다.</p>
+</div>
+</section>
+
+<section><h2>실험 — 부하 직접 보기</h2>
+<pre><code class="language-sql" data-trim>
+-- 더미 데이터 100 개 (MySQL)
+INSERT INTO myboard(title, writer, content)
+SELECT CONCAT('테스트 글 ', seq), 'tester', '본문'
+FROM (
+    SELECT @row := @row + 1 AS seq
+    FROM (SELECT 0 UNION SELECT 1 UNION SELECT 2) t1,
+         (SELECT 0 UNION SELECT 1 UNION SELECT 2) t2,
+         (SELECT 0 UNION SELECT 1 UNION SELECT 2 UNION SELECT 3) t3,
+         (SELECT @row := 0) r
+) numbers
+LIMIT 100;
+</code></pre>
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 100 개 INSERT 후 v6 list 와 v7 list 비교 — UI 차이 직접 확인.
+</p>
+</section>
+
+<section><h2>흔한 실수</h2>
+<table style="font-size:0.7em; width:100%; border-collapse:collapse;">
+<thead><tr style="background:rgba(255,255,255,0.05);">
+<th style="padding:6px;">실수</th><th>증상</th></tr></thead>
+<tbody>
+<tr><td style="padding:5px;">OFFSET 계산 오류</td><td>페이지 점프 시 잘못된 데이터</td></tr>
+<tr><td style="padding:5px;">ORDER BY 누락</td><td>매 요청마다 다른 순서 (DB 별 다름)</td></tr>
+<tr><td style="padding:5px;">page=0 처리 안 함</td><td>OFFSET 음수 → 에러</td></tr>
+<tr><td style="padding:5px;">총 페이지 수 잘못</td><td>마지막 페이지 빈 데이터</td></tr>
+</tbody></table>
+</section>
+
+<section><h2>🔄 Before / After</h2><div class="before-after">
+<div class="before"><div class="label">v6 끝</div>
+<p style="font-size:0.85em;">전체 글 한 번에. 글 많으면 화면 망가짐.</p>
+</div>
+<div class="arrow">→</div>
+<div class="after"><div class="label">v7 끝</div>
+<p style="font-size:0.85em;">한 페이지 10 개씩. 페이지 번호로 이동. 글 1 만 개도 부드럽게.</p>
+</div>
+</div></section>
+
+<section><h2>정리</h2><div class="summary"><h3>오늘 들고 가는 것</h3><ul>
+<li>SQL: <code>LIMIT #{startRow}, #{pageSize}</code> (MySQL)</li>
+<li>총 개수는 별도 <code>COUNT(*)</code> 쿼리</li>
+<li><code>Paging</code> 보조 클래스 — 도메인이 아닌 계산용</li>
+<li>스키마는 그대로 — <code>myboard</code> 변경 없음</li>
+<li>JSP <code>c:forEach begin..end</code> 로 페이지 번호 UI</li>
+</ul></div>
+</section>
+
+</div></div>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"></script>
+<script>Reveal.initialize({hash:true,slideNumber:'c/t',width:1280,height:720,margin:0.06,transition:'slide',plugins:[RevealHighlight,RevealNotes]});</script>
+<script src="../js/infographics.js?v=2"></script>
+<script src="../js/screenshot.js?v=2"></script></body></html>

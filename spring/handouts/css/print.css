@@ -1,0 +1,249 @@
+/* =========================================================================
+   handouts/css/print.css — 인쇄용 핸드아웃 (라이트 테마)
+   ========================================================================= */
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: 'Pretendard', 'Pretendard Variable', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  background: #fff;
+  color: #1a1a1a;
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+}
+
+.container {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 2.5rem 2rem 4rem;
+}
+
+/* ---- 헤더 (좌우 분할) ---- */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  border-bottom: 3px solid #1a1a1a;
+  padding-bottom: 0.8rem;
+  margin-bottom: 1.5rem;
+}
+.header-left .session-num {
+  display: inline-block;
+  background: #1a1a1a;
+  color: #fff;
+  padding: 3px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 4px;
+  margin-bottom: 0.4rem;
+  letter-spacing: 0.05em;
+}
+.header-left h1 {
+  margin: 0.1rem 0 0;
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.header-right {
+  text-align: right;
+  font-size: 13px;
+  color: #666;
+  line-height: 1.4;
+}
+
+/* ---- 학습 목표 ---- */
+.objectives {
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 0.8rem 1rem;
+  margin: 1rem 0;
+  background: #fafafa;
+}
+.objectives h3 {
+  margin: 0 0 0.4rem;
+  font-size: 0.95rem;
+  color: #333;
+}
+.objectives ul {
+  margin: 0;
+  padding-left: 1.2rem;
+}
+.objectives li { margin: 0.2rem 0; font-size: 13px; }
+
+/* ---- 핵심 용어 표 ---- */
+.key-terms { margin: 1.2rem 0; }
+.key-terms h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+  color: #333;
+}
+.key-terms table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.key-terms th, .key-terms td {
+  border: 1px solid #ddd;
+  padding: 0.5rem 0.7rem;
+  text-align: left;
+  vertical-align: top;
+}
+.key-terms th {
+  background: #f5f5f5;
+  font-weight: 700;
+}
+
+/* ---- 본문 ---- */
+h2 {
+  font-size: 1.15rem;
+  margin: 1.5rem 0 0.6rem;
+  padding-bottom: 0.2rem;
+  border-bottom: 1px solid #ddd;
+}
+h3 {
+  font-size: 1rem;
+  margin: 1rem 0 0.4rem;
+  color: #333;
+}
+p { margin: 0.4rem 0; font-size: 13px; }
+ul, ol { padding-left: 1.4rem; font-size: 13px; }
+li { margin: 0.2rem 0; }
+
+/* ---- 강조 박스 ---- */
+.note {
+  border-left: 3px solid #1a1a1a;
+  background: #f5f5f5;
+  padding: 0.5rem 0.9rem;
+  margin: 0.8rem 0;
+  font-size: 13px;
+  border-radius: 0 4px 4px 0;
+}
+.note strong { color: #000; }
+
+/* ---- 코드 ---- */
+code {
+  font-family: 'JetBrains Mono', monospace;
+  background: #f5f5f5;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 0.9em;
+  color: #c0392b;
+}
+pre {
+  background: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 0.7rem 1rem;
+  overflow-x: auto;
+  font-size: 12px;
+  line-height: 1.5;
+}
+pre code {
+  background: transparent;
+  padding: 0;
+  color: #1a1a1a;
+}
+
+/* ---- Before / After ---- */
+.before-after {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.8rem;
+  margin: 1rem 0;
+  font-size: 13px;
+}
+.before-after .before, .before-after .after {
+  padding: 0.6rem 0.9rem;
+  border-radius: 4px;
+}
+.before-after .before {
+  background: #fff5f5;
+  border: 1px solid #fcc;
+}
+.before-after .after {
+  background: #f0faf0;
+  border: 1px solid #bdc;
+}
+.before-after .label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  margin-bottom: 0.3rem;
+}
+.before .label { color: #c00; }
+.after .label  { color: #080; }
+
+/* ---- 학습 체크리스트 (CSS가 ☐ 자동 추가) ---- */
+.checklist {
+  margin: 1.5rem 0 0;
+  border-top: 2px dashed #ccc;
+  padding-top: 1rem;
+}
+.checklist h3 { margin: 0 0 0.5rem; font-size: 1rem; }
+.checklist ul {
+  list-style: none;
+  padding-left: 0;
+}
+.checklist li {
+  margin: 0.3rem 0;
+  font-size: 13px;
+  padding-left: 1.4rem;
+  position: relative;
+}
+.checklist li::before {
+  content: '☐';
+  position: absolute;
+  left: 0;
+  font-size: 14px;
+}
+
+/* ---- 다이어그램 ---- */
+.diagram {
+  font-family: 'JetBrains Mono', monospace;
+  background: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 0.7rem 1rem;
+  white-space: pre;
+  font-size: 11px;
+  line-height: 1.5;
+  overflow-x: auto;
+  margin: 0.8rem 0;
+}
+
+/* ---- 네비게이션 ---- */
+.nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.6rem;
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid #ddd;
+  font-size: 13px;
+}
+.nav a {
+  color: #1a1a1a;
+  text-decoration: none;
+  padding: 0.4rem 0.8rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  flex: 1;
+  text-align: center;
+}
+.nav a:hover { background: #f5f5f5; }
+
+/* ---- 인쇄 최적화 ---- */
+@media print {
+  @page { margin: 1.5cm; }
+  body { font-size: 10pt; line-height: 1.5; }
+  .container { padding: 0; max-width: none; }
+  h1 { font-size: 16pt; }
+  h2 { font-size: 12pt; page-break-after: avoid; }
+  h3 { font-size: 10.5pt; page-break-after: avoid; }
+  p, li { font-size: 10pt; page-break-inside: avoid; }
+  pre, .diagram, .key-terms table { page-break-inside: avoid; }
+  .nav { display: none; }
+  a { color: #1a1a1a; text-decoration: none; }
+  .note { page-break-inside: avoid; }
+}

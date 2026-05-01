@@ -1,0 +1,34 @@
+# 강사 사전 자료 (공개 저장소에서 제외 — 학원 자료·docx·사전 코드 등)
+spring/자료/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Node (혹시 도구 추가 시)
+node_modules/
+package-lock.json
+
+# Server / 임시
+/tmp/
+*.log
+.cache/
+
+# Python
+__pycache__/
+*.pyc
+
+# 빌드 산출물 (혹시)
+dist/
+build/
+
+# Backup files
+*.bak
+*.orig

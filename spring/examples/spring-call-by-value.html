@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Call by Value — 읽기 자료</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/example.css"></head><body>
+<div class="container">
+<div class="header"><div class="session-num">◇ PART · SPRING</div><h1>Call by Value</h1><p class="subtitle">참조형도 「값」을 복사한다 — 읽기 자료</p></div>
+
+<div class="minimap"><div class="minimap-title">📍 지금 어디를 만지고 있나요?</div><div class="flow">
+<div class="box">브라우저</div><span class="arrow">→</span><div class="box">Tomcat</div><span class="arrow">→</span>
+<div class="box active">JVM (자바 메모리)</div><span class="arrow">→</span><div class="box">Controller</div><span class="arrow">→</span><div class="box">DB</div></div></div>
+
+<div class="terms"><h3>이 차시의 핵심 용어</h3>
+<div class="term-item"><span class="term-name">Call by Value</span><span class="term-desc">메서드에 인자를 넘길 때 변수의 「값」을 복사해서 전달하는 방식. 자바는 모든 경우에 이 방식.</span></div>
+<div class="term-item"><span class="term-name">기본형 (Primitive)</span><span class="term-desc"><code>int</code>, <code>double</code>, <code>boolean</code> 등. 값 자체가 변수에 직접 저장.</span></div>
+<div class="term-item"><span class="term-name">참조형 (Reference)</span><span class="term-desc">객체. 변수에는 객체의 「주소」가 저장되고, 실제 객체는 힙(Heap) 메모리에.</span></div>
+</div>
+
+<h2>1. 가장 흔한 오해</h2>
+<p>비전공자가 자바 메서드를 다루면서 가장 자주 헷갈리는 것 — 「메서드 안에서 객체를 바꿨는데 어떨 땐 원본이 바뀌고 어떨 땐 안 바뀐다」는 현상입니다.</p>
+<div class="pain-point"><div class="pain-title">왜 알아야 하나</div><p>이 규칙을 모르면 디버깅 시 「내가 분명히 값을 바꿨는데 왜 적용이 안 되지?」 같은 미스터리가 끝까지 안 풀립니다.</p></div>
+
+<h2>2. 자바는 항상 「값 복사」</h2>
+<div class="new-tool"><div class="tool-title">규칙 — 인자는 항상 복사된다</div>
+<p>자바에서 메서드를 호출할 때 인자는 <strong>언제나 값이 복사</strong>되어 전달됩니다. 기본형이든 참조형이든 예외 없음.</p></div>
+<p>다만 <strong>「값」의 정체</strong>가 다릅니다:</p>
+<ul>
+<li>기본형의 값 = 숫자 그 자체 (예: <code>42</code>)</li>
+<li>참조형의 값 = 객체의 「주소」 (예: <code>0xABC123</code>)</li>
+</ul>
+
+<h2>3. 기본형의 경우</h2>
+<pre><code>void changeNumber(int x) {
+    x = 999;          // 복사본을 바꿈
+}
+
+int a = 1;
+changeNumber(a);
+System.out.println(a);  // → 1 (원본은 그대로)</code></pre>
+<p><code>a</code> 의 값(<code>1</code>)이 복사되어 <code>x</code> 에 들어갔습니다. <code>x</code> 를 바꿔도 <code>a</code> 는 무관합니다.</p>
+
+<h2>4. 참조형 — 객체 필드 변경</h2>
+<pre><code>void changeName(User u) {
+    u.name = "Bob";   // 같은 객체의 필드 변경
+}
+
+User user = new User("Alice");
+changeName(user);
+System.out.println(user.name);  // → Bob (바뀜!)</code></pre>
+<p><code>user</code> 의 값(객체 주소)이 복사되어 <code>u</code> 에 들어갔습니다. 둘 다 <strong>같은 객체</strong>를 가리키므로 필드 변경은 양쪽에서 다 보입니다.</p>
+
+<h2>5. 참조형 — 참조 자체 교체</h2>
+<pre><code>void replaceUser(User u) {
+    u = new User("Bob");  // u 가 가리키는 곳을 다른 객체로
+}
+
+User user = new User("Alice");
+replaceUser(user);
+System.out.println(user.name);  // → Alice (안 바뀜)</code></pre>
+<p><code>u</code> 가 가리키는 주소를 다른 객체로 바꿨을 뿐. <code>user</code> 는 여전히 처음 객체를 가리킵니다.</p>
+
+<h2>6. 한 줄 정리</h2>
+<div class="box box-tip"><div class="box-title">기억할 규칙</div>
+<ul style="margin:0.3rem 0 0;">
+<li>자바는 항상 <strong>값 복사 (Call by Value)</strong></li>
+<li>객체 <strong>필드 변경</strong> → 원본에 보임 (같은 객체이므로)</li>
+<li>변수에 다른 객체 <strong>대입</strong> → 원본에 안 보임 (복사본만 변경)</li>
+</ul></div>
+
+<h2>7. Before / After</h2>
+<div class="before-after">
+<div class="before"><div class="label">전 차시 끝</div><p>JVM 의 큰 그림은 안다. 그 안에서 변수가 어떻게 전달되는지는 모름.</p></div>
+<div class="arrow">→</div>
+<div class="after"><div class="label">이번 차시 끝</div><p>메서드 인자가 어떻게 복사되는지 알고, 「내 변경이 원본에 적용될지 안 될지」 판단할 수 있다.</p></div>
+</div>
+
+<div class="nav"><a href="spring-jvm.html">&larr; 이전: JVM</a><a href="../index.html">메인으로</a><a href="spring-class-vs-instance.html">다음: 클래스 vs 인스턴스 &rarr;</a></div>
+</div><script src="../js/screenshot.js?v=2"></script></body></html>

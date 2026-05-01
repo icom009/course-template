@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>팀 분업 시뮬레이션 — 핸드아웃</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/print.css"></head><body>
+<div class="container">
+
+<div class="header">
+<div class="header-left"><div class="session-num">◆ PART · TEAM</div>
+<h1>팀 분업 시뮬레이션</h1>
+<p>세 트랙이 「같은 이름」 으로 만나는 자리</p></div>
+<div class="header-right">Spring 기초<br>SMHRD</div></div>
+
+<div class="objectives"><h3>학습 목표</h3>
+<ul>
+<li>회원가입이 모든 프로젝트의 공통 기능임을 안다</li>
+<li>기획 → 요구사항 → 유스케이스 → 화면 → 구현 의 한 줄기 흐름을 그릴 수 있다</li>
+<li>같은 데이터 약속이면 화면 디자인은 갈아끼울 수 있음을 직접 확인한다</li>
+</ul></div>
+
+<div class="note"><strong>오늘 들고 가는 3 가지</strong>
+<ul>
+<li>회원가입은 <strong>모든 프로젝트의 공통 기능</strong> — 한 번 살펴두면 다음이 쉽다.</li>
+<li>프로젝트는 <strong>기획 → 요구사항 → 유스케이스 → 화면 → 구현</strong> 단계로 굴러간다.</li>
+<li>같은 데이터 약속이면 <strong>화면 디자인은 갈아끼울 수 있다</strong> — Backend 는 그대로.</li>
+</ul></div>
+
+<h2>0. 회원가입 — 어디에나 있는 그 기능</h2>
+<p>쇼핑몰·SNS·게시판·예약·배달앱·동영상 사이트 — 어떤 서비스든 회원가입 폼은 거의 똑같이 생겼다. 입력칸 몇 개와 가입 버튼. 흔한 화면이지만 한 번 제대로 들여다 보면, 다음 모든 프로젝트가 쉬워진다. 이미 v2~v4 에서 따라하기로 코드를 완성했으므로, 오늘은 그 코드가 「어떻게 만들어지는지」 위에서 내려다본다.</p>
+
+<h2>1. 프로젝트의 단계 — 기획에서 구현까지</h2>
+<div class="diagram">① 기획        ② 요구사항정의서   ③ 유스케이스         ④ 화면 스케치     ⑤ 구현
+"가입 만들자"  ★ id, pwd, nick    "폼 입력→가입→이동"   3칸 + 버튼 1개   Front+Back+DB
+                ↑
+        데이터 약속이 처음 정해지는 자리 — 이후 모든 트랙이 이걸 따른다</div>
+<table>
+<thead><tr><th>단계</th><th>하는 일</th><th>회원가입 예</th></tr></thead>
+<tbody>
+<tr><td>① 기획</td><td>기능을 만들기로 정함</td><td>"회원가입 기능을 만들자"</td></tr>
+<tr><td><strong>② 요구사항정의서</strong></td><td><strong>어떤 데이터를 저장할까</strong></td><td><strong>id, pwd, nick</strong></td></tr>
+<tr><td>③ 유스케이스</td><td>사용자가 어떻게 쓰는지 한 줄</td><td>"폼 3칸 입력 → 가입 → 로그인 페이지로"</td></tr>
+<tr><td>④ 화면 스케치</td><td>디자이너가 그림으로</td><td>입력칸 3개 + 버튼 1개</td></tr>
+<tr><td>⑤ 구현</td><td>Front + Back + DB</td><td>JSP / Controller / mymember</td></tr>
+</tbody></table>
+
+<h2>2. 3 트랙 한눈에</h2>
+<table>
+<thead><tr><th>트랙</th><th>주된 산출물</th><th>주된 도구</th><th>핵심 약속</th></tr></thead>
+<tbody>
+<tr><td><strong>Frontend</strong></td>
+<td>HTML / CSS / JS, 디자인된 폼</td>
+<td>VS Code, Figma, 브라우저</td>
+<td><code>&lt;input name="..."&gt;</code> 의 이름</td></tr>
+<tr><td><strong>Backend</strong></td>
+<td>Controller, Service, Mapper, DTO</td>
+<td>Eclipse, Tomcat, Postman</td>
+<td>DTO 필드명</td></tr>
+<tr><td><strong>DB</strong></td>
+<td>테이블, 인덱스, 가데이터</td>
+<td>MySQL Workbench</td>
+<td>테이블 컬럼명</td></tr>
+</tbody></table>
+
+<div class="diagram">시각 →     09:00       11:00       14:00       16:00
+Front      ▣ wireframe ▣ CSS       ▣ 디자인 폼 ─────┐
+Back       ▣ DTO       ▣ Service   ▣ Mapper   ─────┼──→ ◆ 합치기
+DB         ▣ ERD       ▣ CREATE    ▣ 가데이터 ─────┘   (이름이 같아 자연 합쳐짐)</div>
+
+<h2>3. 「같은 이름」 매핑 표 (회원가입 예시)</h2>
+<table>
+<thead><tr><th>의미</th><th>약속한 이름</th><th>Front (form name)</th><th>Back (DTO 필드)</th><th>DB (컬럼명)</th></tr></thead>
+<tbody>
+<tr><td>아이디</td><td><code>id</code></td><td><code>name="id"</code></td><td><code>String id</code></td><td><code>id VARCHAR(50)</code></td></tr>
+<tr><td>비밀번호</td><td><code>pwd</code></td><td><code>name="pwd"</code></td><td><code>String pwd</code></td><td><code>pwd VARCHAR(100)</code></td></tr>
+<tr><td>닉네임</td><td><code>nick</code></td><td><code>name="nick"</code></td><td><code>String nick</code></td><td><code>nick VARCHAR(30)</code></td></tr>
+</tbody></table>
+
+<p><strong>한 줄 원칙:</strong> 같은 데이터에 같은 이름을 쓰면, 세 사람이 동시에 일해도 시스템이 합쳐진다.</p>
+
+<div class="diagram">브라우저 폼              자바 객체              MySQL 테이블
+name="id"      ─→       String id      ─→     id  VARCHAR(50)
+name="pwd"     ─→       String pwd     ─→     pwd VARCHAR(100)
+name="nick"    ─→       String nick    ─→     nick VARCHAR(30)
+                          ↑
+                ★ 한 글자라도 다르면 합치는 순간 깨짐</div>
+
+<h2>4. 폼만 갈아끼우기 — 같은 데이터, 다른 디자인</h2>
+<p>같은 데이터를 받는 화면은 디자인이 갈아끼워질 수 있다. <code>action</code>, <code>method</code>, <code>name</code> 만 약속대로면 화면은 무엇이든 가능 — Backend 는 한 줄도 안 바뀐다.</p>
+<div class="diagram">[디자인 A] 단순 폼            [디자인 B] 카드 + 그래디언트
+&lt;input name="id"&gt;             &lt;input name="id"&gt;
+&lt;input name="pwd"&gt;            &lt;input name="pwd"&gt;
+&lt;input name="nick"&gt;           &lt;input name="nick"&gt;
+        ↓                              ↓
+        └────── 같은 Controller ───────┘
+                @PostMapping("/signup") public String signup(Member m)</div>
+
+<h2>5. 약속이 깨졌을 때 발생하는 3 가지 사고</h2>
+
+<h3>사고 ① null 바인딩 — 폼 name 과 DTO 필드명 불일치</h3>
+<div class="diagram">&lt;input name="userId"&gt;       ←→       private String id;
+                  ↓
+콘솔: Member(id=null, pwd=*, nick=*)
+        ^^^^^^^ 자동 바인딩 실패 — 에러 안 남, 데이터만 비어있음</div>
+<p>가장 자주 나는 사고. 화면도 서버도 안 죽기 때문에 발견까지 시간이 걸린다.</p>
+
+<h3>사고 ② NoSuchColumn — DTO 필드명과 컬럼명 불일치</h3>
+<div class="diagram">private String password;        ←→       DB 컬럼: pwd
+                  ↓
+SQLException: Unknown column 'password' in 'field list'</div>
+<p>DB 가 즉시 거부하므로 차라리 빨리 잡힌다. INSERT/SELECT 모두에서 발생.</p>
+
+<h3>사고 ③ 화면-DB 불일치 — 화면이 다른 이름으로 참조</h3>
+<div class="diagram">JSP: ${m.nickname}              ←→       DTO: String nick
+                  ↓
+INSERT 는 정상, 그러나 화면의 닉네임 자리가 모두 빈 칸. 에러도 안 남.</div>
+
+<h2>6. 팀 프로젝트 시작 체크리스트</h2>
+<div class="checklist"><h3>첫 회의 30 분 안에 합의할 5 가지</h3>
+<ul>
+<li>① <strong>네이밍 약속</strong> — 폼 <code>name</code> = DTO 필드 = 컬럼명. 한 표로 정리.</li>
+<li>② <strong>ERD 합의</strong> — 테이블 / 컬럼명 / 타입 / 관계.</li>
+<li>③ <strong>API 명세 합의</strong> — 어떤 URL 에 어떤 데이터가 오가는지.</li>
+<li>④ <strong>Git 저장소 합의</strong> — 브랜치 전략, 커밋 메시지 규칙.</li>
+<li>⑤ <strong>합치기 시점 합의</strong> — 처음 셋이 만나는 날.</li>
+</ul></div>
+<p>이 5 가지를 첫날에 정해놓으면 사고의 90% 가 사라진다.</p>
+
+<h2>7. Before / After</h2>
+<div class="before-after">
+<div class="before"><div class="label">따라하기 직후</div><p>회원가입 코드는 동작한다. 그러나 「왜 그렇게 짜는지」 와 「화면이 바뀌면 어떻게 되는지」 는 안 보였다.</p></div>
+<div class="after"><div class="label">한 번 내려다본 후</div><p>기획→요구사항→화면→구현 단계가 보이고, 데이터 약속이 모든 트랙을 잇는다. 화면 디자인은 갈아끼울 수 있다.</p></div>
+</div>
+
+<div class="checklist"><h3>학습 확인 체크리스트</h3>
+<ul>
+<li>회원가입이 어디에나 있는 보편 기능임을 안다</li>
+<li>기획 → 요구사항 → 유스케이스 → 화면 → 구현 단계를 그릴 수 있다</li>
+<li>요구사항의 데이터 약속이 모든 트랙을 통과함을 안다</li>
+<li>같은 데이터 약속이면 화면 디자인은 갈아끼울 수 있음을 안다</li>
+<li>약속이 깨졌을 때 나는 3 가지 사고 모양을 안다</li>
+</ul></div>
+
+<div class="nav"><a href="board-v7-paging.html">&larr; 이전</a><a href="../index.html">메인으로</a><a href="rest-v8-conversion.html">다음 &rarr;</a></div>
+</div></body></html>

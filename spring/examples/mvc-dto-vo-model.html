@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DTO · VO · Model — 읽기 자료</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/example.css"></head><body>
+<div class="container">
+
+<div class="header"><div class="session-num">◇ PART · MVC</div>
+<h1>DTO · VO · Model</h1><p class="subtitle">Spring MVC — 읽기 자료</p></div>
+
+<div class="minimap"><div class="minimap-title">📍 지금 어디를 만지고 있나요?</div><div class="flow">
+<div class="box">브라우저</div><span class="arrow">→</span>
+<div class="box active">Spring MVC</div><span class="arrow">→</span>
+<div class="box">DB</div></div></div>
+
+<div class="terms"><h3>핵심 용어</h3><div class="term-item"><span class="term-name">DTO (Data Transfer Object)</span><span class="term-desc">계층 간 데이터 운반용 객체. 보통 getter/setter 만.</span></div>
+<div class="term-item"><span class="term-name">VO (Value Object)</span><span class="term-desc">값을 표현하는 객체. 불변(immutable) 이 일반적.</span></div>
+<div class="term-item"><span class="term-name">Model</span><span class="term-desc">Spring MVC 의 인터페이스. Controller 가 JSP 로 데이터를 넘길 때 사용.</span></div></div>
+
+<h2>1. 문제</h2>
+<div class="pain-point"><div class="pain-title">전 차시까지의 답답함</div><p>셋 다 비슷한 자바 객체인데 — 왜 이름이 다를까?</p></div>
+
+<h2>2. 새 도구</h2>
+<div class="new-tool"><div class="tool-title">용도가 다른 그릇 3 종</div><p>DTO = 계층 간 운반 그릇 / VO = 값 객체 (불변) / Model = JSP 에 전달하는 컨테이너</p></div>
+
+<h2>3. 코드 — 본 과정의 도메인</h2>
+<pre><code>// DTO — 계층 사이 데이터 운반 (회원 v2 최소형)
+package com.smhrd.domain;
+
+@Data @AllArgsConstructor @NoArgsConstructor
+public class Member {
+    private String id;
+    private String pwd;
+}
+
+// DTO — 게시글 v5 최소형
+@Data @AllArgsConstructor @NoArgsConstructor
+public class Board {
+    private int    num;
+    private String title;
+    private String writer;
+    private String content;
+}
+
+// VO — 비즈니스 의미를 가지는 값 (참고)
+public class Money {
+    private final int amount;     // 불변
+}
+
+// Model — Spring 의 인터페이스 (Controller → JSP)
+model.addAttribute("member", member);
+model.addAttribute("board",  board);</code></pre>
+
+<h2>4. 정리</h2>
+<ul><li>DTO — 계층 사이 데이터 운반 그릇</li>
+<li>VO — 값 의미를 가지는 불변 객체</li>
+<li>Model — Spring 이 제공하는 데이터 전달 인터페이스</li></ul>
+
+<h2>5. Before / After</h2>
+<div class="before-after">
+<div class="before"><div class="label">전 차시 끝</div><p>셋 다 비슷한 자바 객체인데 — 왜 이름이 다를까?</p></div>
+<div class="arrow">→</div>
+<div class="after"><div class="label">이번 차시 끝</div><p>세 객체의 자리가 머릿속에 정리된다.</p></div>
+</div>
+
+<div class="nav"><a href="mvc-dao-repository.html">&larr; 이전</a><a href="../index.html">메인으로</a><a href="mvc-view-resolver.html">다음 &rarr;</a></div>
+</div><script src="../js/screenshot.js?v=2"></script></body></html>

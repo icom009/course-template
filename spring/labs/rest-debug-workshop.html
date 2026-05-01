@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>데이터 흐름 디버깅 워크숍 — 실습</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/lab.css"></head><body>
+<div class="container">
+
+<div class="header"><div class="version-badge">v∞</div><div class="badge">★ LAB · REST</div>
+<h1>데이터 흐름 디버깅 워크숍</h1><p class="subtitle">REST API와 마무리 — 실습</p></div>
+
+<div class="minimap"><div class="minimap-title">📍 지금 어디를 만지고 있나요?</div><div class="flow">
+<div class="box">브라우저</div><span class="arrow">→</span>
+<div class="box active">REST API와 마무리</div><span class="arrow">→</span>
+<div class="box">DB</div></div></div>
+
+<div class="prerequisites"><h3>사전 준비</h3>
+<ul><li>전 차시 완료</li><li>Eclipse + Tomcat 동작 환경</li></ul></div>
+
+<div class="box box-info"><div class="box-title">이번 실습의 목표</div>
+<p>① F12 → ② 서버 콘솔 → ③ Mapper SQL 로그 → ④ DB SELECT → ⑤ 응답 JSON</p></div>
+
+<div class="step"><div class="step-header"><div class="step-num">1</div><div class="step-title">코드 작성</div></div>
+<pre><code>시나리오 1: "댓글이 화면에 안 떠요"
+
+   ① F12 Network 탭
+      → 요청이 갔는가?
+      → 갔다면 응답 Status 는?
+      → 가지 않았으면 → JS 코드의 fetch 가 호출됐는지 확인
+
+   ② 갔다면 서버 콘솔
+      → 컨트롤러가 호출됐는가? (로그 출력)
+      → 호출됐는데 에러? → 스택 트레이스
+
+   ③ 컨트롤러 OK 면 Mapper SQL 로그
+      → 실제 SQL 이 실행됐는가?
+      → 파라미터가 제대로 전달됐는가?
+
+   ④ SQL 실행됐다면 DB 에서 직접 SELECT
+      → 데이터가 진짜 들어갔는가?
+      → DB 에는 있는데 응답엔 없으면 → 응답 직렬화 문제
+
+   ⑤ 마지막 — 응답 JSON 자체
+      → DevTools Network → Response 탭
+      → 응답에 뭐가 와 있는가?
+      → 클라이언트 JS 가 그걸 어떻게 그렸는가?
+
+시나리오 2~5: 로그인 풀림 / 한글 깨짐 / null 데이터 / 권한 오류
+   각각 같은 5 단계 역추적 적용</code></pre>
+<div class="checkpoint"><div class="check-title">CHECKPOINT</div>
+<ul><li>코드를 작성한 뒤 빨간 줄(컴파일 오류)이 없는가?</li></ul></div></div>
+
+<div class="step"><div class="step-header"><div class="step-num">2</div><div class="step-title">실행 + 결과 확인</div></div>
+<p>Run on Server 또는 javac+java 로 실행하고 결과를 확인합니다.</p>
+<div class="checkpoint"><div class="check-title">CHECKPOINT</div>
+<ul><li>예상한 동작이 일어났는가?</li><li>안 됐다면 F12 / 콘솔 / 로그 어디서 단서가 보이는가?</li></ul></div></div>
+
+<div class="checklist"><h3>실습 완료 체크리스트</h3>
+<div class="check-item"><input type="checkbox"> 디버깅 = 흐름도 역추적</div>
+<div class="check-item"><input type="checkbox"> 5 단계 점검 순서</div>
+<div class="check-item"><input type="checkbox"> 한 단계씩 좁혀나감</div>
+<div class="check-item"><input type="checkbox"> v∞ — 4 주 학습의 종착점</div></div>
+
+<div class="nav"><a href="rest-v10-extras.html">&larr; 이전</a><a href="../index.html">메인으로</a><span></span></div>
+</div><script src="../js/screenshot.js?v=2"></script></body></html>

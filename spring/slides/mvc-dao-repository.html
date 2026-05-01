@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DAO / Repository | Spring 기초</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/night.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/custom.css"></head><body>
+<div class="reveal"><div class="slides">
+
+<section><div class="session-title">
+<span class="session-glyph">◇ PART · MVC</span>
+<h1>DAO / Repository</h1>
+<p class="subtitle">SQL 만 책임지는 계층</p>
+</div></section>
+
+<section><h2>학습 목표</h2><div class="objectives"><ul>
+<li class="fragment fade-up">DAO/Repository 의 <span class="keyword">단 하나의 책임</span> 을 안다</li>
+<li class="fragment fade-up">DAO 와 Repository 의 차이 (사실상 같다)</li>
+<li class="fragment fade-up">Service 가 직접 DB 를 호출하지 않는 이유를 안다</li>
+<li class="fragment fade-up">@Repository 어노테이션의 효과를 안다</li>
+</ul></div></section>
+
+<section><h2>⚠️ Service 가 DB 를 직접 다룬다면</h2>
+<div class="pain-point">
+<div class="pain-title">계층 분리 안 했을 때</div>
+<pre><code data-trim>
+@Service
+public class BoardService {
+    public Board find(int num) {
+        // SQL 직접 작성, JDBC 직접 사용
+        Connection c = dataSource.getConnection();
+        PreparedStatement ps = c.prepareStatement(
+            "SELECT num, title, writer, content FROM myboard WHERE num=?");
+        // ... 30 줄
+    }
+}
+</code></pre>
+<p style="margin-top:0.4em;">Service 가 비즈니스 로직 + DB 접근을 모두 책임 → 단위 테스트 불가능, 변경 영향 큼.</p>
+</div>
+</section>
+
+<section><h2>🛠️ DAO/Repository — 창고 관리자</h2>
+<div class="new-tool">
+<div class="tool-title">DB 접근만 책임</div>
+<p>식당의 「식재료 창고 관리자」. 셰프(Service)는 「김치 한 통 가져와」 라고만 부탁. 어떻게 가져오는지(SQL)는 창고 관리자의 일.</p>
+</div>
+
+<pre><code class="language-java" data-trim>
+package com.smhrd.mapper;
+
+@Mapper
+public interface BoardMapper {
+    Board       selectOne(int num);
+    List&lt;Board&gt; selectList();
+    void        insert(Board b);
+    void        update(Board b);
+    void        delete(int num);
+}
+</code></pre>
+
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 메서드 시그니처만 — 비즈니스 로직 없음.
+</p>
+</section>
+
+<section><h2>DAO 와 Repository — 같은 일</h2>
+<table style="font-size:0.75em; width:100%; border-collapse:collapse;">
+<thead><tr style="background:rgba(255,255,255,0.05);">
+<th style="padding:6px;">이름</th><th>출처</th><th>본 과정에서</th></tr></thead>
+<tbody>
+<tr><td style="padding:5px;"><strong>DAO</strong></td><td>전통적 패턴 (Data Access Object)</td><td>같은 의미로 사용 가능</td></tr>
+<tr><td style="padding:5px;"><strong>Repository</strong></td><td>DDD 의 개념. Spring 권장</td><td>@Repository 어노테이션</td></tr>
+<tr><td style="padding:5px;">@Mapper</td><td>MyBatis 의 어노테이션</td><td>본 과정 사용 — Mapper 인터페이스 자동 등록</td></tr>
+</tbody></table>
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 본 과정은 「Mapper」 라는 단어를 우선 사용. DAO·Repository 는 동의어.
+</p>
+</section>
+
+<section><h2>@Repository 어노테이션 (참고)</h2>
+<pre><code class="language-java" data-trim>
+@Repository
+public class JdbcBoardDao {
+    @Autowired private JdbcTemplate jdbc;
+
+    public Board selectOne(int num) {
+        return jdbc.queryForObject(
+            "SELECT num, title, writer, content FROM myboard WHERE num = ?",
+            new BeanPropertyRowMapper&lt;&gt;(Board.class), num
+        );
+    }
+}
+</code></pre>
+
+<p style="font-size:0.85em; margin-top:0.4em;">
+@Repository 의 효과:
+</p>
+<ul style="font-size:0.85em;">
+<li>Spring 컨테이너 자동 등록 (@Component 와 같음)</li>
+<li>SQLException → DataAccessException 자동 변환</li>
+<li>의미적 표시 — 「이 클래스는 DB 접근 계층」</li>
+</ul>
+</section>
+
+<section><h2>본 과정의 선택 — @Mapper</h2>
+<pre><code class="language-java" data-trim>
+package com.smhrd.mapper;
+
+@Mapper                          // ⭐ MyBatis 가 자동 등록
+public interface BoardMapper {
+    List&lt;Board&gt; selectList();
+}
+
+&lt;!-- com/smhrd/mapper/BoardMapper.xml --&gt;
+&lt;mapper namespace="com.smhrd.mapper.BoardMapper"&gt;
+    &lt;select id="selectList" resultType="com.smhrd.domain.Board"&gt;
+        SELECT num, title, writer, content
+        FROM myboard ORDER BY num DESC
+    &lt;/select&gt;
+&lt;/mapper&gt;
+</code></pre>
+
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 본 과정은 인터페이스 + XML 조합. 구현 클래스 직접 안 만듦. MyBatis 가 자동 구현.
+</p>
+</section>
+
+<section><h2>DAO/Repository 가 안 하는 일</h2>
+<div class="warning-box">
+<div class="box-title">금기</div>
+<ul style="font-size:0.85em;">
+<li><strong>비즈니스 로직</strong> — 재고 확인 · 할인 계산 등은 Service</li>
+<li><strong>예외 처리 정책</strong> — 「재고 부족」 같은 도메인 예외는 Service</li>
+<li><strong>여러 테이블 조합 로직</strong> — JOIN 한 번은 OK. 「주문 + 결제 + 알림」 같은 조합은 Service</li>
+<li><strong>외부 시스템 호출</strong> — Service 의 일</li>
+</ul>
+</div>
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 「<strong>SQL 한 번에 하는 일</strong>」 까지가 DAO 의 책임.
+</p>
+</section>
+
+<section><h2>Service ↔ Mapper 의존</h2>
+<pre><code class="language-java" data-trim>
+@Service
+public class BoardService {
+
+    @Autowired
+    private BoardMapper mapper;        // ⭐ 의존 방향: Service → Mapper
+
+    public Board find(int num) {
+        return mapper.selectOne(num);
+    }
+}
+</code></pre>
+
+<div class="diagram">
+   ✓ Service 가 Mapper 를 호출
+   ✗ Mapper 가 Service 를 호출 (절대 X)
+   ✗ Mapper 가 Controller 를 호출 (절대 X)
+</div>
+</section>
+
+<section><h2>여러 Mapper 활용</h2>
+<pre><code class="language-java" data-trim>
+@Service
+public class OrderService {
+    @Autowired private OrderMapper orderMapper;
+    @Autowired private ItemMapper itemMapper;
+    @Autowired private PaymentMapper paymentMapper;
+
+    @Transactional
+    public void order(...) {
+        Item i = itemMapper.findById(itemId);    // ① 재고
+        orderMapper.insert(order);                // ② 주문
+        itemMapper.decreaseStock(itemId, qty);    // ③ 차감
+        paymentMapper.insert(payment);            // ④ 결제 기록
+    }
+}
+</code></pre>
+
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 여러 Mapper 를 「조합」 하는 일이 Service 의 핵심. 한 비즈니스 트랜잭션 단위로 묶임.
+</p>
+</section>
+
+<section><h2>패키지 구조</h2>
+<div class="diagram">
+   src/main/java/com/smhrd/
+       ├─ controller/
+       │   └─ BoardController.java
+       ├─ service/
+       │   └─ BoardService.java
+       ├─ mapper/                        ← DAO/Repository 가 사는 곳
+       │   ├─ BoardMapper.java           ← 인터페이스
+       │   └─ MemberMapper.java
+       └─ domain/
+           ├─ Board.java
+           └─ Member.java
+
+   src/main/resources/com/smhrd/mapper/
+       ├─ BoardMapper.xml                ← SQL
+       └─ MemberMapper.xml
+</div>
+</section>
+
+<section><h2>실수 모음</h2>
+<table style="font-size:0.7em; width:100%; border-collapse:collapse;">
+<thead><tr style="background:rgba(255,255,255,0.05);">
+<th style="padding:6px;">실수</th><th>증상</th></tr></thead>
+<tbody>
+<tr><td style="padding:5px;">@Mapper 빠뜨림</td><td>"No qualifying bean of type 'BoardMapper'"</td></tr>
+<tr><td style="padding:5px;">Service 에 SQL 직접 작성</td><td>책임 분리 깨짐</td></tr>
+<tr><td style="padding:5px;">Mapper 에서 비즈니스 로직</td><td>같은 로직이 여러 Mapper 에 중복</td></tr>
+<tr><td style="padding:5px;">Mapper 가 다른 Mapper 호출</td><td>의존 관계 복잡. Service 거쳐야 함</td></tr>
+</tbody></table>
+</section>
+
+<section><h2>🔄 Before / After</h2><div class="before-after">
+<div class="before"><div class="label">전 차시 끝</div>
+<p style="font-size:0.85em;">Service 와 Mapper 가 따로 있다는 정도만 안다.</p>
+</div>
+<div class="arrow">→</div>
+<div class="after"><div class="label">이번 차시 끝</div>
+<p style="font-size:0.85em;">Mapper 의 단 하나의 책임 = SQL. 비즈니스 로직은 안 들어가는 이유를 안다.</p>
+</div>
+</div></section>
+
+<section><h2>이번 차시의 데이터 흐름</h2>
+<div class="flow-diagram"><div class="flow">
+<div class="box">Service</div><span class="arrow">→</span>
+<div class="box new">Mapper 인터페이스</div><span class="arrow">→</span>
+<div class="box new">Mapper XML</div><span class="arrow">→</span>
+<div class="box">DB</div></div>
+<div class="caption">
+<span class="new-mark">●</span> Mapper 두 박스가 흐름의 끝부분에서 SQL 만 책임
+</div></div>
+</section>
+
+<section><h2>정리</h2><div class="summary"><h3>오늘 들고 가는 것</h3><ul>
+<li>DAO = Repository = Mapper (본 과정에서) — 같은 책임</li>
+<li>「SQL 한 번에 하는 일」 까지가 DAO 의 책임</li>
+<li>비즈니스 로직 · 예외 정책 · 외부 호출 = 모두 Service</li>
+<li>의존 방향: Service → Mapper (역방향 X)</li>
+</ul></div>
+</section>
+
+</div></div>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"></script>
+<script>Reveal.initialize({hash:true,slideNumber:'c/t',width:1280,height:720,margin:0.06,transition:'slide',plugins:[RevealHighlight,RevealNotes]});</script>
+<script src="../js/infographics.js?v=2"></script>
+<script src="../js/screenshot.js?v=2"></script></body></html>

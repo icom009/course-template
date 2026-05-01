@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MySQL 설치 + 테이블 만들기 — 읽기 자료</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/example.css"></head><body>
+<div class="container">
+
+<div class="header"><div class="session-num">▣ PART · DB</div>
+<h1>MySQL 설치 + 테이블 만들기</h1><p class="subtitle">데이터와 MyBatis — 읽기 자료</p></div>
+
+<div class="minimap"><div class="minimap-title">📍 지금 어디를 만지고 있나요?</div><div class="flow">
+<div class="box">브라우저</div><span class="arrow">→</span>
+<div class="box active">데이터와 MyBatis</div><span class="arrow">→</span>
+<div class="box">DB</div></div></div>
+
+<div class="terms"><h3>핵심 용어</h3><div class="term-item"><span class="term-name">AUTO_INCREMENT</span><span class="term-desc">새 행 추가 시 PK 가 자동 증가.</span></div>
+<div class="term-item"><span class="term-name">PRIMARY KEY</span><span class="term-desc">행을 유일하게 식별하는 컬럼.</span></div>
+<div class="term-item"><span class="term-name">ALTER TABLE</span><span class="term-desc">기존 테이블 구조를 바꾸는 명령. 차시가 진행되며 컬럼이 자라난다.</span></div></div>
+
+<h2>1. 문제</h2>
+<div class="pain-point"><div class="pain-title">전 차시까지의 답답함</div><p>DB 도구 설치가 어렵게 느껴진다.</p></div>
+
+<h2>2. 새 도구</h2>
+<div class="new-tool"><div class="tool-title">MySQL 8 + Workbench</div><p>MySQL 서버 설치 후 Workbench 또는 DBeaver 같은 GUI 로 접속. 회원·게시판 테이블 DDL 실행.</p></div>
+
+<h2>3. 코드</h2>
+<pre><code>-- 회원 테이블 (v2 최소형)
+CREATE TABLE mymember (
+    id   VARCHAR(50)  PRIMARY KEY,
+    pwd  VARCHAR(20)  NOT NULL
+);
+
+-- 게시판 테이블 (v5 최소형)
+CREATE TABLE myboard (
+    num     INT          PRIMARY KEY AUTO_INCREMENT,
+    title   VARCHAR(100) NOT NULL,
+    writer  VARCHAR(50)  NOT NULL,
+    content TEXT         NOT NULL
+);</code></pre>
+
+<p style="color:#666; font-size:0.9em;">👉 처음에는 일부러 <strong>최소 컬럼</strong>으로 시작합니다. 작성 시각·조회수·첨부 같은 컬럼은 후속 차시에서 <code>ALTER TABLE</code> 로 추가합니다.</p>
+
+<h2>4. 정리</h2>
+<ul><li><code>mymember</code> — 로그인 ID 와 비밀번호 두 칸</li>
+<li><code>myboard</code> — 글번호 / 제목 / 작성자 / 본문 네 칸</li>
+<li>차시가 진행되며 두 테이블에 ALTER 가 차곡차곡 쌓인다</li></ul>
+
+<h2>5. Before / After</h2>
+<div class="before-after">
+<div class="before"><div class="label">전 차시 끝</div><p>DB 도구 설치가 어렵게 느껴진다.</p></div>
+<div class="arrow">→</div>
+<div class="after"><div class="label">이번 차시 끝</div><p>본 과정 마지막까지 사용할 <code>mymember</code>·<code>myboard</code> 최소 골격이 준비됐다.</p></div>
+</div>
+
+<div class="nav"><a href="db-sql-basics.html">&larr; 이전</a><a href="../index.html">메인으로</a><a href="db-jdbc-vs-mybatis.html">다음 &rarr;</a></div>
+</div><script src="../js/screenshot.js?v=2"></script></body></html>

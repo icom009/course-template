@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DB 붙이려면 어디를 손대나 — 실습</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/lab.css"></head><body>
+<div class="container">
+
+<div class="header"><div class="badge">◆ LAB · DB</div>
+<h1>DB 붙이려면 어디를 손대나</h1><p class="subtitle">데이터와 MyBatis — 실습</p></div>
+
+<div class="minimap"><div class="minimap-title">📍 지금 어디를 만지고 있나요?</div><div class="flow">
+<div class="box">브라우저</div><span class="arrow">→</span>
+<div class="box active">데이터와 MyBatis</div><span class="arrow">→</span>
+<div class="box">DB</div></div></div>
+
+<div class="prerequisites"><h3>사전 준비</h3>
+<ul><li>전 차시 완료</li><li>Eclipse + Tomcat 동작 환경</li></ul></div>
+
+<div class="box box-info"><div class="box-title">이번 실습의 목표</div>
+<p>본 과정 디버깅 1순위. 「DB 안 됨」 만나면 이 5 곳부터.</p></div>
+
+<div class="step"><div class="step-header"><div class="step-num">1</div><div class="step-title">코드 작성</div></div>
+<pre><code>① pom.xml
+   &lt;dependency&gt; mysql-connector-j &lt;/dependency&gt;
+   &lt;dependency&gt; mybatis &lt;/dependency&gt;
+   &lt;dependency&gt; mybatis-spring &lt;/dependency&gt;
+
+② root-context.xml
+   &lt;bean id="dataSource" class="HikariDataSource"&gt;...&lt;/bean&gt;
+   &lt;bean id="sqlSessionFactory" .../&gt;
+   &lt;bean class="MapperScannerConfigurer".../&gt;
+
+③ src/main/resources/mybatis-config.xml
+   &lt;settings&gt;
+     &lt;setting name="mapUnderscoreToCamelCase" value="true"/&gt;
+   &lt;/settings&gt;
+
+④ Mapper 인터페이스 + XML (com.smhrd.mapper)
+   @Mapper interface BoardMapper { ... }
+   &lt;mapper namespace="com.smhrd.mapper.BoardMapper"&gt;
+     &lt;select id="selectList" resultType="com.smhrd.domain.Board"&gt;
+       SELECT num, title, writer, content FROM myboard
+     &lt;/select&gt;
+   &lt;/mapper&gt;
+
+⑤ Service 에서 주입
+   @Autowired BoardMapper mapper;</code></pre>
+<div class="checkpoint"><div class="check-title">CHECKPOINT</div>
+<ul><li>코드를 작성한 뒤 빨간 줄(컴파일 오류)이 없는가?</li></ul></div></div>
+
+<div class="step"><div class="step-header"><div class="step-num">2</div><div class="step-title">실행 + 결과 확인</div></div>
+<p>Run on Server 또는 javac+java 로 실행하고 결과를 확인합니다.</p>
+<div class="checkpoint"><div class="check-title">CHECKPOINT</div>
+<ul><li>예상한 동작이 일어났는가?</li><li>안 됐다면 F12 / 콘솔 / 로그 어디서 단서가 보이는가?</li></ul></div></div>
+
+<div class="checklist"><h3>실습 완료 체크리스트</h3>
+<div class="check-item"><input type="checkbox"> ① pom.xml 의존성</div>
+<div class="check-item"><input type="checkbox"> ② root-context.xml DataSource·SqlSessionFactory</div>
+<div class="check-item"><input type="checkbox"> ③ mybatis-config.xml 옵션</div>
+<div class="check-item"><input type="checkbox"> ④ Mapper 인터페이스 + XML</div>
+<div class="check-item"><input type="checkbox"> ⑤ Service 에서 @Autowired</div></div>
+
+<div class="nav"><a href="db-jdbc-vs-mybatis.html">&larr; 이전</a><a href="../index.html">메인으로</a><a href="db-hikari-pool.html">다음 &rarr;</a></div>
+</div><script src="../js/screenshot.js?v=2"></script></body></html>

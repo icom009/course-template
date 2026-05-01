@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>클라이언트와 서버 | Spring 기초</title>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/night.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+  <link rel="stylesheet" href="css/custom.css">
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+      <!-- ================== 1. 타이틀 ================== -->
+      <section>
+        <div class="session-title">
+          <span class="session-glyph">◇ PART · WEB</span>
+          <h1>클라이언트와 서버</h1>
+          <p class="subtitle">웹의 동작 원리 — 요청과 응답</p>
+        </div>
+        <aside class="notes">
+          첫 시간이므로 분위기를 편하게 잡아주세요. 컴퓨터에 익숙하지 않아도 괜찮다고 안내합니다.
+          오늘 우리는 코드를 한 줄도 쓰지 않습니다. 매일 보는 웹사이트가 어떻게 동작하는지를 누구나 아는 풍경(카페에서 커피 시키기)에 빗대어 짚어봅니다.
+        </aside>
+      </section>
+
+      <!-- ================== 2. 학습 목표 ================== -->
+      <section>
+        <h2>학습 목표</h2>
+        <div class="objectives">
+          <ul>
+            <li class="fragment fade-up"><span class="keyword">클라이언트</span>와 <span class="keyword">서버</span>가 무엇인지 자기 말로 설명할 수 있다</li>
+            <li class="fragment fade-up">웹사이트에서 일어나는 <span class="keyword">요청</span>과 <span class="keyword">응답</span>의 흐름을 그릴 수 있다</li>
+            <li class="fragment fade-up">실제 브라우저에서 이 흐름이 일어나는 순간을 직접 확인할 수 있다</li>
+          </ul>
+        </div>
+        <aside class="notes">
+          학습 목표를 읽어주고, 끝나고 나서 학생이 스스로 "할 수 있게 됐는지" 확인할 거라고 안내.
+        </aside>
+      </section>
+
+      <!-- ================== 3. ⚠️ 왜 이걸 알아야 하나 (첫 차시 변형) ================== -->
+      <section>
+        <h2>⚠️ 왜 이걸 알아야 할까요?</h2>
+        <div class="pain-point">
+          <div class="pain-title">우리가 매일 만나는 풍경</div>
+          <p>주소창에 <code>naver.com</code> 을 치면 — 1초 만에 화면이 뜹니다.<br>
+          그 1초 동안 컴퓨터 사이에서는 <strong>무슨 일</strong>이 일어났을까요?</p>
+          <p style="margin-top: 0.6em;">이걸 모르면 나중에 코드가 안 될 때 <span class="keyword">어디서 막혔는지</span> 짐작할 수가 없습니다.</p>
+        </div>
+        <aside class="notes">
+          입문자에게 가장 와닿는 도입은 "이거 모르면 디버깅이 안 된다"입니다.
+          코드를 짤 줄 아는 것과, 안 될 때 어디를 봐야 할지 아는 것은 다른 기술이라고 짚어주세요.
+        </aside>
+      </section>
+
+      <!-- ================== 4. 🛠️ 새 도구 — 카페 비유 ================== -->
+      <section>
+        <h2>🛠️ 카페에서 일어나는 일</h2>
+        <div class="new-tool">
+          <div class="tool-title">웹 = 카페</div>
+          <p>웹사이트의 모든 동작은 <strong>카페에서 커피를 시키는 것</strong>과 똑같이 생겼습니다.</p>
+          <img src="../images/cafe-counter.jpg" alt="카페 카운터" style="max-width: 380px; border-radius: 12px; margin: 1em auto; display: block; opacity: 0.9;">
+        </div>
+
+        <div class="diagram">
+        ┌─────────────┐                 ┌──────────────┐
+        │             │   "아메리카노"   │              │
+        │   손님      │ ──────────────→ │   바리스타   │
+        │ (Client)    │                 │  (Server)    │
+        │             │ ←────────────── │              │
+        │             │   ☕ 한 잔      │              │
+        └─────────────┘                 └──────────────┘
+        </div>
+        <aside class="notes">
+          여기가 핵심 비유입니다. 한 번 잡히면 4주 내내 이 그림이 머릿속에 박힙니다.
+          학생들에게 "여러분도 매일 이걸 하고 있어요"라고 친근하게.
+        </aside>
+      </section>
+
+      <!-- ================== 5. 손님(클라이언트) ================== -->
+      <section>
+        <h2>손님 — 클라이언트 <small style="color:#94a3b8;">(Client)</small></h2>
+        <div class="columns">
+          <div class="col">
+            <ul>
+              <li class="fragment fade-up">먼저 <span class="keyword">"이거 주세요"</span> 라고 말을 거는 쪽</li>
+              <li class="fragment fade-up">우리가 매일 쓰는 <strong>크롬</strong>, <strong>사파리</strong></li>
+              <li class="fragment fade-up">배달 앱, 게임, 쇼핑 앱도 전부 클라이언트</li>
+            </ul>
+          </div>
+          <div class="col">
+            <div class="info-box">
+              <div class="box-title">💡 한 줄 정리</div>
+              <p style="font-size: 0.9em;">"먼저 부탁하는 쪽" 이면 모두 클라이언트.</p>
+            </div>
+          </div>
+        </div>
+        <aside class="notes">
+          학생들이 매일 쓰는 앱이 전부 클라이언트라는 걸 짚어주면 친근해집니다.
+        </aside>
+      </section>
+
+      <!-- ================== 6. 가게(서버) ================== -->
+      <section>
+        <h2>바리스타 — 서버 <small style="color:#94a3b8;">(Server)</small></h2>
+        <div class="columns">
+          <div class="col">
+            <ul>
+              <li class="fragment fade-up">손님의 요청을 <span class="keyword">묵묵히 기다리는</span> 쪽</li>
+              <li class="fragment fade-up">언제 손님이 올지 모르므로 <strong>24시간 켜져 있어야</strong> 함</li>
+              <li class="fragment fade-up">네이버 서버, 유튜브 서버, 카카오톡 서버 ...</li>
+            </ul>
+          </div>
+          <div class="col">
+            <div class="warning-box">
+              <div class="box-title">⏰ 중요한 차이</div>
+              <p style="font-size: 0.9em;">서버는 <strong>먼저 말을 걸지 않습니다</strong>.<br>항상 손님이 먼저입니다.</p>
+            </div>
+          </div>
+        </div>
+        <aside class="notes">
+          서버가 24시간 켜져 있다는 점, 그리고 절대 먼저 말을 걸지 않는다는 점이 학생들에게는 의외의 사실입니다.
+        </aside>
+      </section>
+
+      <!-- ================== 7. 요청과 응답 ================== -->
+      <section>
+        <h2>요청과 응답 <small style="color:#94a3b8;">(Request / Response)</small></h2>
+        <div class="diagram">
+   1. 손님 → 가게:   "아메리카노 한 잔 주세요"     ← 요청 (Request)
+
+   2. 가게 → 손님:   "여기 있습니다 ☕"           ← 응답 (Response)
+        </div>
+
+        <p class="fragment" style="margin-top: 0.8em;">웹에서 우리가 하는 모든 일은 이 <strong>두 단계의 반복</strong>입니다.</p>
+
+        <div class="fragment tip-box">
+          <div class="box-title">🎯 외워둘 것</div>
+          <p style="font-size: 0.92em;">웹 = <strong>요청</strong>(Request) + <strong>응답</strong>(Response). 끝.</p>
+        </div>
+        <aside class="notes">
+          이 두 단어가 4주 내내 등장합니다. 지금 단단히 박아두면 나중에 편합니다.
+        </aside>
+      </section>
+
+      <!-- ================== 8. 실제 풍경 — 네이버 ================== -->
+      <section>
+        <h2>네이버 화면이 뜨는 그 1초</h2>
+        <div class="diagram">
+   주소창에 naver.com 입력
+              │
+              ▼
+   ┌─────────────┐                    ┌──────────────┐
+   │   브라우저  │   "네이버 줘"      │  네이버 서버 │
+   │   (크롬)    │ ─────────────────→ │              │
+   │             │                    │              │
+   │             │ ←───────────────── │              │
+   │             │   HTML, 이미지 등  │              │
+   └─────────────┘                    └──────────────┘
+              │
+              ▼
+        화면을 그려서 보여줌
+        </div>
+        <aside class="notes">
+          이 1초 안에 일어나는 일을 그림으로 보여주면 학생들이 "아, 이렇게 되는 거구나" 합니다.
+          이게 안 되면 "인터넷이 안 돼요"가 되는 거죠.
+        </aside>
+      </section>
+
+      <!-- ================== 9. 💻 직접 확인 ================== -->
+      <section>
+        <h2>💻 진짜로 일어나는지 보고 싶다면</h2>
+        <p>크롬을 열고 — <strong>F12</strong> 를 눌러보세요.</p>
+
+        <div class="screenshot">
+          <div class="label">스크린샷</div>
+          <div class="desc">크롬에서 네이버에 접속한 뒤 F12 → Network 탭. 수십 개의 요청·응답이 줄지어 보임</div>
+        </div>
+
+        <p class="fragment" style="font-size: 0.85em; color: var(--text-muted);">
+          한 페이지를 띄우는 데 사실은 <strong>수십 번의 요청·응답</strong>이 오갑니다.
+        </p>
+        <aside class="notes">
+          여기서 학생들이 처음으로 F12 를 누르는 경험을 합니다. 두려워할 필요 없다고 말해주세요.
+          실습 자료(labs/)에서 단계별로 따라하게 됩니다.
+        </aside>
+      </section>
+
+      <!-- ================== 10. 데이터 흐름도 (필수, 마지막 직전) ================== -->
+      
+      <section>
+        <h2>📊 한 그림 정리</h2>
+        <div data-infographic="client-server"></div>
+      </section>
+
+      <section>
+        <h2>이번 차시의 데이터 흐름</h2>
+        <div class="flow-diagram">
+          <div class="flow">
+            <div class="box new">브라우저</div>
+            <span class="arrow">⇄</span>
+            <div class="box new">서버</div>
+          </div>
+          <div class="caption">
+            <span class="new-mark">●</span> 첫 박스 두 개가 등장했습니다 — 앞으로 이 사이가 점점 채워집니다
+          </div>
+        </div>
+
+        <p style="margin-top: 1em; font-size: 0.8em; color: var(--text-muted); text-align: center;">
+          오늘은 그저 <strong>둘이 대화하는 사이</strong>임을 봤습니다.<br>
+          다음 차시부터 사이에 박스가 하나씩 추가됩니다.
+        </p>
+        <aside class="notes">
+          이 흐름도는 매 차시마다 점점 길어집니다. 박스가 하나씩 채워지는 게 우리 과정의 진도입니다.
+          마지막 차시 즈음에는 [브라우저] → [Controller] → [Service] → [Mapper] → [DB] 까지 늘어납니다.
+        </aside>
+      </section>
+
+      <!-- ================== 11. 정리 ================== -->
+      <section>
+        <h2>정리</h2>
+        <div class="summary">
+          <h3>오늘 들고 가는 것</h3>
+          <ul>
+            <li><strong>클라이언트</strong> = 먼저 부탁하는 쪽 (손님, 브라우저)</li>
+            <li><strong>서버</strong> = 묵묵히 기다리는 쪽 (바리스타, 24시간 켜진 컴퓨터)</li>
+            <li>웹의 모든 일 = <strong>요청 + 응답</strong>의 반복</li>
+          </ul>
+        </div>
+        <p style="margin-top: 0.8em; font-size: 0.7em; color: var(--text-muted);">
+          다음 차시: <strong>HTTP 해부</strong> — 요청·응답 안에 어떤 글자가 들어있는지 F12 로 직접 뜯어봅니다.
+        </p>
+        <aside class="notes">
+          정리는 짧게. 학생이 "오늘은 이걸 들고 갑니다"를 입으로 말할 수 있게.
+        </aside>
+      </section>
+
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"></script>
+  <script>
+    Reveal.initialize({
+      hash: true,
+      slideNumber: 'c/t',
+      width: 1280,
+      height: 720,
+      margin: 0.06,
+      transition: 'slide',
+      plugins: [RevealHighlight, RevealNotes]
+    });
+  </script>
+  <script src="../js/infographics.js?v=2"></script>
+<script src="../js/screenshot.js?v=2"></script>
+</body>
+</html>

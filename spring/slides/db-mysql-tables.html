@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MySQL 설치 + 테이블 만들기 | Spring 기초</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/night.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/custom.css"></head><body>
+<div class="reveal"><div class="slides">
+
+<section><div class="session-title">
+<span class="session-glyph">▣ PART · DB</span>
+<h1>MySQL 설치 + 테이블 만들기</h1>
+<p class="subtitle">실제 DB 환경 준비</p>
+</div></section>
+
+<section><h2>학습 목표</h2><div class="objectives"><ul>
+<li class="fragment fade-up">MySQL 서버 설치 + 가동</li>
+<li class="fragment fade-up">DBeaver 또는 Workbench 같은 GUI 도구 연결</li>
+<li class="fragment fade-up">데이터베이스 + 테이블 직접 생성</li>
+<li class="fragment fade-up">본 과정 끝까지 사용할 두 테이블 (mymember, myboard) 준비 — 최소 컬럼부터</li>
+</ul></div></section>
+
+<section><h2>설치 단계 — Mac/Windows 공통</h2>
+<ol style="font-size:0.85em;">
+<li class="fragment">MySQL Community Server 다운로드 (mysql.com)</li>
+<li class="fragment">설치 (root 비밀번호 설정 시 잊지 말 것)</li>
+<li class="fragment">서비스 시작 (자동 시작으로 설정)</li>
+<li class="fragment">DBeaver 또는 MySQL Workbench 설치 (GUI 도구)</li>
+<li class="fragment">root 계정으로 연결 테스트</li>
+</ol>
+</section>
+
+<section><h2>DBeaver — 추천 GUI 도구</h2>
+<div class="info-box">
+<p>DBeaver 설치 후 새 연결:</p>
+<ul style="font-size:0.85em;">
+<li>Database: MySQL</li>
+<li>Server Host: localhost</li>
+<li>Port: 3306</li>
+<li>Username: root</li>
+<li>Password: 설치 시 설정한 비밀번호</li>
+</ul>
+<p style="margin-top:0.4em;">「Test Connection」 → 성공이면 「Finish」.</p>
+</div>
+</section>
+
+<section><h2>① 데이터베이스 만들기</h2>
+<pre><code class="language-sql" data-trim>
+CREATE DATABASE spring_db
+    DEFAULT CHARACTER SET utf8mb4
+    COLLATE utf8mb4_unicode_ci;
+
+USE spring_db;
+</code></pre>
+
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 본 과정에서 사용할 DB 의 이름은 <code>spring_db</code>.<br>
+<strong>utf8mb4</strong> = 한글 + 이모지 지원.
+</p>
+</section>
+
+<section><h2>② mymember 테이블 생성 (v2 최소형)</h2>
+<pre><code class="language-sql" data-trim>
+CREATE TABLE mymember (
+    id   VARCHAR(50)  PRIMARY KEY,
+    pwd  VARCHAR(20)  NOT NULL
+);
+</code></pre>
+
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 처음에는 <strong>딱 두 칸</strong> — 로그인 ID 와 비밀번호. <code>pwd</code> 는 평문 단계라 짧게(20). 나중에 BCrypt 가 들어올 때 <code>ALTER TABLE</code> 로 늘릴 예정.
+</p>
+</section>
+
+<section><h2>③ myboard 테이블 생성 (v5 최소형)</h2>
+<pre><code class="language-sql" data-trim>
+CREATE TABLE myboard (
+    num     INT          PRIMARY KEY AUTO_INCREMENT,
+    title   VARCHAR(100) NOT NULL,
+    writer  VARCHAR(50)  NOT NULL,
+    content TEXT         NOT NULL
+);
+</code></pre>
+
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 <strong>4 칸</strong>이 끝 — 글 번호 / 제목 / 작성자 / 본문. 작성 시각·조회수·첨부는 후속 차시에서 <code>ALTER TABLE</code> 로 추가.
+</p>
+</section>
+
+<section><h2>왜 이렇게 단순한가</h2>
+<div class="info-box">
+<p style="font-size:0.85em;">
+완성된 테이블을 통째로 보여주면 — 학생은 「왜 이 컬럼이 처음부터 있지?」 라는 가장 중요한 질문을 못 합니다.<br>
+이 과정에서는 <strong>차시가 진행될수록 <code>ALTER TABLE</code> 로 컬럼이 자라납니다.</strong> 그 ALTER 하나하나가 곧 학습 내용입니다.
+</p>
+</div>
+</section>
+
+<section><h2>테스트 데이터 삽입</h2>
+<pre><code class="language-sql" data-trim>
+-- 회원 3 명
+INSERT INTO mymember (id, pwd) VALUES
+    ('hong', 'temp1234'),
+    ('kim',  'temp1234'),
+    ('lee',  'temp1234');
+
+-- 게시글 3 개
+INSERT INTO myboard (title, writer, content) VALUES
+    ('첫 글입니다',  'hong', '안녕하세요'),
+    ('두 번째 글',   'hong', '내용입니다'),
+    ('환영합니다',   'kim',  '반갑습니다');
+</code></pre>
+
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 비밀번호는 「temp1234」 평문 — v3 에서 BCrypt 로 다시 저장할 예정.
+</p>
+</section>
+
+<section><h2>확인 — SELECT 로 데이터 검증</h2>
+<pre><code class="language-sql" data-trim>
+SELECT * FROM mymember;
+SELECT * FROM myboard;
+
+-- 게시글 + 작성자 (mymember.id 를 writer 로 참조)
+SELECT b.num, b.title, b.writer
+FROM myboard b
+INNER JOIN mymember m ON b.writer = m.id;
+</code></pre>
+
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 결과가 정상 출력되면 — 본 과정의 DB 환경 준비 완료.
+</p>
+</section>
+
+<section><h2>흔한 함정</h2>
+<table style="font-size:0.7em; width:100%; border-collapse:collapse;">
+<thead><tr style="background:rgba(255,255,255,0.05);">
+<th style="padding:6px;">증상</th><th>원인</th></tr></thead>
+<tbody>
+<tr><td style="padding:5px;">"Access denied"</td><td>비밀번호 오류</td></tr>
+<tr><td style="padding:5px;">"Unknown database"</td><td>USE 안 했거나 DB 안 만듦</td></tr>
+<tr><td style="padding:5px;">한글 깨짐</td><td>CHARACTER SET utf8mb4 누락</td></tr>
+<tr><td style="padding:5px;">테이블 못 찾음</td><td>USE 안 했거나 이름 오타 (<code>mymember</code> / <code>myboard</code>)</td></tr>
+<tr><td style="padding:5px;">포트 충돌</td><td>3306 사용 중 — 다른 MySQL 인스턴스 또는 변경</td></tr>
+</tbody></table>
+</section>
+
+<section><h2>🔄 Before / After</h2><div class="before-after">
+<div class="before"><div class="label">전 차시 끝</div>
+<p style="font-size:0.85em;">DB 와 SQL 은 책상 위 개념. 실제 DB 환경 없음.</p>
+</div>
+<div class="arrow">→</div>
+<div class="after"><div class="label">이번 차시 끝</div>
+<p style="font-size:0.85em;">MySQL 서버 가동, <code>mymember</code>·<code>myboard</code> 최소 테이블 + 테스트 데이터. 차시가 진행되며 ALTER 로 자라날 출발점.</p>
+</div>
+</div></section>
+
+<section><h2>정리</h2><div class="summary"><h3>오늘 들고 가는 것</h3><ul>
+<li>MySQL 설치 + DBeaver 연결</li>
+<li>spring_db (utf8mb4) + 최소 두 테이블 (<code>mymember</code>, <code>myboard</code>)</li>
+<li>테스트 데이터 삽입</li>
+<li>SELECT JOIN 으로 검증 — 차시가 진행되며 ALTER 로 자란다</li>
+</ul></div>
+</section>
+
+</div></div>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"></script>
+<script>Reveal.initialize({hash:true,slideNumber:'c/t',width:1280,height:720,margin:0.06,transition:'slide',plugins:[RevealHighlight,RevealNotes]});</script>
+<script src="../js/infographics.js?v=2"></script>
+<script src="../js/screenshot.js?v=2"></script></body></html>

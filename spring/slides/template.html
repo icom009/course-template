@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<!--
+  ============================================================================
+  새 슬라이드를 만들 때 이 파일을 복사해서 시작하세요.
+
+  파일명 규칙: slides/{part약어}-{주제키워드}.html
+    예) slides/web-client-server.html
+        slides/spring-ioc.html
+        slides/auth-v3-secure.html
+  주의: 키워드는 「학습 주제」로 짓는다. 비유(cafe, taxi 등)를 파일명에 넣지 않는다.
+
+  필수 4단계 흐름:
+    ⚠️ 이전 버전의 불편 (.pain-point)
+    🛠️ 새 도구 소개      (.new-tool)
+    💻 코드 적용
+    🔄 Before/After 비교 (.before-after)
+
+  마지막 직전 슬라이드는 항상 「데이터 흐름도」(.flow-diagram)
+  마일스톤 차시(★)는 .version-badge 를 둘 것
+  ============================================================================
+-->
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Session 제목 | 비전공자를 위한 Spring 기초</title>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/night.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+  <link rel="stylesheet" href="css/custom.css">
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+      <!-- ================== 1. 타이틀 슬라이드 ================== -->
+      <section>
+        <!-- 마일스톤 차시면 활성화 -->
+        <!-- <div class="version-badge">v?</div> -->
+
+        <div class="session-title">
+          <span class="session-glyph">◇ 개념 차시</span>
+          <h1>차시 제목</h1>
+          <p class="subtitle">Part · 비유</p>
+        </div>
+        <aside class="notes">
+          [강사 노트] 수업 시작 시 분위기 가이드. 비전공자가 부담 없이 들어올 수 있게.
+        </aside>
+      </section>
+
+      <!-- ================== 2. 학습 목표 ================== -->
+      <section>
+        <h2>학습 목표</h2>
+        <div class="objectives">
+          <ul>
+            <li class="fragment fade-up"><span class="keyword">핵심용어 1</span>이 무엇인지 비유로 설명할 수 있다</li>
+            <li class="fragment fade-up"><span class="keyword">핵심용어 2</span>의 동작 원리를 그림으로 그릴 수 있다</li>
+            <li class="fragment fade-up">실제 화면에서 <span class="keyword">핵심용어 3</span>를 직접 확인할 수 있다</li>
+          </ul>
+        </div>
+        <aside class="notes">학습 목표는 "할 수 있다" 형태로. 학생이 끝나고 나서 자기 검증할 수 있게.</aside>
+      </section>
+
+      <!-- ================== 3. ⚠️ 이전 버전의 불편 (또는 "왜 필요한가") ================== -->
+      <section>
+        <h2>⚠️ 어디가 아팠나</h2>
+        <div class="pain-point">
+          <div class="pain-title">이전 버전의 문제</div>
+          <p>...구체적인 불편함을 학생이 느낄 수 있게 서술. 가능하면 직접 시연한 후 들어옴.</p>
+        </div>
+        <aside class="notes">
+          이 자리에서 "그래서 우리가 새 도구를 배우는 거예요"의 동기가 만들어진다.
+          첫 차시처럼 이전 버전이 없으면 "왜 이게 필요한가" (학생의 일상 호기심)로 대체.
+        </aside>
+      </section>
+
+      <!-- ================== 4. 🛠️ 새 도구 소개 ================== -->
+      <section>
+        <h2>🛠️ 새 도구</h2>
+        <div class="new-tool">
+          <div class="tool-title">도구 이름 (English Name)</div>
+          <p>한 줄 설명 + 일상 비유.</p>
+        </div>
+
+        <div class="diagram">
+[비유 다이어그램]
+  ↓
+  ↓
+[원리 설명]
+        </div>
+        <aside class="notes">새 개념은 반드시 일상 비유와 함께. 이론 먼저 말하지 말고 비유 먼저.</aside>
+      </section>
+
+      <!-- ================== 5. 💻 코드 적용 ================== -->
+      <section>
+        <h2>💻 코드로 만나기</h2>
+        <pre><code class="language-java" data-trim data-noescape>
+// 여기에 실제 코드 예시
+public class Example {
+    public void hello() {
+        System.out.println("Hello");
+    }
+}
+        </code></pre>
+        <aside class="notes">코드는 짧게. 한 슬라이드에 너무 많이 넣지 않기.</aside>
+      </section>
+
+      <!-- ================== 6. 🔄 Before / After ================== -->
+      <section>
+        <h2>🔄 Before / After</h2>
+        <div class="before-after">
+          <div class="before">
+            <div class="label">BEFORE — 이전 버전</div>
+            <pre><code data-trim>// 이전 코드
+old code here</code></pre>
+          </div>
+          <div class="arrow">→</div>
+          <div class="after">
+            <div class="label">AFTER — 이번 차시</div>
+            <pre><code data-trim>// 새 코드
+new code here</code></pre>
+          </div>
+        </div>
+        <p style="font-size: 0.7em; color: var(--text-muted); margin-top: 1em;">
+          🔍 어디가 줄었나? 어디가 새로 생겼나?
+        </p>
+        <aside class="notes">학생이 직접 "어디가 달라졌나"를 짚게 한다. 1분 정도 시간을 준다.</aside>
+      </section>
+
+      <!-- ================== 7. 데이터 흐름도 (마지막 직전, 필수) ================== -->
+      <section>
+        <h2>이번 차시의 데이터 흐름</h2>
+        <div class="flow-diagram">
+          <div class="flow">
+            <div class="box">브라우저</div>
+            <span class="arrow">→</span>
+            <div class="box new">새로 생긴 칸</div>
+            <span class="arrow">→</span>
+            <div class="box empty">아직 비어있음</div>
+          </div>
+          <div class="caption">
+            <span class="new-mark">●</span> 이번 차시에서 새로 생긴 칸
+          </div>
+        </div>
+        <aside class="notes">
+          매 차시 마지막 직전에 흐름도. 박스가 누적되면서 점점 길어지는 게 핵심.
+          다음 차시 들어가기 전에 학생이 흐름도를 손가락으로 짚을 수 있어야 함.
+        </aside>
+      </section>
+
+      <!-- ================== 8. 정리 ================== -->
+      <section>
+        <h2>정리</h2>
+        <div class="summary">
+          <h3>오늘 배운 내용</h3>
+          <ul>
+            <li>핵심 1</li>
+            <li>핵심 2</li>
+            <li>핵심 3</li>
+          </ul>
+        </div>
+        <p style="margin-top: 0.8em; font-size: 0.7em; color: var(--text-muted);">
+          다음 차시: 다음 주제 미리보기
+        </p>
+        <aside class="notes">정리는 짧게 3줄. 학생이 핵심만 들고 나가게.</aside>
+      </section>
+
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"></script>
+  <script>
+    Reveal.initialize({
+      hash: true,
+      slideNumber: 'c/t',
+      width: 1280,
+      height: 720,
+      margin: 0.06,
+      transition: 'slide',
+      plugins: [RevealHighlight, RevealNotes]
+    });
+  </script>
+  <script src="../js/infographics.js?v=2"></script>
+<script src="../js/screenshot.js?v=2"></script>
+</body>
+</html>

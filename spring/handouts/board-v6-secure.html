@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>안전한 게시판 — 핸드아웃</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/print.css"></head><body>
+<div class="container">
+
+<div class="header">
+<div class="header-left"><div class="session-num">★ PART · BOARD</div>
+<h1>안전한 게시판</h1></div>
+<div class="header-right">Spring 기초<br>SMHRD</div></div>
+
+<div class="objectives"><h3>학습 목표</h3>
+<ul><li>안전한 게시판 의 핵심 개념을 안다</li><li>ALTER ADD COLUMN created_at 의 동작을 안다</li><li>본인 글만 수정·삭제 가능. v6 — 실용 가능한 게시판.</li></ul></div>
+
+<h2>1. 문제</h2>
+<p>v5 의 두 가지 답답함 — ① 누구나 남의 글을 수정·삭제 가능. ② myboard 에 작성일 컬럼이 없어 「언제 쓴 글인지」 표시할 수 없음.</p>
+
+<h2>2. 새 도구</h2>
+<div class="note"><strong>ALTER ADD created_at + 인가:</strong> 운영 중인 myboard 에 created_at 컬럼을 ADD. DEFAULT CURRENT_TIMESTAMP 로 기존 row 도 채움. 이어서 작성자 문자열과 세션 ID 비교로 본인 확인.</div>
+
+<h2>3. 코드</h2>
+<div class="diagram">-- 스키마 진화
+ALTER TABLE myboard
+  ADD COLUMN created_at DATETIME DEFAULT CURRENT_TIMESTAMP;
+
+// com.smhrd.domain.Board — createdAt 합류
+@Data @AllArgsConstructor @NoArgsConstructor
+public class Board {
+    private int           num;
+    private String        title;
+    private String        writer;
+    private String        content;
+    private LocalDateTime createdAt;   // ← v6 추가
+}
+
+@PostMapping("/board/update")
+public String update(Board b, HttpSession session) {
+    Member u = (Member) session.getAttribute("loginUser");
+    Board original = service.selectOne(b.getNum());
+
+    // 본인 확인 (인가) — 문자열 비교
+    if (!original.getWriter().equals(u.getId())) {
+        return "redirect:/board/view?num=" + b.getNum() + "&amp;err=forbidden";
+    }
+    service.update(b, u.getId());
+    return "redirect:/board/view?num=" + b.getNum();
+}
+
+@PostMapping("/board/delete")
+public String delete(@RequestParam int num, HttpSession session) {
+    Member u = (Member) session.getAttribute("loginUser");
+    Board original = service.selectOne(num);
+    if (!original.getWriter().equals(u.getId())) {
+        return "redirect:/board/view?num=" + num + "&amp;err=forbidden";
+    }
+    service.delete(num, u.getId());
+    return "redirect:/board/list";
+}
+
+&lt;!-- view.jsp 에서 --&gt;
+&lt;p&gt;작성자: ${board.writer} | 작성일: ${board.createdAt}&lt;/p&gt;
+&lt;c:if test="${board.writer == sessionScope.loginUser.id}"&gt;
+    &lt;a href="/board/edit?num=${board.num}"&gt;수정&lt;/a&gt;
+    &lt;form action="/board/delete" method="post" style="display:inline;"&gt;
+        &lt;input type="hidden" name="num" value="${board.num}"&gt;
+        &lt;button&gt;삭제&lt;/button&gt;
+    &lt;/form&gt;
+&lt;/c:if&gt;</div>
+
+<h2>4. 정리</h2>
+<ul><li>ALTER ADD COLUMN created_at DATETIME DEFAULT CURRENT_TIMESTAMP</li>
+<li>writer.equals(userId) 문자열 비교가 본인 확인</li>
+<li>JSP c:if 는 UI 편의 / 진짜 보안은 서버</li>
+<li>v6 마일스톤</li></ul>
+
+<h2>5. Before / After</h2>
+<div class="before-after">
+<div class="before"><div class="label">전 차시</div><p>v5 의 위험 — 누구나 남의 글을 수정·삭제 가능. 본인 확인이 필요.</p></div>
+<div class="after"><div class="label">이번 차시</div><p>본인 글만 수정·삭제 가능. v6 — 실용 가능한 게시판.</p></div>
+</div>
+
+<div class="checklist"><h3>학습 확인 체크리스트</h3>
+<ul><li>ALTER ADD COLUMN created_at + 기존 row 자동 채움</li>
+<li>Board 에 createdAt 필드 합류</li>
+<li>writer.equals(userId) 본인 확인</li>
+<li>Service / Controller 이중 체크</li></ul></div>
+
+<div class="nav"><a href="board-v5-minimal.html">&larr; 이전</a><a href="../index.html">메인으로</a><a href="board-v7-paging.html">다음 &rarr;</a></div>
+</div></body></html>

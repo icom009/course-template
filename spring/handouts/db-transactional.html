@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>@Transactional 기본 — 핸드아웃</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/print.css"></head><body>
+<div class="container">
+
+<div class="header">
+<div class="header-left"><div class="session-num">◇ PART · DB</div>
+<h1>@Transactional 기본</h1></div>
+<div class="header-right">Spring 기초<br>SMHRD</div></div>
+
+<div class="objectives"><h3>학습 목표</h3>
+<ul><li>@Transactional 기본 의 핵심 개념을 안다</li><li>@Transactional 의 동작을 안다</li><li>여러 DB 작업을 묶어야 할 때 어떤 어노테이션을 쓰는지 안다.</li></ul></div>
+
+<h2>1. 문제</h2>
+<p>"송금" 같은 작업 — 출금만 됐는데 입금이 실패하면? 돈이 사라진다.</p>
+
+<h2>2. 새 도구</h2>
+<div class="note"><strong>@Transactional:</strong> 메서드 내 모든 DB 작업을 하나의 단위로 묶음. 하나라도 실패하면 모두 롤백.</div>
+
+<h2>3. 코드</h2>
+<div class="diagram">@Service
+public class TransferService {
+
+    @Transactional
+    public void transfer(int from, int to, int amount) {
+        accountMapper.withdraw(from, amount);   // 출금
+        accountMapper.deposit(to, amount);      // 입금
+        // 둘 중 하나라도 예외 발생 → 자동 롤백
+        // 둘 다 성공 → 커밋
+    }
+}</div>
+
+<h2>4. 정리</h2>
+<ul><li>@Transactional = 메서드의 모든 DB 작업을 한 단위로</li>
+<li>하나 실패하면 전부 롤백</li>
+<li>Service 계층에 붙임</li></ul>
+
+<h2>5. Before / After</h2>
+<div class="before-after">
+<div class="before"><div class="label">전 차시</div><p>"송금" 같은 작업 — 출금만 됐는데 입금이 실패하면? 돈이 사라진다.</p></div>
+<div class="after"><div class="label">이번 차시</div><p>여러 DB 작업을 묶어야 할 때 어떤 어노테이션을 쓰는지 안다.</p></div>
+</div>
+
+<div class="checklist"><h3>학습 확인 체크리스트</h3>
+<ul><li>@Transactional = 메서드의 모든 DB 작업을 한 단위로</li>
+<li>하나 실패하면 전부 롤백</li>
+<li>Service 계층에 붙임</li></ul></div>
+
+<div class="nav"><a href="db-sql-injection.html">&larr; 이전</a><a href="../index.html">메인으로</a><a href="db-first-end-to-end.html">다음 &rarr;</a></div>
+</div></body></html>

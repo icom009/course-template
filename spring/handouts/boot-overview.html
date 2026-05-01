@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SpringBoot 개요 — 핸드아웃</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/print.css"></head><body>
+<div class="container">
+
+<!-- 1쪽: 표지 -->
+<div class="header">
+  <div class="header-left">
+    <div class="session-num">◇ PART · BOOT</div>
+    <h1>SpringBoot 개요</h1>
+    <p class="subtitle">설정의 무게를 내려놓고 다시 만나는 Spring</p>
+  </div>
+  <div class="header-right">Spring 기초<br>SMHRD</div>
+</div>
+
+<div class="objectives">
+  <h3>오늘 들고 가는 3가지</h3>
+  <ul>
+    <li><strong>SpringBoot = 설정이 미리 깔린 Spring</strong> — 코어는 그대로, 설정의 무게만 덜어냄</li>
+    <li><strong>@SpringBootApplication + Starter</strong> 두 단어 — 자동 설정과 묶음 의존성이 핵심</li>
+    <li><strong>비즈니스 로직과 흐름 사고는 우리 책임</strong> — 본 과정의 4 박스 사고가 그대로 살아있음</li>
+  </ul>
+</div>
+
+<div class="note">
+  <strong>이번 차시의 자리:</strong> 본 과정의 마지막 — Part 6 의 끝에서 후속 과정의 첫 입구로 넘어가는 다리. 오늘은 「개념 둘러보기」 까지이며, 실제 SpringBoot 프로젝트는 후속 과정에서 손으로 만집니다.
+</div>
+
+<div class="page-break"></div>
+
+<!-- 2쪽: Legacy vs Boot 비교표 -->
+<h2>1. Legacy vs SpringBoot — 한눈에 비교</h2>
+<table>
+<thead><tr><th style="width:25%;">항목</th><th>Spring Legacy</th><th>SpringBoot</th></tr></thead>
+<tbody>
+<tr><td>설정 파일</td><td>web.xml + servlet-context.xml + root-context.xml + pom.xml + log4j.xml + mybatis-config.xml + Tomcat server.xml</td><td>application.properties 1개 + pom.xml</td></tr>
+<tr><td>의존성 명시</td><td>각 라이브러리 버전 직접 작성 — 충돌 직접 해결</td><td>Starter 한 줄 — 버전은 Boot 부모 POM 이 결정</td></tr>
+<tr><td>웹 서버</td><td>외부 Tomcat 설치 → war 배포</td><td>임베디드 Tomcat — <code>java -jar</code> 한 줄</td></tr>
+<tr><td>실행 방식</td><td>Run on Server</td><td>main() 우클릭 → Run As → Java Application</td></tr>
+<tr><td>시작 코드</td><td>web.xml 의 <code>&lt;servlet&gt;</code> 태그</td><td><code>@SpringBootApplication</code> 한 줄</td></tr>
+<tr><td>DispatcherServlet</td><td>web.xml 에 직접 등록</td><td>자동 등록 (Auto-Configuration)</td></tr>
+<tr><td>인코딩 필터</td><td>web.xml 에 CharacterEncodingFilter 직접</td><td>UTF-8 기본값</td></tr>
+<tr><td>ViewResolver</td><td>servlet-context.xml 에 빈 정의</td><td>application.properties 의 prefix/suffix 두 줄</td></tr>
+<tr><td>DataSource</td><td>root-context.xml 에 빈 정의 + HikariCP 설정</td><td>application.properties 의 spring.datasource.* 만</td></tr>
+<tr><td>진입 장벽</td><td>높음 — 첫 화면 30분~1시간</td><td>낮음 — 첫 화면 5분</td></tr>
+<tr><td>Controller / Service / Mapper</td><td>직접 작성</td><td><strong>그대로 직접 작성</strong></td></tr>
+<tr><td>비즈니스 로직</td><td>우리 책임</td><td><strong>여전히 우리 책임</strong></td></tr>
+</tbody>
+</table>
+
+<div class="note">
+  <strong>요지:</strong> Boot 가 「대신 해주는 것」 = 설정. 「여전히 우리가 하는 것」 = 비즈니스 로직, DB 설계, SQL, 화면 흐름, 디버깅 사고. 본 과정에서 익힌 사고 방식은 100% 그대로 살아있습니다.
+</div>
+
+<div class="page-break"></div>
+
+<!-- 3쪽: Hello World 코드 -->
+<h2>2. Hello World — 두 파일이면 끝</h2>
+
+<h3>Application.java (시작점 — 단 10줄)</h3>
+<div class="diagram">
+package com.example.demo;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class DemoApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(DemoApplication.class, args);
+    }
+}
+</div>
+
+<h3>HelloController.java (Legacy 와 동일)</h3>
+<div class="diagram">
+package com.example.demo;
+
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+public class HelloController {
+
+    @GetMapping("/hello")
+    public String hello() {
+        return "안녕, SpringBoot!";
+    }
+}
+</div>
+
+<h3>pom.xml (의존성 한 줄)</h3>
+<div class="diagram">
+&lt;parent&gt;
+  &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+  &lt;artifactId&gt;spring-boot-starter-parent&lt;/artifactId&gt;
+  &lt;version&gt;3.2.0&lt;/version&gt;
+&lt;/parent&gt;
+
+&lt;dependencies&gt;
+  &lt;dependency&gt;
+    &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+    &lt;artifactId&gt;spring-boot-starter-web&lt;/artifactId&gt;
+  &lt;/dependency&gt;
+&lt;/dependencies&gt;
+</div>
+
+<h3>실행 신호 — 콘솔 마지막 줄</h3>
+<div class="diagram">
+INFO ... Tomcat started on port(s): 8080 (http)
+INFO ... Started DemoApplication in 2.341 seconds
+</div>
+
+<div class="page-break"></div>
+
+<!-- 4쪽: 용어 ↔ 비유 매핑 -->
+<h2>3. 용어 ↔ 비유 매핑</h2>
+<table>
+<thead><tr><th style="width:35%;">용어</th><th>비유 / 한 줄 풀이</th></tr></thead>
+<tbody>
+<tr><td>SpringBoot</td><td>이미 조립된 베이스 키트 — 설정만 미리 깔린 Spring</td></tr>
+<tr><td>@SpringBootApplication</td><td>「자동 설정 / 컴포넌트 스캔 / Configuration」 세 어노테이션을 묶은 한 단어</td></tr>
+<tr><td>Auto-Configuration</td><td>클래스패스에 무엇이 있는지 보고 — 빈자리를 알아서 메우는 메커니즘</td></tr>
+<tr><td>Starter</td><td>호환 검증된 의존성 묶음 — 「웹 한 세트」, 「JDBC 한 세트」</td></tr>
+<tr><td>임베디드 톰캣</td><td>jar 안에 들어 있는 톰캣 — 외부 설치 없이 <code>java -jar</code> 로 실행</td></tr>
+<tr><td>application.properties</td><td>Legacy 의 7개 XML 자리 — 키=값 한 줄씩</td></tr>
+<tr><td>spring-boot-starter-parent</td><td>버전을 결정하는 부모 POM — 「버전 한 곳에만」 두는 자리</td></tr>
+<tr><td>@RestController</td><td>본 과정의 <code>@Controller + @ResponseBody</code> — JSP 없이 본문 텍스트로 응답</td></tr>
+</tbody>
+</table>
+
+<h2>4. SpringBoot 가 <em>안</em> 풀어주는 것</h2>
+<div class="note">
+  Boot 는 <strong>설정의 무게</strong> 만 줄여줍니다. 다음은 여전히 우리 몫입니다:
+  <ul>
+    <li>비즈니스 로직 — 게시판 권한 체크, 검증 규칙, 도메인 흐름</li>
+    <li>DB 스키마 설계 — 어떤 테이블, 어떤 컬럼, 어떤 인덱스</li>
+    <li>SQL — MyBatis 쿼리는 직접 작성</li>
+    <li>화면 흐름 — Controller → Service → Mapper 4 박스 사고</li>
+    <li>디버깅 사고 — 흐름도 역추적, F12, 콘솔, SQL 로그</li>
+  </ul>
+</div>
+
+<div class="page-break"></div>
+
+<!-- 5쪽: 다음 과정 안내 -->
+<h2>5. 다음 과정에서 만나게 될 것</h2>
+<table>
+<thead><tr><th style="width:30%;">주제</th><th>본 과정과의 관계</th></tr></thead>
+<tbody>
+<tr><td>Spring Initializr</td><td>start.spring.io 에서 5분 안에 첫 Boot 프로젝트 생성. 본 실습의 pom.xml 작성을 자동화.</td></tr>
+<tr><td>JPA / Spring Data JPA</td><td>MyBatis 대신 객체로 DB 다루기. 본 과정의 DAO/Mapper 사고를 객체 그래프로 확장.</td></tr>
+<tr><td>JWT 인증</td><td>세션 (손목 도장) 대신 토큰 기반 로그인. 본 과정의 v3 안전한 로그인의 다음 진화.</td></tr>
+<tr><td>Spring Security</td><td>인터셉터 + 본인 확인 (v4) 대신 표준 보안 프레임워크.</td></tr>
+<tr><td>Docker 배포</td><td>jar 를 컨테이너 이미지로 만들어 어디서든 띄우기.</td></tr>
+<tr><td>Spring Boot Actuator</td><td>실행 중인 앱의 상태 (메모리, 헬스 체크) 를 표준 엔드포인트로 노출.</td></tr>
+</tbody>
+</table>
+
+<div class="note">
+  <strong>학습 전략의 의미:</strong> 본 과정에서 Legacy 로 시작한 이유 — XML 한 줄 한 줄을 직접 짜며 「데이터 흐름이 어디서 끊겼는지」 를 짚을 수 있게 하기 위해서였습니다. 후속 과정에서 Boot 로 옮길 때, 자동 설정이 무엇을 자동화했는지를 「되긴 하는데 왜 되는지 모르는」 상태가 아니라 손에 잡히는 상태로 만나게 됩니다.
+</div>
+
+<h2>6. 본 과정에서 익힌 것 — 그대로 쓸 수 있는 것</h2>
+<table>
+<thead><tr><th style="width:40%;">본 과정에서 익힌 것</th><th>SpringBoot 에서의 위치</th></tr></thead>
+<tbody>
+<tr><td>HTTP 무상태성 / GET / POST</td><td>그대로 — 프로토콜 이해는 프레임워크와 무관</td></tr>
+<tr><td>IoC / DI / @Autowired</td><td>그대로 — Spring 의 코어 그 자체</td></tr>
+<tr><td>Controller → Service → DAO 4 박스 사고</td><td>그대로 — Boot 가 바꾸지 않음</td></tr>
+<tr><td>MyBatis Mapper XML / SQL</td><td>그대로 — starter 가 자동 구성만 추가</td></tr>
+<tr><td>세션 / 쿠키 / BCrypt</td><td>그대로 — 후속 과정에서 JWT 로 대체 가능</td></tr>
+<tr><td>F12 / 콘솔 로그 / SQL 로그 디버깅</td><td>그대로 — 오히려 설정 잡음이 줄어 더 잘 보임</td></tr>
+</tbody>
+</table>
+
+<div class="checklist">
+  <h3>학습 확인 체크리스트</h3>
+  <ul>
+    <li>SpringBoot 가 Spring 위에 얹힌 「자동 설정 도우미」 라는 사실을 안다</li>
+    <li>@SpringBootApplication 한 줄이 어떤 일을 하는지 안다</li>
+    <li>Starter 의존성이 버전 충돌을 어떻게 해결하는지 안다</li>
+    <li>임베디드 톰캣이 무엇을 바꿨는지 안다</li>
+    <li>SpringBoot 가 안 풀어주는 것 (비즈니스 로직, SQL, 흐름 사고) 을 구분할 수 있다</li>
+    <li>본 과정의 v∞ 가 다음 과정의 출발점이 된다는 사실에 동의한다</li>
+  </ul>
+</div>
+
+<div class="note" style="margin-top: 0.8em;">
+  <strong>한 줄 정리:</strong> SpringBoot 는 「설정의 무게만 덜어낸 Spring」 입니다. 본 과정에서 익힌 데이터 흐름·MVC·MyBatis·세션·디버깅 사고는 그대로 살아 있고, XML 7개를 매번 다시 쓰던 부담만 사라집니다. 후속 과정에서 손으로 만나게 됩니다.
+</div>
+
+<div class="nav">
+  <a href="rest-debug-workshop.html">&larr; 이전</a>
+  <a href="../index.html">메인으로</a>
+  <span></span>
+</div>
+</div></body></html>

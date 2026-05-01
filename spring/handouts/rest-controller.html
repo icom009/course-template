@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>@RestController — 핸드아웃</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/print.css"></head><body>
+<div class="container">
+
+<div class="header">
+<div class="header-left"><div class="session-num">◆ PART · REST</div>
+<h1>@RestController</h1></div>
+<div class="header-right">Spring 기초<br>SMHRD</div></div>
+
+<div class="objectives"><h3>학습 목표</h3>
+<ul><li>@RestController 의 핵심 개념을 안다</li><li>@RestController = @Controller + @ResponseBody 의 동작을 안다</li><li>두 어노테이션의 결정적 차이를 안다.</li></ul></div>
+
+<h2>1. 문제</h2>
+<p>@Controller 와 @RestController 의 차이가 뭔지?</p>
+
+<h2>2. 새 도구</h2>
+<div class="note"><strong>@RestController = @Controller + @ResponseBody:</strong> 반환값을 JSP 가 아니라 JSON 으로. View 가 흐름에서 빠짐.</div>
+
+<h2>3. 코드</h2>
+<div class="diagram">// @Controller (기존) — com.smhrd.controller
+@Controller
+public class BoardController {
+    @GetMapping("/board/{num}")
+    public String view(@PathVariable int num, Model model) {
+        model.addAttribute("board", service.selectOne(num));
+        return "board/view";    // ← JSP ViewName
+    }
+}
+
+// @RestController (REST) — com.smhrd.controller
+@RestController
+public class BoardApiController {
+    @GetMapping("/api/boards/{num}")
+    public Board view(@PathVariable int num) {
+        return service.selectOne(num);   // ← 그대로 JSON 응답
+    }
+}</div>
+
+<h2>4. 정리</h2>
+<ul><li>@Controller = JSP 반환</li>
+<li>@RestController = JSON 반환</li>
+<li>View 박스가 흐름에서 사라짐</li>
+<li>API 서버 만들 때 사용</li></ul>
+
+<h2>5. Before / After</h2>
+<div class="before-after">
+<div class="before"><div class="label">전 차시</div><p>@Controller 와 @RestController 의 차이가 뭔지?</p></div>
+<div class="after"><div class="label">이번 차시</div><p>두 어노테이션의 결정적 차이를 안다.</p></div>
+</div>
+
+<div class="checklist"><h3>학습 확인 체크리스트</h3>
+<ul><li>@Controller = JSP 반환</li>
+<li>@RestController = JSON 반환</li>
+<li>View 박스가 흐름에서 사라짐</li>
+<li>API 서버 만들 때 사용</li></ul></div>
+
+<div class="nav"><a href="rest-json.html">&larr; 이전</a><a href="../index.html">메인으로</a><a href="rest-http-methods.html">다음 &rarr;</a></div>
+</div></body></html>

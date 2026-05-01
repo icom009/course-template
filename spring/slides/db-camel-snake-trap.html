@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>카멜 ↔ 스네이크 함정 | Spring 기초</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/night.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/custom.css"></head><body>
+<div class="reveal"><div class="slides">
+
+<section><div class="session-title">
+<span class="session-glyph">◆ TURNING · DB</span>
+<h1>카멜 ↔ 스네이크 함정</h1>
+<p class="subtitle">데이터가 null 이 되는 가장 흔한 이유</p>
+</div></section>
+
+<section><h2>학습 목표</h2><div class="objectives"><ul>
+<li class="fragment fade-up">DB 와 자바의 <span class="keyword">이름 규칙 차이</span> 를 안다</li>
+<li class="fragment fade-up">매핑 실패가 일어나는 정확한 메커니즘을 안다</li>
+<li class="fragment fade-up">2 가지 해법 (AS / mapUnderscoreToCamelCase) 을 안다</li>
+<li class="fragment fade-up">앞으로 같은 함정을 만났을 때 <span class="keyword">3 초 만에</span> 진단할 수 있다</li>
+</ul></div></section>
+
+<section><h2>⚠️ 가장 답답한 증상</h2>
+<div class="pain-point">
+<div class="pain-title">학생들의 외침</div>
+<p>"<strong>SELECT 는 분명히 성공했어요. 콘솔에 SQL 도 정상으로 보이고요. 근데 객체에 데이터가 다 null 이에요!</strong>"</p>
+<p style="margin-top:0.4em;">이 증상은 본 과정에서 <strong>가장 자주, 가장 오래</strong> 학생을 헤매게 하는 함정입니다. 한 번 만나면 평생 기억합니다.</p>
+</div>
+</section>
+
+<section><h2>🛠️ 두 세계의 이름 규칙</h2>
+<div class="new-tool">
+<div class="tool-title">DB 와 자바는 다른 컨벤션을 따른다</div>
+<p>DB 는 <strong>스네이크 케이스 (snake_case)</strong>, 자바는 <strong>카멜 케이스 (camelCase)</strong> 를 씁니다. 둘이 자동으로 매핑되지 않아서 이 함정이 생깁니다.</p>
+</div>
+
+<div class="diagram">
+   DB 컬럼명 (스네이크):    user_id     created_at    is_active
+                              ↕  ↕↕  자동 매핑 안 됨
+   자바 필드명 (카멜):      userId      createdAt     isActive
+</div>
+</section>
+
+<section><h2>왜 이름 규칙이 다른가</h2>
+<table style="font-size:0.75em; width:100%; border-collapse:collapse;">
+<thead><tr style="background:rgba(255,255,255,0.05);">
+<th style="padding:6px;">규칙</th><th>이유</th><th>사용처</th></tr></thead>
+<tbody>
+<tr><td style="padding:5px;"><strong>스네이크 케이스</strong><br><code>user_id</code></td><td>SQL 은 <strong>대소문자 구별 안 함</strong>. 단어 구분에 _ 가 자연스러움</td><td>DB 컬럼·테이블, Python, Ruby</td></tr>
+<tr><td style="padding:5px;"><strong>카멜 케이스</strong><br><code>userId</code></td><td>자바·자바스크립트의 표준 컨벤션</td><td>자바 변수·메서드</td></tr>
+</tbody></table>
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 두 진영이 각자 자기 컨벤션을 따라간 결과. 둘 다 옳음.
+</p>
+</section>
+
+<section><h2>함정의 메커니즘 — 왜 null 이 되나</h2>
+<div class="diagram">
+   1) DB 에 데이터:
+      sample 테이블의 한 행
+      ┌────┬─────────┬───────────┐
+      │ id │ user_id │ created_at│
+      ├────┼─────────┼───────────┤
+      │ 1  │ "hong"  │ 2024-...  │
+      └────┴─────────┴───────────┘
+
+   2) MyBatis SELECT 결과:
+      Map { "id"=1, "user_id"="hong", "created_at"=... }
+                      ↑
+                MyBatis 가 컬럼명 그대로 받음
+
+   3) Sample 객체에 매핑:
+      MyBatis 가 setUserId() 호출하려고 보니
+      → "user_id" 라는 키를 가지고 있음
+      → setUser_id() 메서드가 없음 (자바엔 setUserId)
+      → 매핑 실패 → 필드는 초기값(null) 그대로
+
+   결과: sample.getUserId() == null
+</div>
+</section>
+
+<section><h2>증상 재현 — DB 와 VO 정의 (일반 예시)</h2>
+<pre><code class="language-sql" data-trim>
+-- 일반 예시 (어떤 테이블이든 _ 가 들어간 컬럼이면 같은 함정)
+CREATE TABLE sample (
+    id          INT,
+    user_id     VARCHAR(50),
+    created_at  TIMESTAMP
+);
+INSERT INTO sample VALUES (1, 'hong', NOW());
+</code></pre>
+
+<pre><code class="language-java" data-trim>
+// VO
+public class Sample {
+    private int id;
+    private String userId;            // 카멜
+    private LocalDateTime createdAt;  // 카멜
+}
+
+// Mapper XML
+&lt;select id="selectOne" resultType="Sample"&gt;
+    SELECT * FROM sample WHERE id = #{id}
+&lt;/select&gt;
+</code></pre>
+</section>
+
+<section><h2>증상 재현 — 호출 결과</h2>
+<pre><code class="language-java" data-trim>
+Sample s = mapper.selectOne(1);
+System.out.println(s.getId());          // 1     ✓
+System.out.println(s.getUserId());      // null  ✗
+System.out.println(s.getCreatedAt());   // null  ✗
+</code></pre>
+<div class="pain-point" style="margin-top:0.6em;">
+<p>같은 SELECT 한 줄인데, <code>id</code> 만 정상이고 나머지는 모두 null. 다음 슬라이드에서 그 이유를 풀어봅니다.</p>
+</div>
+</section>
+
+<section><h2>왜 id 만 정상인가?</h2>
+<div class="info-box">
+<p>위 코드에서 <code>id</code> 만 정상으로 매핑된 이유:</p>
+<ul style="font-size:0.85em;">
+<li>DB 컬럼: <code>id</code></li>
+<li>자바 필드: <code>id</code></li>
+<li>setter: <code>setId(int)</code></li>
+<li>이름이 똑같으면 매핑 성공 — _ 가 없어서 변환 필요 없음</li>
+</ul>
+<p style="margin-top:0.4em;"><strong>_ 가 들어간 컬럼만 함정에 빠집니다.</strong></p>
+</div>
+</section>
+
+<section><h2>해법 ① — 글로벌 옵션 (권장)</h2>
+<pre><code class="language-xml" data-trim>
+&lt;!-- mybatis-config.xml --&gt;
+&lt;configuration&gt;
+    &lt;settings&gt;
+        &lt;setting name="mapUnderscoreToCamelCase" value="true" /&gt;
+    &lt;/settings&gt;
+&lt;/configuration&gt;
+</code></pre>
+
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 한 번만 켜두면 — 이후 모든 매핑에서 <code>user_id</code> ↔ <code>userId</code> 가 자동 변환.
+</p>
+
+<div class="info-box" style="margin-top:0.4em;">
+<p style="font-size:0.85em;"><strong>변환 규칙</strong>: <code>_</code> 다음 글자를 대문자로. 첫 단어는 소문자.</p>
+<pre><code data-trim>
+user_id        → userId
+created_at     → createdAt
+is_active      → isActive
+last_login_at  → lastLoginAt
+USER_NAME      → userName    (대소문자 구분 없이)
+</code></pre>
+</div>
+</section>
+
+<section><h2>해법 ② — SELECT 에서 AS 로 별칭</h2>
+<pre><code class="language-xml" data-trim>
+&lt;select id="selectOne" resultType="Sample"&gt;
+    SELECT
+        id,
+        user_id    AS userId,
+        created_at AS createdAt
+    FROM sample
+    WHERE id = #{id}
+&lt;/select&gt;
+</code></pre>
+
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 SQL 자체에서 컬럼명을 자바 카멜로 변경.
+</p>
+
+<div class="warning-box" style="margin-top:0.4em;">
+<div class="box-title">단점</div>
+<p style="font-size:0.85em;">매 SELECT 에서 반복 작성. 컬럼이 많을수록 길어짐. <strong>해법 ① 이 더 깔끔</strong>.</p>
+</div>
+</section>
+
+<section><h2>해법 ③ — resultMap (고급, 참고)</h2>
+<pre><code class="language-xml" data-trim>
+&lt;resultMap id="sampleMap" type="Sample"&gt;
+    &lt;id     property="id"        column="id" /&gt;
+    &lt;result property="userId"    column="user_id" /&gt;
+    &lt;result property="createdAt" column="created_at" /&gt;
+&lt;/resultMap&gt;
+
+&lt;select id="selectOne" resultMap="sampleMap"&gt;
+    SELECT * FROM sample WHERE id = #{id}
+&lt;/select&gt;
+</code></pre>
+
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 명시적 매핑. 복잡한 객체(중첩, 컬렉션) 매핑 시 필수. 본 과정에선 <strong>해법 ①</strong> 만 쓰면 충분.
+</p>
+</section>
+
+<section><h2>3 가지 해법 비교</h2>
+<table style="font-size:0.75em; width:100%; border-collapse:collapse;">
+<thead><tr style="background:rgba(255,255,255,0.05);">
+<th style="padding:6px;">해법</th><th>위치</th><th>장점</th><th>단점</th></tr></thead>
+<tbody>
+<tr><td style="padding:5px;">① 글로벌 옵션</td><td>mybatis-config.xml</td><td>한 번만 설정. 모든 SELECT 자동</td><td>명시적이지 않음</td></tr>
+<tr><td style="padding:5px;">② AS 별칭</td><td>각 SELECT</td><td>명시적. 한눈에 보임</td><td>반복 작성</td></tr>
+<tr><td style="padding:5px;">③ resultMap</td><td>각 mapper</td><td>완전 통제. 복잡 매핑</td><td>장황</td></tr>
+</tbody></table>
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 <strong>본 과정 권장</strong>: 해법 ① + 필요 시 ③ 조합.
+</p>
+</section>
+
+<section><h2>실험 — 함정 직접 체험</h2>
+<ol style="font-size:0.9em;">
+<li class="fragment">mybatis-config.xml 의 <code>mapUnderscoreToCamelCase</code> 를 <strong>false</strong> 로 (또는 삭제)</li>
+<li class="fragment">SELECT 실행 → 모든 _ 들어간 필드가 null 확인</li>
+<li class="fragment">콘솔의 SQL 로그를 보면 — SELECT 는 정상 (혼란 가중)</li>
+<li class="fragment">옵션 다시 <strong>true</strong> → 즉시 정상</li>
+</ol>
+<p style="font-size:0.85em; margin-top:0.4em; color:var(--text-muted);">
+👉 한 번 깨뜨리고 고쳐보면 평생 안 잊습니다.
+</p>
+</section>
+
+<section><h2>비슷한 함정 — INSERT 의 반대 방향</h2>
+<pre><code class="language-xml" data-trim>
+&lt;insert id="insert"&gt;
+    INSERT INTO sample(user_id, created_at)
+    VALUES(#{userId}, #{createdAt})
+&lt;/insert&gt;
+</code></pre>
+
+<div class="info-box">
+<p>INSERT 의 <code>#{userId}</code> 는 자바 객체의 <strong>getter</strong>(<code>getUserId()</code>) 를 호출. 이 방향은 자바 카멜이 그대로.</p>
+<p style="margin-top:0.3em;">즉 <strong>SELECT 만 매핑 함정</strong>이고, INSERT 는 자바 → DB 방향이라 다른 규칙.</p>
+</div>
+</section>
+
+<section><h2>이 함정을 만났을 때의 진단 알고리즘</h2>
+<div class="diagram">
+   증상: 객체 필드가 null
+
+   ① SELECT 가 실행됐는가?
+      → SQL 로그 확인
+      → 안 됐으면 → 다른 문제
+
+   ② SQL 결과에 데이터 있는가?
+      → DB 도구로 같은 SQL 직접 실행
+      → 결과 없음 → WHERE 조건 의심
+      → 결과 있음 → 다음 단계로
+
+   ③ 컬럼명에 _ 가 있는가?
+      → 있으면 → 카멜·스네이크 함정 의심!
+      → mapUnderscoreToCamelCase 옵션 확인
+
+   ④ 자바 필드명·setter 가 정확한가?
+      → IDE 의 「Generate getter/setter」 다시 실행
+
+   대부분 ③ 에서 끝남
+</div>
+</section>
+
+<section><h2>다른 ORM 의 같은 문제 — 같은 해법</h2>
+<table style="font-size:0.75em; width:100%; border-collapse:collapse;">
+<thead><tr style="background:rgba(255,255,255,0.05);">
+<th style="padding:6px;">도구</th><th>옵션</th></tr></thead>
+<tbody>
+<tr><td style="padding:5px;">MyBatis</td><td><code>mapUnderscoreToCamelCase=true</code></td></tr>
+<tr><td style="padding:5px;">JPA / Hibernate</td><td><code>SpringPhysicalNamingStrategy</code> (기본값)</td></tr>
+<tr><td style="padding:5px;">Spring Data JDBC</td><td><code>NamingStrategy</code> 빈 등록</td></tr>
+<tr><td style="padding:5px;">Jackson (JSON)</td><td><code>@JsonNaming(SnakeCaseStrategy.class)</code></td></tr>
+</tbody></table>
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 JS / Kotlin / Python 어떤 언어로 가도 같은 함정. 같은 발상의 해법.
+</p>
+</section>
+
+<section><h2>본 과정의 컨벤션 — 권장 사항</h2>
+<div class="info-box">
+<ul style="font-size:0.85em;">
+<li>DB: <strong>스네이크 케이스</strong> 통일 (<code>user_id</code>, <code>created_at</code>)</li>
+<li>자바: <strong>카멜 케이스</strong> 통일 (<code>userId</code>, <code>createdAt</code>)</li>
+<li>MyBatis: <strong>mapUnderscoreToCamelCase=true</strong> 항상 켜기</li>
+<li>SELECT 에 별칭(AS) 가급적 안 씀 — 글로벌 옵션이 처리</li>
+<li>resultMap 은 복잡한 JOIN 결과 매핑 시에만</li>
+</ul>
+</div>
+</section>
+
+<section><h2>예외 — 매핑되지 않는 컬럼</h2>
+<div class="warning-box">
+<div class="box-title">옵션 켜도 매핑 안 되는 케이스</div>
+<ul style="font-size:0.85em;">
+<li>VO 에 <strong>해당 필드가 없음</strong> — setter 없으면 매핑 자체 불가</li>
+<li>setter 시그니처 다름 — <code>setUserId(Long)</code> 인데 컬럼은 String</li>
+<li>대문자만 있는 컬럼 — <code>USER_ID</code> → <code>userId</code> 로 변환 (대부분 OK)</li>
+<li>특이한 글자 — <code>user-id</code> (하이픈) 은 변환 안 됨</li>
+</ul>
+</div>
+</section>
+
+<section><h2>🔄 Before / After</h2><div class="before-after">
+<div class="before"><div class="label">전 차시 끝</div>
+<p style="font-size:0.85em;">Mapper XML 의 SELECT 가 동작은 한다. 가끔 null 이 나오는 이유는 모름.</p>
+</div>
+<div class="arrow">→</div>
+<div class="after"><div class="label">이번 차시 끝</div>
+<p style="font-size:0.85em;">DB ↔ 자바의 이름 규칙 차이를 알고, 객체 필드가 null 일 때 3 초 만에 진단한다.</p>
+</div>
+</div></section>
+
+
+      <section>
+        <h2>📊 한 그림 정리</h2>
+        <div data-infographic="db-table-mapping"></div>
+      </section>
+
+      <section><h2>이번 차시의 데이터 흐름</h2>
+<div class="flow-diagram"><div class="flow">
+<div class="box">DB</div><span class="arrow">→</span>
+<div class="box new">컬럼명 (스네이크)</div><span class="arrow">→</span>
+<div class="box new">MyBatis 자동 변환</div><span class="arrow">→</span>
+<div class="box new">자바 필드 (카멜)</div><span class="arrow">→</span>
+<div class="box">VO 객체</div></div>
+<div class="caption">
+<span class="new-mark">●</span> 이름 규칙 변환이라는 「투명한 다리」가 생김 — 옵션이 그 다리를 만든다
+</div></div>
+</section>
+
+<section><h2>정리</h2><div class="summary"><h3>오늘 들고 가는 것</h3><ul>
+<li>DB <strong>스네이크</strong> ↔ 자바 <strong>카멜</strong> 의 규칙 차이</li>
+<li>객체 필드가 null 일 때 3 초 진단: 컬럼에 _ 있는가? → 옵션 확인</li>
+<li>해법 ① <code>mapUnderscoreToCamelCase=true</code> (권장)</li>
+<li>해법 ② AS 별칭, 해법 ③ resultMap (필요 시)</li>
+<li>같은 발상이 JPA·JSON 등 다른 도구에도 적용</li>
+</ul></div>
+<p style="margin-top:0.8em; font-size:0.7em; color:var(--text-muted);">
+다음: <strong>◆ SQL 인젝션 직접 시연</strong> — #{} vs ${}.
+</p>
+</section>
+
+</div></div>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"></script>
+<script>Reveal.initialize({hash:true,slideNumber:'c/t',width:1280,height:720,margin:0.06,transition:'slide',plugins:[RevealHighlight,RevealNotes]});</script>
+<script src="../js/infographics.js?v=2"></script>
+<script src="../js/screenshot.js?v=2"></script></body></html>

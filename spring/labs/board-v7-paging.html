@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>페이징 게시판 — 실습</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/lab.css"></head><body>
+<div class="container">
+
+<div class="header"><div class="version-badge">v7</div><div class="badge">★ LAB · BOARD</div>
+<h1>페이징 게시판</h1><p class="subtitle">회원과 게시판 — 실습</p></div>
+
+<div class="minimap"><div class="minimap-title">📍 지금 어디를 만지고 있나요?</div><div class="flow">
+<div class="box">브라우저</div><span class="arrow">→</span>
+<div class="box active">회원과 게시판</div><span class="arrow">→</span>
+<div class="box">DB</div></div></div>
+
+<div class="prerequisites"><h3>사전 준비</h3>
+<ul><li>전 차시 완료</li><li>Eclipse + Tomcat 동작 환경</li></ul></div>
+
+<div class="box box-info"><div class="box-title">이번 실습의 목표</div>
+<p>한 번에 일정 개수만 가져오고, 페이지 번호로 이동.</p></div>
+
+<div class="step"><div class="step-header"><div class="step-num">1</div><div class="step-title">더미 데이터 100 건 + 부하 체감</div></div>
+<pre><code>-- MySQL 에서 100 건 INSERT
+INSERT INTO myboard(title, writer, content)
+SELECT CONCAT('테스트 글 ', seq), 'tester', '본문'
+FROM (
+    SELECT @row := @row + 1 AS seq
+    FROM (SELECT 0 UNION SELECT 1 UNION SELECT 2) t1,
+         (SELECT 0 UNION SELECT 1 UNION SELECT 2) t2,
+         (SELECT 0 UNION SELECT 1 UNION SELECT 2 UNION SELECT 3) t3,
+         (SELECT @row := 0) r
+) numbers
+LIMIT 100;</code></pre>
+<p>v6 의 <code>/board/list</code> 에 들어가 100 건이 한 화면에 쏟아지는 것을 직접 본다.</p>
+<div class="checkpoint"><div class="check-title">CHECKPOINT</div>
+<ul><li>MySQL <code>SELECT COUNT(*) FROM myboard;</code> 가 100 (이상) 인가?</li><li>v6 list 화면을 스크롤해야 끝까지 보이는가? — 「불편」을 직접 느끼고 다음 단계로.</li></ul></div></div>
+
+<div class="step"><div class="step-header"><div class="step-num">2</div><div class="step-title">Paging 보조 클래스 + Mapper / Service</div></div>
+<pre><code>// com/smhrd/domain/Paging.java — 도메인 아님 (계산용)
+public class Paging {
+    private int pageNo, pageSize, totalCount;
+    public Paging(int pageNo, int pageSize, int totalCount) {
+        this.pageNo = pageNo &lt; 1 ? 1 : pageNo;
+        this.pageSize = pageSize;
+        this.totalCount = totalCount;
+    }
+    public int getStartRow()    { return (pageNo - 1) * pageSize; }
+    public int getTotalPages()  { return (int) Math.ceil((double) totalCount / pageSize); }
+    public int getPageNo()      { return pageNo; }
+    public int getPageSize()    { return pageSize; }
+}
+
+&lt;!-- BoardMapper.xml — 스키마 변경 없음, SQL 만 추가 --&gt;
+&lt;select id="selectListPaging" parameterType="map"
+        resultType="com.smhrd.domain.Board"&gt;
+  SELECT num, title, writer, content, created_at
+  FROM myboard
+  ORDER BY num DESC
+  LIMIT #{startRow}, #{pageSize}
+&lt;/select&gt;
+
+&lt;select id="count" resultType="int"&gt;
+  SELECT COUNT(*) FROM myboard
+&lt;/select&gt;
+
+// BoardService
+public Paging buildPaging(int pageNo) {
+    return new Paging(pageNo, 10, mapper.count());
+}
+public List&lt;Board&gt; selectListPaging(Paging paging) {
+    Map&lt;String, Integer&gt; param = new HashMap&lt;&gt;();
+    param.put("startRow", paging.getStartRow());
+    param.put("pageSize", paging.getPageSize());
+    return mapper.selectListPaging(param);
+}</code></pre>
+<div class="checkpoint"><div class="check-title">CHECKPOINT</div>
+<ul><li><code>SHOW COLUMNS FROM myboard;</code> — v6 와 동일한 5 컬럼인가? (스키마 변경 없음)</li><li>MyBatis 로그에 <code>LIMIT 0, 10</code> (1 페이지) 이 찍히는가?</li></ul></div></div>
+
+<div class="step"><div class="step-header"><div class="step-num">3</div><div class="step-title">Controller / JSP — 페이지 번호 UI</div></div>
+<pre><code>@GetMapping("/board/list")
+public String list(@RequestParam(defaultValue = "1") int page,
+                    Model model) {
+    Paging paging = service.buildPaging(page);
+    model.addAttribute("boards", service.selectListPaging(paging));
+    model.addAttribute("paging", paging);
+    return "board/list";
+}
+
+&lt;!-- list.jsp --&gt;
+&lt;c:forEach var="b" items="${boards}"&gt;
+    &lt;tr&gt;&lt;td&gt;${b.num}&lt;/td&gt;&lt;td&gt;${b.title}&lt;/td&gt;&lt;td&gt;${b.writer}&lt;/td&gt;&lt;/tr&gt;
+&lt;/c:forEach&gt;
+
+&lt;c:forEach begin="1" end="${paging.totalPages}" var="p"&gt;
+    &lt;c:choose&gt;
+        &lt;c:when test="${p == paging.pageNo}"&gt;&lt;strong&gt;${p}&lt;/strong&gt;&lt;/c:when&gt;
+        &lt;c:otherwise&gt;&lt;a href="?page=${p}"&gt;${p}&lt;/a&gt;&lt;/c:otherwise&gt;
+    &lt;/c:choose&gt;
+&lt;/c:forEach&gt;</code></pre>
+<div class="checkpoint"><div class="check-title">CHECKPOINT</div>
+<ul><li><code>?page=2</code> 로 이동했을 때 MyBatis SQL 로그가 <code>LIMIT 10, 10</code> 이 되는가?</li><li>총 페이지 수가 <code>ceil(전체/10)</code> 과 일치하는가?</li><li>현재 페이지 숫자만 굵게 보이는가?</li></ul></div></div>
+
+<div class="checklist"><h3>실습 완료 체크리스트</h3>
+<div class="check-item"><input type="checkbox"> 100 건 더미 INSERT 후 v6 list 의 「불편」 체감</div>
+<div class="check-item"><input type="checkbox"> Paging 보조 클래스 — 도메인이 아닌 계산용</div>
+<div class="check-item"><input type="checkbox"> SQL 만 LIMIT 추가 — 스키마는 v6 그대로</div>
+<div class="check-item"><input type="checkbox"> 페이지 번호 UI 동작 (현재 페이지 강조)</div></div>
+
+<div class="nav"><a href="board-v6-secure.html">&larr; 이전</a><a href="../index.html">메인으로</a><a href="rest-async-need.html">다음 &rarr;</a></div>
+</div><script src="../js/screenshot.js?v=2"></script></body></html>

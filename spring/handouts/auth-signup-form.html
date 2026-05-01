@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>회원가입 폼 — name 속성과 VO 필드 매칭 — 핸드아웃</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/print.css"></head><body>
+<div class="container">
+
+<div class="header">
+<div class="header-left"><div class="session-num">▣ PART · AUTH</div>
+<h1>회원가입 폼 — name 속성과 VO 필드 매칭</h1></div>
+<div class="header-right">Spring 기초<br>SMHRD</div></div>
+
+<div class="objectives"><h3>학습 목표</h3>
+<ul>
+<li>회원가입 폼을 만들고 서버에 POST 한다</li>
+<li><code>&lt;input name="..."&gt;</code> 가 VO 의 어떤 필드에 들어가는지 자기 말로 설명한다</li>
+<li>name 이 어긋나면 어느 필드가 null 로 들어오는지 직접 본다</li>
+</ul></div>
+
+<h2>1. 문제 — getParameter 가 칸 수만큼 늘어난다</h2>
+<p>회원가입 폼 칸이 6 개라면 Controller 안에 <code>request.getParameter(...)</code> 와 <code>m.setXxx(...)</code> 가 12 줄. 본질은 <code>service.signup(m)</code> 한 줄인데 데이터를 꺼내는 코드가 컨트롤러를 채웁니다.</p>
+
+<h2>2. 새 도구 — 같은 이름이면 자동 바인딩</h2>
+<div class="note"><strong>약속:</strong> 폼의 <code>&lt;input name="id"&gt;</code> 와 VO 의 <code>private String id;</code> 처럼 이름을 맞추면 — Spring 이 알아서 <code>m.setId(...)</code> 를 호출합니다.</div>
+
+<h2>3. 코드</h2>
+<div class="diagram">&lt;!-- signup.jsp --&gt;
+&lt;form action="/signup" method="post"&gt;
+  &lt;input name="id"&gt;
+  &lt;input name="pwd" type="password"&gt;
+  &lt;input name="nick"&gt;
+  &lt;button&gt;가입하기&lt;/button&gt;
+&lt;/form&gt;
+
+// com.smhrd.domain.Member
+@Data @AllArgsConstructor @NoArgsConstructor
+public class Member {
+    private String id;
+    private String pwd;
+    private String nick;
+}
+
+// com.smhrd.controller.SignupController
+@Controller
+public class SignupController {
+    @Autowired private MemberService memberService;
+
+    @PostMapping("/signup")
+    public String signup(Member m) {     // ← 자동 바인딩
+        System.out.println("받은 회원: " + m);
+        memberService.signup(m);
+        return "redirect:/login";
+    }
+}</div>
+
+<h2>4. 흐름</h2>
+<div class="diagram">브라우저 ─POST id=hong&amp;pwd=...&amp;nick=...─→ Spring
+                                              │
+                          new Member() → setId(...) → setPwd(...) → setNick(...)
+                                              │
+                                       signup(m) 호출</div>
+
+<h2>5. 어긋나게 하면? (name="id" → name="userId")</h2>
+<div class="diagram">받은 회원: Member(id=null, pwd=mypw1234, nick=홍길동)
+                    ↑
+              VO 에 userId 필드가 없으므로 setter 호출 X</div>
+<p>이름이 약속을 깨면 그 필드만 null. INSERT 시 PK null 오류로 이어집니다.</p>
+
+<h2>6. Before / After</h2>
+<div class="before-after">
+<div class="before"><div class="label">Before</div><p>getParameter 6 줄 + setter 6 줄. Controller 가 데이터 꺼내기 코드로 채워짐.</p></div>
+<div class="after"><div class="label">After</div><p><code>signup(Member m)</code> 한 줄. Controller 는 본질에만 집중.</p></div>
+</div>
+
+<h2>7. 정리</h2>
+<ul>
+<li><code>name</code> 속성이 곧 「데이터 약속」</li>
+<li>같은 이름이면 Spring 이 setter 자동 호출</li>
+<li>이름이 어긋나면 그 필드만 null</li>
+<li>다음 차시(★ v2) 에서 이 폼이 DB 에 그대로 INSERT 되는 흐름</li>
+</ul>
+
+<div class="checklist"><h3>학습 확인 체크리스트</h3>
+<ul>
+<li>VO 필드명이 폼의 name 과 같은가</li>
+<li>Controller 매개변수에 VO 한 줄만 두고도 콘솔에 값이 찍히는가</li>
+<li>name 을 어긋나게 했을 때 그 필드만 null 이 되는 것을 봤는가</li>
+<li>「같은 이름이 폼과 VO 를 잇는다」 를 자기 말로 말할 수 있는가</li>
+</ul></div>
+
+<div class="nav"><a href="../index.html">&larr; 메인</a><a href="../index.html">메인으로</a><a href="auth-v2-raw.html">다음 &rarr;</a></div>
+</div></body></html>

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>안전한 회원가입/로그인 — 핸드아웃</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/print.css"></head><body>
+<div class="container">
+
+<div class="header">
+<div class="header-left"><div class="session-num">★ PART · BOARD</div>
+<h1>안전한 회원가입/로그인</h1></div>
+<div class="header-right">Spring 기초<br>SMHRD</div></div>
+
+<div class="objectives"><h3>학습 목표</h3>
+<ul><li>안전한 회원가입/로그인 의 핵심 개념을 안다</li><li>BCrypt + HttpSession 의 동작을 안다</li><li>평문 사라짐 + 세션으로 로그인 유지. v3 마일스톤.</li></ul></div>
+
+<h2>1. 문제</h2>
+<p>v2 의 두 문제 — 평문, 무상태 — 그리고 v2 의 <code>pwd VARCHAR(20)</code> 으론 BCrypt 60자 해시가 안 들어감.</p>
+
+<h2>2. 새 도구</h2>
+<div class="note"><strong>ALTER + BCrypt + HttpSession:</strong> 컬럼 길이를 늘리고, v2 코드에 두 줄을 추가·교체해서 안전한 v3 로 진화.</div>
+
+<h2>3. 코드</h2>
+<div class="diagram">-- 1) 스키마 마이그레이션
+ALTER TABLE mymember MODIFY COLUMN pwd VARCHAR(100) NOT NULL;
+-- 기존 평문 데이터는 비우고 다시 가입 (학습용)
+
+// com.smhrd.service.MemberService
+@Service
+public class MemberService {
+    @Autowired MemberMapper mapper;
+
+    private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+
+    public void signup(Member m) {
+        m.setPwd(encoder.encode(m.getPwd()));   // ← BCrypt!
+        mapper.insert(m);
+    }
+
+    public Member login(String id, String pwd) {
+        Member m = mapper.selectOne(id);
+        if (m != null &amp;&amp; encoder.matches(pwd, m.getPwd())) {
+            return m;
+        }
+        return null;
+    }
+}
+
+// com.smhrd.controller.LoginController
+@Controller
+public class LoginController {
+    @PostMapping("/login")
+    public String login(@RequestParam String id,
+                         @RequestParam String pwd,
+                         HttpSession session) {
+        Member m = service.login(id, pwd);
+        if (m != null) {
+            session.setAttribute("loginUser", m);    // ← 세션!
+            return "redirect:/";
+        }
+        return "redirect:/login?error";
+    }
+
+    @GetMapping("/logout")
+    public String logout(HttpSession session) {
+        session.invalidate();
+        return "redirect:/";
+    }
+}</div>
+
+<h2>4. 정리</h2>
+<ul><li>BCrypt = 단방향 해시</li>
+<li>session.setAttribute 으로 로그인 유지</li>
+<li>invalidate() 로 로그아웃</li>
+<li>v3 — 실용 가능한 첫 인증</li></ul>
+
+<h2>5. Before / After</h2>
+<div class="before-after">
+<div class="before"><div class="label">전 차시</div><p>v2 의 두 문제 — 평문, 무상태 — 를 해결할 시간.</p></div>
+<div class="after"><div class="label">이번 차시</div><p>평문 사라짐 + 세션으로 로그인 유지. v3 마일스톤.</p></div>
+</div>
+
+<div class="checklist"><h3>학습 확인 체크리스트</h3>
+<ul><li>BCrypt = 단방향 해시</li>
+<li>session.setAttribute 으로 로그인 유지</li>
+<li>invalidate() 로 로그아웃</li>
+<li>v3 — 실용 가능한 첫 인증</li></ul></div>
+
+<div class="nav"><a href="cookie-vs-session.html">&larr; 이전</a><a href="../index.html">메인으로</a><a href="auth-v4-clean.html">다음 &rarr;</a></div>
+</div></body></html>

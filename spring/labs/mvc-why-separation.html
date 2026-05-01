@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MVC — 왜 분업하나 — 실습</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/lab.css"></head><body>
+<div class="container">
+<div class="header"><div class="badge">▣ LAB · MVC</div><h1>분업 vs 한 덩어리 비교</h1><p class="subtitle">MVC — 왜 분업하나 / 약 15분</p></div>
+
+<div class="minimap"><div class="minimap-title">📍 지금 어디를 만지고 있나요?</div><div class="flow">
+<div class="box">브라우저</div><span class="arrow">→</span>
+<div class="box active">Spring MVC 6 계층</div><span class="arrow">→</span>
+<div class="box">DB</div></div></div>
+
+<div class="prerequisites"><h3>사전 준비</h3><ul><li>Part 2 의 첫 Spring 프로젝트 완료</li></ul></div>
+
+<div class="box box-info"><div class="box-title">이번 실습의 목표</div><p>「한 덩어리 코드」와 「분업된 코드」를 모두 짜보고, 왜 분업이 유연성을 만드는지 손으로 느낍니다.</p></div>
+
+<div class="step"><div class="step-header"><div class="step-num">1</div><div class="step-title">한 덩어리 — 컨트롤러에 다 박기</div></div>
+<pre><code>@Controller
+public class BadController {
+    @RequestMapping("/bad")
+    public String all(Model m) {
+        // DB 직접 접근, 비즈니스 로직, 화면 데이터 가공
+        // 모두 여기에...
+        Connection c = ...;
+        ResultSet rs = ...;
+        // 길고 복잡
+        m.addAttribute("data", processed);
+        return "bad";
+    }
+}</code></pre>
+<div class="checkpoint"><div class="check-title">CHECKPOINT</div><ul>
+<li>이 컨트롤러는 변경 사유가 몇 가지인가요? (정답: SQL 변경, 로직 변경, 화면 변경 — 3 가지)</li>
+<li>테스트하기 어려운 이유는? (정답: DB 가 없으면 메서드 자체를 호출 못 함)</li>
+</ul></div></div>
+
+<div class="step"><div class="step-header"><div class="step-num">2</div><div class="step-title">분업 — 3 계층으로 분리</div></div>
+<pre><code>@Repository  // DB 접근만
+public interface DataMapper { List<Item> findAll(); }
+
+@Service     // 비즈니스 로직만
+public class DataService {
+    @Autowired DataMapper mapper;
+    public List<Item> getData() {
+        return mapper.findAll().stream()
+                .filter(i -> i.isValid())
+                .toList();
+    }
+}
+
+@Controller  // 요청 처리만
+public class GoodController {
+    @Autowired DataService service;
+    @RequestMapping("/good")
+    public String list(Model m) {
+        m.addAttribute("data", service.getData());
+        return "good";
+    }
+}</code></pre>
+<div class="checkpoint"><div class="check-title">CHECKPOINT</div><ul>
+<li>각 계층의 변경 사유가 하나씩으로 분리됐나요?</li>
+<li>Service 만 단위 테스트 가능 (Mapper 를 Mock 으로)</li>
+</ul></div></div>
+
+<div class="step"><div class="step-header"><div class="step-num">3</div><div class="step-title">변경 시뮬레이션 — 화면만 바꾸기</div></div>
+<p>"기존 테이블을 카드 형태 UI 로 변경" 요청이 왔을 때:</p>
+<ul>
+<li><strong>한 덩어리 버전</strong>: 컨트롤러 메서드 안의 데이터 조립 부분 + JSP 모두 수정</li>
+<li><strong>분업 버전</strong>: <strong>JSP 만 수정</strong>. Controller·Service·Repository 그대로</li>
+</ul>
+<div class="checkpoint"><div class="check-title">CHECKPOINT</div><ul>
+<li>「식당 인테리어가 바뀌어도 셰프는 안 바뀐다」가 코드에서 어떻게 나타나는지 확인</li>
+</ul></div></div>
+
+<div class="checklist"><h3>실습 완료 체크리스트</h3>
+<div class="check-item"><input type="checkbox"> 한 덩어리 코드의 변경 사유 3 가지를 식별</div>
+<div class="check-item"><input type="checkbox"> 분업 코드로 다시 짜기</div>
+<div class="check-item"><input type="checkbox"> 화면 변경 시 어디만 수정되는지 확인</div>
+<div class="check-item"><input type="checkbox"> 분업의 유연성 효과를 입으로 설명할 수 있다</div>
+</div>
+
+<div class="nav"><a href="spring-first-project.html">&larr; 이전</a><a href="../index.html">메인으로</a><a href="mvc-six-layers.html">다음 &rarr;</a></div>
+</div><script src="../js/screenshot.js?v=2"></script></body></html>

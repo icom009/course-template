@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Controller 해부 — 읽기 자료</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/example.css"></head><body>
+<div class="container">
+
+<div class="header"><div class="session-num">▣ PART · MVC</div>
+<h1>Controller 해부</h1><p class="subtitle">Spring MVC — 읽기 자료</p></div>
+
+<div class="minimap"><div class="minimap-title">📍 지금 어디를 만지고 있나요?</div><div class="flow">
+<div class="box">브라우저</div><span class="arrow">→</span>
+<div class="box active">Spring MVC</div><span class="arrow">→</span>
+<div class="box">DB</div></div></div>
+
+<div class="terms"><h3>핵심 용어</h3><div class="term-item"><span class="term-name">@RequestMapping</span><span class="term-desc">URL 과 메서드를 매핑.</span></div>
+<div class="term-item"><span class="term-name">@RequestParam</span><span class="term-desc">URL 쿼리스트링 또는 폼 파라미터를 변수로.</span></div>
+<div class="term-item"><span class="term-name">Model</span><span class="term-desc">JSP 에 전달할 데이터를 담는 객체.</span></div></div>
+
+<h2>1. 문제</h2>
+<div class="pain-point"><div class="pain-title">전 차시까지의 답답함</div><p>컨트롤러 메서드의 시그니처가 복잡해 보인다. 매개변수가 어떻게 들어오는 건지?</p></div>
+
+<h2>2. 새 도구</h2>
+<div class="new-tool"><div class="tool-title">Controller 의 3 요소</div><p>① URL 매핑 ② 파라미터 받기 ③ 모델에 데이터 담기</p></div>
+
+<h2>3. 코드</h2>
+<pre><code>@Controller
+public class BoardController {
+
+    @RequestMapping("/board/view")
+    public String view(
+        @RequestParam("id") int id,    // URL ?id=3 의 값
+        Model model                     // 데이터 운반 그릇
+    ) {
+        Board b = service.findById(id);
+        model.addAttribute("board", b);  // JSP 에서 ${board}
+        return "board/view";              // ViewName
+    }
+}</code></pre>
+
+<h2>4. 정리</h2>
+<ul><li>@RequestMapping 으로 URL 매핑</li>
+<li>@RequestParam 으로 쿼리 파라미터 바인딩</li>
+<li>Model 로 JSP 에 데이터 전달</li></ul>
+
+<h2>5. Before / After</h2>
+<div class="before-after">
+<div class="before"><div class="label">전 차시 끝</div><p>컨트롤러 메서드의 시그니처가 복잡해 보인다. 매개변수가 어떻게 들어오는 건지?</p></div>
+<div class="arrow">→</div>
+<div class="after"><div class="label">이번 차시 끝</div><p>컨트롤러 메서드 한 개를 라인별로 짚을 수 있다.</p></div>
+</div>
+
+<div class="nav"><a href="mvc-dispatcher-servlet.html">&larr; 이전</a><a href="../index.html">메인으로</a><a href="mvc-service-layer.html">다음 &rarr;</a></div>
+</div><script src="../js/screenshot.js?v=2"></script></body></html>

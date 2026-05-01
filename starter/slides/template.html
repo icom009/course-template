@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<!-- =========================================================================
+     slides/template.html — 4단계 구조 빈 슬라이드 템플릿
+     사용법:
+       1. 이 파일을 slides/<part약어>-<키워드>.html 로 복제
+       2. <title>, .session-glyph, h1, .subtitle 채우기
+       3. 각 <section> 의 [TODO] 본문 채우기
+       4. data-infographic="이름" 자리는 Visual Designer 에이전트에 위임
+     섹션 구성:
+       1. 표지
+       2. 학습 목표
+       3-4. ⚠️ 불편 (1~2 섹션)
+       5-6. 🛠️ 새 도구 (1~2 섹션)
+       7-10. 💻 코드 적용 (2~4 섹션)
+       11-13. 🔄 Before / After + 예시 (1~3 섹션)
+       14-15. 보충 (필요시)
+       16. 📊 한 그림 정리 (인포그래픽)
+       17. 이번 차시의 데이터 흐름 (마지막 직전 — 필수)
+       18. 정리
+     ====================================================================== -->
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- TODO: <차시 키워드 제목> | <코스 이름> -->
+  <title>[차시 키워드 제목] | [코스 이름]</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/night.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+  <link rel="stylesheet" href="css/custom.css">
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+      <!-- ========== 1. 표지 ========== -->
+      <section>
+        <!-- 마일스톤 차시면 우측 상단에 버전 뱃지:
+             <div class="version-badge">v3</div> -->
+        <div class="session-title">
+          <!-- TODO: ◇/▣/◆/★ 중 하나 + Part 약어 (예: ◇ PART · WEB) -->
+          <span class="session-glyph">◇ PART · [약어]</span>
+          <!-- TODO: 키워드 제목 (비유 금지) -->
+          <h1>[차시 키워드 제목]</h1>
+          <!-- TODO: 한 줄 부제 (비유 금지) -->
+          <p class="subtitle">[한 줄 부제]</p>
+        </div>
+        <aside class="notes">
+          <!-- 강사 노트 — 비유는 여기서는 자유롭게 풀어쓰기 가능 -->
+          [오늘 차시의 핵심 의도, 학생이 어디서 막힐지, 시연 포인트]
+        </aside>
+      </section>
+
+      <!-- ========== 2. 학습 목표 ========== -->
+      <section>
+        <h2>학습 목표</h2>
+        <div class="objectives">
+          <ul>
+            <li class="fragment fade-up">[목표 1 — 비유 금지, "자기 말로 설명할 수 있다" 형식]</li>
+            <li class="fragment fade-up">[목표 2]</li>
+            <li class="fragment fade-up">[목표 3]</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- ========== 3. ⚠️ 불편 ① ========== -->
+      <section>
+        <h2>⚠️ [불편 한 줄 — "이상한 일" / "기존의 문제"]</h2>
+        <div class="pain-point">
+          <div class="pain-title">[증상 한 줄]</div>
+          <p>[학생이 직접 체감하는 문제 상황 한 단락]</p>
+          <p style="margin-top: 0.5em;">[왜 아픈지 한 줄 — 이전 버전의 한계]</p>
+        </div>
+      </section>
+
+      <!-- ========== 4. ⚠️ 불편 ② (선택) ========== -->
+      <section>
+        <h2>⚠️ [더 깊은 증상]</h2>
+        <p>[코드/그림으로 한 번 더 보여주기 — 학생이 "이건 안 되겠다" 라고 느끼게]</p>
+        <pre><code class="language-java">// TODO: 이전 버전의 코드 — 어디가 아픈지 주석으로 표시</code></pre>
+      </section>
+
+      <!-- ========== 5. 🛠️ 새 도구 ① ========== -->
+      <section>
+        <h2>🛠️ [새 도구 이름]</h2>
+        <div class="new-tool">
+          <div class="tool-title">[한 줄 정의 — 비유는 여기 본문 안에서만 OK]</div>
+          <p>[새 도구가 어떤 점을 풀어주는지 한 단락]</p>
+        </div>
+      </section>
+
+      <!-- ========== 6. 🛠️ 새 도구 ② — 비유로 풀어보기 ========== -->
+      <section>
+        <h2>🛠️ [도구의 작동 원리]</h2>
+        <div class="diagram">
+[비유 다이어그램 — 텍스트 아트로 한 화면]
+[예: 손님 → 점원 → 메모지 → 다음 손님 응대 시 메모 확인]
+        </div>
+        <p style="margin-top: 0.5em; font-size: 0.7em; color: var(--text-muted);">
+          [비유와 실제 용어 매핑 한 줄]
+        </p>
+      </section>
+
+      <!-- ========== 7. 💻 코드 적용 ① ========== -->
+      <section>
+        <h2>💻 같은 화면, 새 도구로</h2>
+        <pre><code class="language-java">// TODO: 새 도구를 쓴 코드 — 새로 추가된 줄은 주석으로 강조</code></pre>
+      </section>
+
+      <!-- ========== 8. 💻 코드 적용 ② ========== -->
+      <section>
+        <h2>💻 [구현 핵심 한 줄]</h2>
+        <p>[이 코드가 무엇을 하는지 본문 한 단락]</p>
+        <pre><code class="language-java">// TODO: 핵심 메서드 / 설정 / SQL</code></pre>
+      </section>
+
+      <!-- ========== 9. 💻 코드 적용 ③ (선택) ========== -->
+      <section>
+        <h2>💻 [실제 동작 확인]</h2>
+        <p>[F12 / 콘솔 / DB SELECT 결과 등 — "내 데이터가 여기까지 왔는지"]</p>
+        <div class="screenshot">
+          <div class="label">SCREENSHOT</div>
+          <div class="desc">[이 차시의 핵심 화면 한 장]</div>
+        </div>
+      </section>
+
+      <!-- ========== 10. 🔄 Before / After ========== -->
+      <section>
+        <h2>🔄 Before / After</h2>
+        <div class="before-after">
+          <div class="before">
+            <div class="label">BEFORE</div>
+            <p>[이전 버전 — 어디가 아팠는가 한 줄]</p>
+            <pre><code>// 이전 코드 / 흐름</code></pre>
+          </div>
+          <div class="arrow">→</div>
+          <div class="after">
+            <div class="label">AFTER</div>
+            <p>[새 버전 — 어디가 달라졌나 한 줄]</p>
+            <pre><code>// 새 코드 / 흐름</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========== 11. 보충 (선택) — 자주 묻는 질문 / 함정 ========== -->
+      <section>
+        <h2>이건 어떻게 돼요?</h2>
+        <div class="info-box">
+          <div class="box-title">[자주 묻는 질문 한 줄]</div>
+          <p>[답변 한 단락]</p>
+        </div>
+        <div class="warning-box">
+          <div class="box-title">[흔한 함정 한 줄]</div>
+          <p>[설명 한 단락]</p>
+        </div>
+      </section>
+
+      <!-- ========== 12. 📊 한 그림 정리 (인포그래픽 자리) ========== -->
+      <section>
+        <h2>📊 한 그림 정리</h2>
+        <!-- TODO: data-infographic="이름" — Visual Designer 가 js/infographics.js 에 등록 -->
+        <div data-infographic="[인포그래픽 이름]"></div>
+      </section>
+
+      <!-- ========== 13. 이번 차시의 데이터 흐름 (마지막 직전 — 필수) ========== -->
+      <section>
+        <h2>이번 차시의 데이터 흐름</h2>
+        <div class="flow-diagram">
+          <div class="flow">
+            <div class="box">[칸 1]</div>
+            <span class="arrow">→</span>
+            <div class="box">[칸 2]</div>
+            <span class="arrow">→</span>
+            <!-- 이번 차시에서 새로 생긴 칸은 class="new" -->
+            <div class="box new">[새로 생긴 칸]</div>
+          </div>
+          <div class="caption">
+            <span class="new-mark">●</span> [이번에 새로 생긴 부분이 무엇을 하는지 한 줄]
+          </div>
+        </div>
+      </section>
+
+      <!-- ========== 14. 정리 (마지막) ========== -->
+      <section>
+        <h2>정리</h2>
+        <div class="summary">
+          <h3>오늘 들고 가는 것</h3>
+          <ul>
+            <li>[핵심 1 — 새 도구 한 줄]</li>
+            <li>[핵심 2 — 데이터 흐름 한 줄]</li>
+            <li>[핵심 3 — 다음 차시로 이어지는 한 줄]</li>
+          </ul>
+        </div>
+        <p style="margin-top: 0.8em; font-size: 0.7em; color: var(--text-muted);">
+          다음 차시: <strong>[다음 차시 키워드]</strong> — [한 줄 예고]
+        </p>
+      </section>
+
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"></script>
+  <script>Reveal.initialize({hash:true,slideNumber:'c/t',width:1280,height:720,margin:0.06,transition:'slide',plugins:[RevealHighlight,RevealNotes]});</script>
+  <script src="../js/infographics.js"></script>
+  <script src="../js/screenshot.js"></script>
+</body>
+</html>

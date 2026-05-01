@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>한글 깨짐 필터 — 읽기 자료</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/example.css"></head><body>
+<div class="container">
+
+<div class="header"><div class="session-num">▣ PART · MVC</div>
+<h1>한글 깨짐 필터</h1><p class="subtitle">Spring MVC — 읽기 자료</p></div>
+
+<div class="minimap"><div class="minimap-title">📍 지금 어디를 만지고 있나요?</div><div class="flow">
+<div class="box">브라우저</div><span class="arrow">→</span>
+<div class="box active">Spring MVC</div><span class="arrow">→</span>
+<div class="box">DB</div></div></div>
+
+<div class="terms"><h3>핵심 용어</h3><div class="term-item"><span class="term-name">CharacterEncodingFilter</span><span class="term-desc">Spring 이 제공하는 인코딩 필터.</span></div>
+<div class="term-item"><span class="term-name">forceEncoding</span><span class="term-desc">true 로 두면 응답에도 강제 적용.</span></div></div>
+
+<h2>1. 문제</h2>
+<div class="pain-point"><div class="pain-title">전 차시까지의 답답함</div><p>폼에서 한글을 보냈더니 화면에 ???? 만 뜬다.</p></div>
+
+<h2>2. 새 도구</h2>
+<div class="new-tool"><div class="tool-title">CharacterEncodingFilter</div><p>모든 요청·응답을 UTF-8 로 인코딩되도록 강제하는 필터.</p></div>
+
+<h2>3. 코드</h2>
+<pre><code>&lt;!-- web.xml --&gt;
+&lt;filter&gt;
+    &lt;filter-name&gt;encodingFilter&lt;/filter-name&gt;
+    &lt;filter-class&gt;
+        org.springframework.web.filter.CharacterEncodingFilter
+    &lt;/filter-class&gt;
+    &lt;init-param&gt;
+        &lt;param-name&gt;encoding&lt;/param-name&gt;
+        &lt;param-value&gt;UTF-8&lt;/param-value&gt;
+    &lt;/init-param&gt;
+    &lt;init-param&gt;
+        &lt;param-name&gt;forceEncoding&lt;/param-name&gt;
+        &lt;param-value&gt;true&lt;/param-value&gt;
+    &lt;/init-param&gt;
+&lt;/filter&gt;
+&lt;filter-mapping&gt;
+    &lt;filter-name&gt;encodingFilter&lt;/filter-name&gt;
+    &lt;url-pattern&gt;/*&lt;/url-pattern&gt;
+&lt;/filter-mapping&gt;</code></pre>
+
+<h2>4. 정리</h2>
+<ul><li>??? 글자는 인코딩 불일치</li>
+<li>CharacterEncodingFilter + UTF-8</li>
+<li>web.xml 에 등록</li>
+<li>JSP 도 contentType=UTF-8</li></ul>
+
+<h2>5. Before / After</h2>
+<div class="before-after">
+<div class="before"><div class="label">전 차시 끝</div><p>폼에서 한글을 보냈더니 화면에 ???? 만 뜬다.</p></div>
+<div class="arrow">→</div>
+<div class="after"><div class="label">이번 차시 끝</div><p>한글 깨짐을 만나도 어디를 의심할지 안다.</p></div>
+</div>
+
+<div class="nav"><a href="mvc-config-files.html">&larr; 이전</a><a href="../index.html">메인으로</a><a href="mvc-end-to-end-no-db.html">다음 &rarr;</a></div>
+</div><script src="../js/screenshot.js?v=2"></script></body></html>

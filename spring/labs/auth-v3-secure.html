@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>안전한 회원가입/로그인 — 실습</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/lab.css"></head><body>
+<div class="container">
+
+<div class="header"><div class="version-badge">v3</div><div class="badge">★ LAB · BOARD</div>
+<h1>안전한 회원가입/로그인</h1><p class="subtitle">회원과 게시판 — 실습</p></div>
+
+<div class="minimap"><div class="minimap-title">📍 지금 어디를 만지고 있나요?</div><div class="flow">
+<div class="box">브라우저</div><span class="arrow">→</span>
+<div class="box active">회원과 게시판</div><span class="arrow">→</span>
+<div class="box">DB</div></div></div>
+
+<div class="prerequisites"><h3>사전 준비</h3>
+<ul><li>전 차시 완료</li><li>Eclipse + Tomcat 동작 환경</li></ul></div>
+
+<div class="box box-info"><div class="box-title">이번 실습의 목표</div>
+<p>v2 코드에 두 줄을 추가·교체해서 안전한 v3 로 진화.</p></div>
+
+<div class="step"><div class="step-header"><div class="step-num">1</div><div class="step-title">스키마 마이그레이션 — pwd 길이 늘리기</div></div>
+<pre><code>-- v2 의 pwd VARCHAR(20) 으론 BCrypt 60자 해시가 안 들어감
+ALTER TABLE mymember MODIFY COLUMN pwd VARCHAR(100) NOT NULL;
+
+-- 기존 평문 데이터는?
+-- 학습 단계라 비우고 다시 가입:
+TRUNCATE TABLE mymember;</code></pre>
+<div class="checkpoint"><div class="check-title">CHECKPOINT</div>
+<ul><li><code>DESC mymember;</code> 에서 pwd 가 <code>varchar(100)</code> 으로 보이는가?</li></ul></div></div>
+
+<div class="step"><div class="step-header"><div class="step-num">2</div><div class="step-title">코드 — BCrypt + HttpSession</div></div>
+<pre><code>// com.smhrd.service.MemberService
+@Service
+public class MemberService {
+    @Autowired MemberMapper mapper;
+
+    private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+
+    public void signup(Member m) {
+        m.setPwd(encoder.encode(m.getPwd()));   // ← BCrypt!
+        mapper.insert(m);
+    }
+
+    public Member login(String id, String pwd) {
+        Member m = mapper.selectOne(id);
+        if (m != null &amp;&amp; encoder.matches(pwd, m.getPwd())) {
+            return m;
+        }
+        return null;
+    }
+}
+
+// com.smhrd.controller.LoginController
+@Controller
+public class LoginController {
+    @PostMapping("/login")
+    public String login(@RequestParam String id,
+                         @RequestParam String pwd,
+                         HttpSession session) {
+        Member m = service.login(id, pwd);
+        if (m != null) {
+            session.setAttribute("loginUser", m);    // ← 세션!
+            return "redirect:/";
+        }
+        return "redirect:/login?error";
+    }
+
+    @GetMapping("/logout")
+    public String logout(HttpSession session) {
+        session.invalidate();
+        return "redirect:/";
+    }
+}</code></pre>
+<div class="checkpoint"><div class="check-title">CHECKPOINT</div>
+<ul><li>코드를 작성한 뒤 빨간 줄(컴파일 오류)이 없는가?</li></ul></div></div>
+
+<div class="step"><div class="step-header"><div class="step-num">3</div><div class="step-title">실행 + 결과 확인</div></div>
+<p>회원가입 → DB SELECT → 로그인 → 페이지 이동 순서로 따라갑니다.</p>
+<div class="checkpoint"><div class="check-title">CHECKPOINT</div>
+<ul><li><code>SELECT id, pwd FROM mymember;</code> — pwd 가 <code>$2a$10$...</code> 형태(60자)인가?</li><li>F12 → Application → Cookies 에 <strong>JSESSIONID</strong> 가 있는가?</li><li>로그인 후 다른 페이지로 이동해도 상태 유지되는가?</li></ul></div></div>
+
+<div class="checklist"><h3>실습 완료 체크리스트</h3>
+<div class="check-item"><input type="checkbox"> BCrypt = 단방향 해시</div>
+<div class="check-item"><input type="checkbox"> session.setAttribute 으로 로그인 유지</div>
+<div class="check-item"><input type="checkbox"> invalidate() 로 로그아웃</div>
+<div class="check-item"><input type="checkbox"> v3 — 실용 가능한 첫 인증</div></div>
+
+<div class="nav"><a href="cookie-vs-session.html">&larr; 이전</a><a href="../index.html">메인으로</a><a href="auth-v4-clean.html">다음 &rarr;</a></div>
+</div><script src="../js/screenshot.js?v=2"></script></body></html>

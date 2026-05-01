@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>v∞ 데이터 흐름 디버깅 워크숍 | Spring 기초</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/night.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/custom.css"></head><body>
+<div class="reveal"><div class="slides">
+
+<section>
+<div class="version-badge">v∞</div>
+<div class="session-title">
+<span class="session-glyph">★ FINALE · REST</span>
+<h1>데이터 흐름 디버깅 워크숍</h1>
+<p class="subtitle">흐름도를 거꾸로 거슬러 올라간다</p>
+</div>
+<aside class="notes">
+4 주 학습의 마지막 차시. 코드 한 줄도 새로 짜지 않습니다. 대신 4 주 동안 쌓아온 흐름도를 「역추적」하는 사고법을 종합합니다.
+</aside>
+</section>
+
+<section><h2>학습 목표</h2><div class="objectives"><ul>
+<li class="fragment fade-up">버그를 만났을 때 <span class="keyword">흐름도를 역추적</span>하는 사고를 익힌다</li>
+<li class="fragment fade-up">디버깅의 <span class="keyword">5 단계 점검</span>(F12 → 콘솔 → SQL 로그 → DB → 응답)을 외운다</li>
+<li class="fragment fade-up">실제 시나리오 5 개를 풀어본다</li>
+<li class="fragment fade-up">4 주 학습의 모든 박스를 한 번에 복습한다</li>
+</ul></div></section>
+
+<section><h2>4 주 동안 우리가 그린 흐름도</h2>
+<div class="flow-diagram"><div class="flow">
+<div class="box">브라우저</div><span class="arrow">→</span>
+<div class="box">Tomcat</div><span class="arrow">→</span>
+<div class="box">DispatcherServlet</div><span class="arrow">→</span>
+<div class="box">Controller</div><span class="arrow">→</span>
+<div class="box">Service</div><span class="arrow">→</span>
+<div class="box">Mapper</div><span class="arrow">→</span>
+<div class="box">DB</div></div>
+<p style="font-size:0.85em; margin-top:0.6em;">v0 부터 시작해 매 차시 박스가 하나씩 늘어났습니다. 이제 7 박스가 한 줄로 이어진 상태.</p>
+<p style="font-size:0.8em; color:var(--text-muted); margin-top:0.4em;">
+👉 오늘은 <strong>이 화살표를 거꾸로 따라가는</strong> 법.
+</p>
+</div></section>
+
+<section><h2>⚠️ 가장 답답한 순간</h2>
+<div class="pain-point">
+<div class="pain-title">학생들의 외침</div>
+<p>"<strong>안 돼요... 어디가 문제인지 모르겠어요!</strong>"</p>
+<p style="margin-top:0.4em; font-size:0.85em;">버그 자체는 어렵지 않습니다. 「<strong>어디서</strong> 막혔는지」 모르는 게 어려운 부분.</p>
+<p style="margin-top:0.3em; font-size:0.85em;">7 박스가 일렬로 늘어선 흐름도를 막연히 노려본다고 답이 나오지 않습니다. 체계적인 점검이 필요합니다.</p>
+</div>
+</section>
+
+<section><h2>🛠️ 5 단계 역추적 사고법</h2>
+<div class="new-tool">
+<div class="tool-title">화살표를 거꾸로 따라간다</div>
+<p>화면에서 시작해 DB 쪽으로 한 박스씩 거꾸로 점검합니다. 「데이터가 어디까지 왔는가」를 한 단계씩 확인.</p>
+</div>
+
+<div class="diagram">
+   ⑤ 응답 JSON / 화면 ←─── 여기서 시작 (눈에 보임)
+   ④ DB SELECT 결과
+   ③ Mapper SQL 로그
+   ② 서버 콘솔 로그
+   ① F12 Network 탭 ←─── 마지막엔 여기 (출발점)
+
+   각 단계마다 「데이터가 여기까지 왔는가?」 확인
+   → 안 왔으면 그 직전 단계가 문제
+</div>
+</section>
+
+<section><h2>① 단계 — F12 Network 탭</h2>
+<div class="info-box">
+<div class="box-title">"내가 보낸 요청이 진짜 갔는가?"</div>
+<ul style="font-size:0.85em;">
+<li>요청이 표에 보이는가?</li>
+<li>안 보이면 → 자바스크립트 오류 (Console 탭 확인)</li>
+<li>보이면 → Status Code 확인</li>
+</ul>
+</div>
+
+<table style="font-size:0.7em; width:100%; border-collapse:collapse; margin-top:0.5em;">
+<thead><tr><th style="padding:5px;">Status</th><th>의심</th></tr></thead>
+<tbody>
+<tr><td style="padding:5px;">없음 (요청 자체 안 감)</td><td>JS 오타 / fetch 호출 안 됨</td></tr>
+<tr><td style="padding:5px;">200</td><td>요청 잘 갔다 옴 → 다음 단계로</td></tr>
+<tr><td style="padding:5px;">302</td><td>리다이렉트 (보통 로그인 풀림)</td></tr>
+<tr><td style="padding:5px;">404</td><td>URL 오타 / 컨트롤러 매핑 잘못</td></tr>
+<tr><td style="padding:5px;">500</td><td>서버 코드 예외 → ② 서버 콘솔로</td></tr>
+</tbody></table>
+</section>
+
+<section><h2>② 단계 — 서버 콘솔 로그</h2>
+<div class="info-box">
+<div class="box-title">"컨트롤러가 호출됐는가? 예외는 없는가?"</div>
+<p style="font-size:0.85em;">Tomcat 콘솔에:</p>
+<ul style="font-size:0.85em;">
+<li>스택 트레이스가 있으면 → 어느 줄에서 예외 발생했는지 확인</li>
+<li>Bean 생성 실패 → 시작 시 출력</li>
+<li>NullPointerException → 어떤 변수가 null 인지 확인</li>
+</ul>
+</div>
+
+<pre><code data-trim>
+// 디버깅용 로그 추가
+@PostMapping("/api/replies")
+public Reply add(@RequestBody Reply r) {
+    System.out.println("[DEBUG] 받은 댓글: " + r);  // ←
+    Reply saved = service.add(r);
+    System.out.println("[DEBUG] 저장됨: " + saved);  // ←
+    return saved;
+}
+</code></pre>
+</section>
+
+<section><h2>③ 단계 — Mapper SQL 로그</h2>
+<div class="info-box">
+<div class="box-title">"실제 SQL 이 실행됐는가? 어떤 SQL?"</div>
+<p style="font-size:0.85em;"><code>mybatis-config.xml</code> 의 <code>logImpl=STDOUT_LOGGING</code> 으로 SQL 로그 켜둔 상태에서:</p>
+</div>
+
+<pre><code data-trim>
+==>  Preparing: INSERT INTO myreply(content, boardnum, writer) VALUES(?, ?, ?)
+==> Parameters: 좋은 글이네요(String), 3(Integer), hong(String)
+&lt;==    Updates: 1
+</code></pre>
+
+<ul style="font-size:0.85em;">
+<li>SQL 자체가 안 보이면 → Mapper 호출 안 됨 (② 다시)</li>
+<li>SQL 보이고 Parameters 가 이상하면 → 컨트롤러에서 잘못 받음</li>
+<li>SQL 정상이고 Updates 가 0 이면 → WHERE 조건 의심</li>
+</ul>
+</section>
+
+<section><h2>④ 단계 — DB 직접 SELECT</h2>
+<div class="info-box">
+<div class="box-title">"DB 에 데이터가 진짜 들어갔는가?"</div>
+<p style="font-size:0.85em;">MySQL Workbench / DBeaver 등으로 직접 SELECT:</p>
+</div>
+
+<pre><code data-trim>
+SELECT * FROM myreply ORDER BY num DESC LIMIT 5;
+</code></pre>
+
+<ul style="font-size:0.85em;">
+<li>데이터가 있으면 → ⑤ 응답 단계 의심</li>
+<li>데이터가 없으면 → ③ SQL 로그가 거짓말? Updates=0 이었을 가능성</li>
+<li>데이터가 있는데 화면에 없으면 → 직렬화/응답 문제</li>
+</ul>
+</section>
+
+<section><h2>⑤ 단계 — 응답 JSON / 화면</h2>
+<div class="info-box">
+<div class="box-title">"응답에 뭐가 와 있는가?"</div>
+<p style="font-size:0.85em;">F12 → Network → 해당 요청 → <strong>Response</strong> 탭:</p>
+</div>
+
+<pre><code data-trim>
+// 정상 응답
+{
+  "num": 7,
+  "content": "좋은 글이네요",
+  "boardnum": 3,
+  "writer": "hong",
+  "createdAt": "2024-08-15T10:30:00"
+}
+
+// 비정상 — 모든 필드가 null
+{
+  "num": 0,
+  "content": null,
+  "boardnum": 0,
+  "writer": null
+}
+</code></pre>
+
+<ul style="font-size:0.85em;">
+<li>응답에는 정상 → JS 가 그 데이터를 화면에 못 그렸음</li>
+<li>응답이 비정상 → DB 에서 가져온 객체에 데이터 매핑 안 됨 (카멜·스네이크 함정 의심)</li>
+</ul>
+</section>
+
+<section><h2>실전 시나리오 ① — "댓글이 화면에 안 떠요"</h2>
+<div class="diagram">
+   증상: 댓글 작성 버튼 누르면 아무 일도 일어나지 않음
+
+   역추적:
+   ① F12 Network — POST /api/replies 요청 보임?
+      └─ 안 보임 → JS Console 에서 fetch 오류 확인
+      └─ 보임 → Status Code 는?
+
+   ① Status 가 200 이라면 — Response 탭 확인
+      └─ 응답에 데이터 정상 → JS 의 DOM 추가 코드 의심
+
+   ① Status 가 500 이라면 — ② 서버 콘솔로
+      └─ NullPointerException 흔적 — 어떤 변수가 null?
+</div>
+</section>
+
+<section><h2>실전 시나리오 ② — "글 수정했는데 안 바뀌어요"</h2>
+<div class="diagram">
+   증상: 수정 폼 제출 → "수정 완료" 페이지 → 다시 봐도 그대로
+
+   역추적:
+   ① F12 Network — POST /board/update 응답 Status?
+      └─ 302 (리다이렉트) → 일단 정상으로 보임
+      └─ 다음 페이지의 GET 응답을 봐야 함
+
+   ⑤ 새로고침된 글 화면의 Response — 옛 내용 그대로?
+      └─ 정상이면 캐시 문제. Ctrl+F5
+
+   ④ DB 직접 SELECT — 실제로 update 됐는가?
+      └─ 옛 데이터 → ③ SQL 로그 확인
+      └─ 새 데이터 → 화면 캐시 문제
+
+   ③ SQL 로그 — UPDATE 문이 실행됐는가?
+      └─ 안 됐으면 → 본인 확인에서 차단됐을 수 있음 (Service 에서 SecurityException)
+</div>
+</section>
+
+<section><h2>실전 시나리오 ③ — "한글이 ?? 로 깨져요"</h2>
+<div class="diagram">
+   증상: 한글 입력 → 저장 → 화면에 ???? 표시
+
+   역추적:
+   ⑤ Response — JSON 안의 글자가 ???
+      └─ DB 에서 이미 ??? 로 저장됨. ④ 로
+
+   ④ DB SELECT — 글자가 ??? 또는 깨진 글자?
+      └─ ??? → 컬럼 charset 가 utf8mb4 인지
+      └─ 정상 → ⑤ JSP encoding 문제
+
+   ② 서버 콘솔 — 받을 때 이미 ???
+      └─ web.xml CharacterEncodingFilter 미설정
+
+   가장 흔한 원인: 4 곳 중 한 곳의 인코딩이 UTF-8 가 아님
+      ① web.xml CharacterEncodingFilter
+      ② JSP page contentType
+      ③ JDBC URL ?characterEncoding=UTF-8
+      ④ DB 테이블/컬럼 charset
+</div>
+</section>
+
+<section><h2>실전 시나리오 ④ — "객체 필드가 모두 null"</h2>
+<div class="diagram">
+   증상: SELECT 는 성공하는데 응답 JSON 의 모든 필드가 null
+
+   역추적:
+   ⑤ Response 의 JSON 보기 → 정말 모든 필드 null
+
+   ④ DB SELECT 직접 — 데이터 있음
+
+   ③ SQL 로그 — SELECT 실행됨, 결과 1 행
+
+   문제: SELECT 결과를 객체에 매핑할 때 실패
+      → 카멜 ↔ 스네이크 함정!
+      → mybatis-config.xml 의
+         &lt;setting name="mapUnderscoreToCamelCase" value="true"/&gt;
+         확인
+
+   해결: 옵션 추가 후 재시작 → 즉시 해결
+</div>
+</section>
+
+<section><h2>실전 시나리오 ⑤ — "로그인 풀림"</h2>
+<div class="diagram">
+   증상: 분명 로그인 했는데 다른 페이지 가면 다시 로그인 화면
+
+   역추적:
+   ① F12 Network — 그 페이지 요청 Status 가 302?
+      └─ 302 → 인터셉터가 비로그인으로 판단해 리다이렉트
+
+   F12 Application — Cookies 의 JSESSIONID 가 있는가?
+      └─ 없음 → 브라우저 쿠키 차단 또는 도메인 문제
+      └─ 있는데 같은 값?
+
+   ② 서버 콘솔 — session.getAttribute("loginUser") 가 null?
+      └─ session.setAttribute("loginUser", m) 가 빠짐
+      └─ 또는 키 이름 오타 ("loginUser" vs "loginuser")
+
+   ① F12 Network — 로그인 응답에 Set-Cookie: JSESSIONID 있나?
+      └─ 없으면 → 로그인 메서드에서 세션 저장 안 했음
+</div>
+</section>
+
+<section><h2>핵심 도구 5 가지</h2>
+<table style="font-size:0.75em; width:100%; border-collapse:collapse;">
+<thead><tr style="background:rgba(255,255,255,0.05);">
+<th style="padding:6px;">도구</th><th>용도</th></tr></thead>
+<tbody>
+<tr><td style="padding:5px;">F12 Network 탭</td><td>요청 갔는가 / Status / 응답 내용</td></tr>
+<tr><td style="padding:5px;">F12 Console 탭</td><td>JS 오류</td></tr>
+<tr><td style="padding:5px;">F12 Application 탭</td><td>쿠키 / 세션 ID 확인</td></tr>
+<tr><td style="padding:5px;">Tomcat 콘솔</td><td>스택 트레이스 / 디버깅 로그</td></tr>
+<tr><td style="padding:5px;">DB 도구 (Workbench)</td><td>실제 데이터 확인</td></tr>
+</tbody></table>
+<p style="font-size:0.85em; margin-top:0.5em; color:var(--text-muted);">
+👉 4 주 동안 매 차시에서 한 번씩은 본 도구들. 디버깅 시엔 동시에 5 개를 띄워둠.
+</p>
+</section>
+
+<section><h2>버그가 안 풀릴 때의 사고법</h2>
+<ul>
+<li class="fragment"><strong>흐름도 상에서 어디까지 데이터가 갔는지 확정</strong></li>
+<li class="fragment"><strong>그 직후 박스가 의심 1순위</strong></li>
+<li class="fragment"><strong>로그를 추가해서 다시 실행</strong> — 추측 대신 사실로</li>
+<li class="fragment"><strong>한 번에 한 가지만 변경</strong> — 동시에 여러 곳 고치면 원인 알 수 없음</li>
+<li class="fragment"><strong>제일 단순한 케이스로 좁히기</strong> — 입력값을 최소화</li>
+<li class="fragment"><strong>한 시간 막히면 잠깐 쉬기</strong> — 머리 식히면 풀리는 경우 많음</li>
+</ul>
+</section>
+
+<section><h2>4 주 학습 정리</h2>
+<table style="font-size:0.7em; width:100%; border-collapse:collapse;">
+<thead><tr style="background:rgba(255,255,255,0.05);">
+<th style="padding:6px;">Part</th><th>마일스톤</th><th>핵심 박스 추가</th></tr></thead>
+<tbody>
+<tr><td style="padding:5px;">1. 웹 동작</td><td>v0 Hello Servlet</td><td>Tomcat, Servlet</td></tr>
+<tr><td style="padding:5px;">2. Java/Spring</td><td>첫 Bean 주입</td><td>Spring 컨테이너</td></tr>
+<tr><td style="padding:5px;">3. MVC</td><td>v0.5 종단간</td><td>Controller, Service, View</td></tr>
+<tr><td style="padding:5px;">4. DB</td><td>v1 첫 DB</td><td>Mapper, DB</td></tr>
+<tr><td style="padding:5px;">5. 회원/게시판</td><td>v3, v4, v6</td><td>인증, 인가, 인터셉터</td></tr>
+<tr><td style="padding:5px;">6. REST</td><td>v8, v9, v∞</td><td>RestController, Ajax</td></tr>
+</tbody></table>
+<p style="font-size:0.85em; margin-top:0.5em;">
+👉 7 박스가 모두 자기 자리를 가지게 된 4 주.
+</p>
+</section>
+
+
+      <section>
+        <h2>📊 한 그림 정리</h2>
+        <div data-infographic="debug-flow"></div>
+      </section>
+
+      <section><h2>이번 차시의 데이터 흐름 — 「역방향」</h2>
+<div class="flow-diagram"><div class="flow">
+<div class="box new">화면</div><span class="arrow">←</span>
+<div class="box new">응답 JSON</div><span class="arrow">←</span>
+<div class="box new">DB 데이터</div><span class="arrow">←</span>
+<div class="box new">SQL 로그</div><span class="arrow">←</span>
+<div class="box new">서버 콘솔</div><span class="arrow">←</span>
+<div class="box new">F12 Network</div></div>
+<div class="caption">
+<span class="new-mark">●</span> 4 주 동안 그려온 흐름이 <strong>거꾸로</strong> 흘러갑니다 — 디버깅의 본질
+</div></div>
+</section>
+
+<section><h2>마지막 메시지</h2>
+<div class="info-box">
+<p>코드를 짜는 능력과 안 될 때 어디를 봐야 할지 아는 능력은 <strong>다른 기술</strong>입니다.</p>
+<p style="margin-top:0.5em;">앞으로 어떤 새 프레임워크를 만나도, 어떤 새 언어를 배워도 — 「<strong>흐름도를 그리고 거꾸로 따라가기</strong>」의 사고는 똑같이 통합니다.</p>
+<p style="margin-top:0.5em; font-size:0.9em;">4 주 동안 흐름도를 손가락으로 짚는 연습을 해온 이유가 이것이었습니다.</p>
+</div>
+</section>
+
+<section><h2>🔄 4 주 전 / 4 주 후</h2><div class="before-after">
+<div class="before"><div class="label">4 주 전</div>
+<p style="font-size:0.85em;">웹사이트가 어떻게 동작하는지 막연. 코드 안 되면 막막.</p>
+</div>
+<div class="arrow">→</div>
+<div class="after"><div class="label">v∞ — 오늘</div>
+<p style="font-size:0.85em;">7 박스 흐름도를 손가락으로 짚는다. 어디서 막혀도 5 단계 역추적으로 좁혀나간다.</p>
+<p style="font-size:0.85em;">REST API 게시판을 끝까지 만들어봤다.</p>
+</div>
+</div></section>
+
+<section><h2>정리 — 4 주 학습의 마무리</h2>
+<div class="summary"><h3>오늘 들고 가는 것</h3><ul>
+<li>버그 = 흐름도 어디선가 데이터가 막힌 것</li>
+<li>5 단계 역추적: F12 → 콘솔 → SQL 로그 → DB → 응답</li>
+<li>핵심 도구 5 가지를 한 번에 띄우고 점검</li>
+<li>한 번에 한 가지만 변경 / 단순한 케이스로 좁히기</li>
+<li><strong>이게 4 주 학습의 종착점이자 새 시작점</strong></li>
+</ul></div>
+<p style="margin-top:0.8em; font-size:0.7em; color:var(--text-muted);">
+다음 학습 — 더 큰 프로젝트, Spring Boot, JPA, 클라우드 배포 ... 흐름도는 같은 방식으로 자랍니다.
+</p>
+</section>
+
+</div></div>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"></script>
+<script>Reveal.initialize({hash:true,slideNumber:'c/t',width:1280,height:720,margin:0.06,transition:'slide',plugins:[RevealHighlight,RevealNotes]});</script>
+<script src="../js/infographics.js?v=2"></script>
+<script src="../js/screenshot.js?v=2"></script></body></html>

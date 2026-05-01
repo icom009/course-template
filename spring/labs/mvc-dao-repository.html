@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DAO / Repository — 실습</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/lab.css"></head><body>
+<div class="container">
+
+<div class="header"><div class="badge">◇ LAB · MVC</div>
+<h1>DAO / Repository</h1><p class="subtitle">Spring MVC — 실습</p></div>
+
+<div class="minimap"><div class="minimap-title">📍 지금 어디를 만지고 있나요?</div><div class="flow">
+<div class="box">브라우저</div><span class="arrow">→</span>
+<div class="box active">Spring MVC</div><span class="arrow">→</span>
+<div class="box">DB</div></div></div>
+
+<div class="prerequisites"><h3>사전 준비</h3>
+<ul><li>전 차시 완료</li><li>Eclipse + Tomcat 동작 환경</li></ul></div>
+
+<div class="box box-info"><div class="box-title">이번 실습의 목표</div>
+<p>식재료 창고(DB)에 접근하는 일만 전담. SQL 을 작성하고 결과를 객체로 변환.</p></div>
+
+<div class="step"><div class="step-header"><div class="step-num">1</div><div class="step-title">BoardMapper 인터페이스 작성</div></div>
+<pre><code>// src/main/java/com/smhrd/mapper/BoardMapper.java
+package com.smhrd.mapper;
+
+import java.util.List;
+import org.apache.ibatis.annotations.Mapper;
+import com.smhrd.domain.Board;
+
+@Mapper
+public interface BoardMapper {
+    List&lt;Board&gt; selectList();
+    Board       selectOne(int num);
+    void        insert(Board b);
+    void        update(Board b);
+    void        delete(int num);
+}</code></pre>
+<div class="checkpoint"><div class="check-title">CHECKPOINT</div>
+<ul><li>패키지가 <code>com.smhrd.mapper</code> 인가?</li><li>도메인이 <code>com.smhrd.domain.Board</code> 인가?</li></ul></div></div>
+
+<div class="step"><div class="step-header"><div class="step-num">2</div><div class="step-title">Service 에서 Mapper 주입 (의존 방향 확인)</div></div>
+<pre><code>// src/main/java/com/smhrd/service/BoardService.java
+package com.smhrd.service;
+
+@Service
+public class BoardService {
+    @Autowired
+    private BoardMapper mapper;     // ⭐ Service → Mapper
+
+    public Board find(int num) {
+        return mapper.selectOne(num);
+    }
+}</code></pre>
+<div class="checkpoint"><div class="check-title">CHECKPOINT</div>
+<ul><li>Service 안에 SQL 문이 한 줄도 없는가?</li><li>Mapper 가 Service 를 호출하는 코드는 없는가? (역방향 금지)</li></ul></div></div>
+
+<div class="checklist"><h3>실습 완료 체크리스트</h3>
+<div class="check-item"><input type="checkbox"> <code>com.smhrd.mapper.BoardMapper</code> 인터페이스 작성</div>
+<div class="check-item"><input type="checkbox"> 메서드명 = selectList / selectOne / insert / update / delete (표준 id)</div>
+<div class="check-item"><input type="checkbox"> Service 가 Mapper 를 주입받아 호출만 함</div>
+<div class="check-item"><input type="checkbox"> Service 안에 SQL 직접 작성 없음</div></div>
+
+<div class="nav"><a href="mvc-service-layer.html">&larr; 이전</a><a href="../index.html">메인으로</a><a href="mvc-dto-vo-model.html">다음 &rarr;</a></div>
+</div><script src="../js/screenshot.js?v=2"></script></body></html>

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>회원가입 폼 — name 속성과 VO 필드 매칭 — 실습</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/lab.css"></head><body>
+<div class="container">
+
+<div class="header"><div class="badge">▣ LAB · AUTH</div>
+<h1>회원가입 폼 — name 속성과 VO 필드 매칭</h1><p class="subtitle">JSP 폼이 서버 객체로 자동 바인딩되는 원리</p></div>
+
+<div class="minimap"><div class="minimap-title">📍 지금 어디를 만지고 있나요?</div><div class="flow">
+<div class="box">브라우저<br>&lt;form&gt;</div><span class="arrow">→</span>
+<div class="box active">Controller<br>signup(Member m)</div><span class="arrow">→</span>
+<div class="box">Service</div><span class="arrow">→</span>
+<div class="box">Mapper</div><span class="arrow">→</span>
+<div class="box">DB</div>
+</div></div>
+
+<div class="prerequisites"><h3>사전 준비</h3>
+<ul>
+<li>Spring Legacy Project (또는 동등 환경) 가 이미 만들어져 있고 Tomcat 으로 실행되는 상태</li>
+<li><code>com.smhrd.controller</code>, <code>com.smhrd.service</code>, <code>com.smhrd.domain</code> 패키지가 준비됨</li>
+<li>DB 연결은 이번 실습에선 필요 없습니다 — 콘솔 출력으로 「자동 바인딩이 됐는지」 만 확인합니다</li>
+</ul></div>
+
+<div class="box box-info"><div class="box-title">이번 실습의 목표</div>
+<p><code>&lt;input name="..."&gt;</code> 의 name 이 VO 필드명과 같을 때 — Spring 이 어떻게 데이터를 자동으로 객체에 채워주는지를 손으로 확인합니다. 마지막 단계에서는 일부러 name 을 어긋나게 만들어 「약속이 깨지면 어떻게 되는지」 도 직접 봅니다.</p></div>
+
+<div class="step"><div class="step-header"><div class="step-num">1</div><div class="step-title">Member VO 작성 — 그릇 만들기</div></div>
+<p><code>com.smhrd.domain.Member</code> 클래스를 만듭니다. 폼에서 받을 칸과 같은 이름의 필드만 둡니다.</p>
+<pre><code>package com.smhrd.domain;
+
+import lombok.Data;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+
+@Data @AllArgsConstructor @NoArgsConstructor
+public class Member {
+    private String id;
+    private String pwd;
+    private String nick;
+}</code></pre>
+<div class="checkpoint"><div class="check-title">CHECKPOINT</div>
+<ul>
+<li>Lombok 이 적용되어 있는지 — <code>@Data</code> 가 빨간 줄 안 뜨는지 확인</li>
+<li>필드명이 정확히 <code>id</code>, <code>pwd</code>, <code>nick</code> 인가? (대소문자 주의)</li>
+</ul></div></div>
+
+<div class="step"><div class="step-header"><div class="step-num">2</div><div class="step-title">회원가입 폼 JSP 작성</div></div>
+<p><code>src/main/webapp/WEB-INF/views/signup.jsp</code> (혹은 프로젝트 규칙에 맞는 위치) 를 만듭니다. 모든 입력 칸의 <code>name</code> 을 VO 필드명과 같게 둡니다.</p>
+<pre><code>&lt;%@ page contentType="text/html;charset=UTF-8" %&gt;
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta charset="UTF-8"&gt;&lt;title&gt;회원가입&lt;/title&gt;&lt;/head&gt;
+&lt;body&gt;
+  &lt;h1&gt;회원가입&lt;/h1&gt;
+  &lt;form action="/signup" method="post"&gt;
+    &lt;input name="id"   placeholder="아이디"&gt;&lt;br&gt;
+    &lt;input name="pwd"  type="password" placeholder="비밀번호"&gt;&lt;br&gt;
+    &lt;input name="nick" placeholder="닉네임 (선택)"&gt;&lt;br&gt;
+    &lt;button&gt;가입하기&lt;/button&gt;
+  &lt;/form&gt;
+&lt;/body&gt;&lt;/html&gt;</code></pre>
+<div class="checkpoint"><div class="check-title">CHECKPOINT</div>
+<ul>
+<li>브라우저에서 폼 페이지가 열리는가?</li>
+<li>F12 → Elements 에서 모든 input 에 <code>name</code> 속성이 살아있는지 확인</li>
+<li>F12 → Network 탭을 켜둔다 (다음 Step 에서 사용)</li>
+</ul></div></div>
+
+<div class="step"><div class="step-header"><div class="step-num">3</div><div class="step-title">Controller 작성 — VO 한 줄로 받기</div></div>
+<p><code>com.smhrd.controller.SignupController</code> 를 만듭니다. 매개변수에 <code>Member m</code> 만 두면 끝납니다.</p>
+<pre><code>package com.smhrd.controller;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import com.smhrd.domain.Member;
+
+@Controller
+public class SignupController {
+
+    // 폼 페이지 보여주기
+    @GetMapping("/signup")
+    public String form() {
+        return "signup";   // /WEB-INF/views/signup.jsp
+    }
+
+    // 폼 데이터 받기
+    @PostMapping("/signup")
+    public String signup(Member m) {
+        System.out.println("받은 회원: " + m);
+        return "redirect:/signup";   // 일단 다시 폼으로
+    }
+}</code></pre>
+<div class="checkpoint"><div class="check-title">CHECKPOINT</div>
+<ul>
+<li>컴파일 오류가 없는가?</li>
+<li>Tomcat 재시작 후 <code>http://localhost:8080/signup</code> 에서 폼이 보이는가?</li>
+</ul></div></div>
+
+<div class="step"><div class="step-header"><div class="step-num">4</div><div class="step-title">실행 — 자동 바인딩 직접 확인</div></div>
+<p>폼에 값을 넣고 「가입하기」 를 눌러봅니다.</p>
+<pre><code>id   : hong
+pwd  : mypw1234
+nick : 홍길동</code></pre>
+<p>Eclipse 콘솔에 다음과 같은 줄이 떠야 합니다:</p>
+<pre><code>받은 회원: Member(id=hong, pwd=mypw1234, nick=홍길동)</code></pre>
+<div class="checkpoint"><div class="check-title">CHECKPOINT — Eclipse 콘솔 + F12 Network</div>
+<ul>
+<li>Eclipse 콘솔에 위와 같이 세 필드 모두 값이 찍히는가?</li>
+<li>F12 → Network → /signup 요청 → Payload 에 <code>id=hong&amp;pwd=mypw1234&amp;nick=...</code> 가 보이는가?</li>
+<li>「내가 setter 를 부르지 않았는데 채워졌다」 — Spring 이 한 일</li>
+</ul></div></div>
+
+<div class="step"><div class="step-header"><div class="step-num">5</div><div class="step-title">일부러 깨뜨리기 — name 어긋나게</div></div>
+<p>폼 JSP 에서 첫 번째 input 의 <code>name</code> 만 바꿔봅니다.</p>
+<pre><code>&lt;!-- 변경 전 --&gt;
+&lt;input name="id" placeholder="아이디"&gt;
+
+&lt;!-- 변경 후 --&gt;
+&lt;input name="userId" placeholder="아이디"&gt;</code></pre>
+<p>저장 후 다시 폼을 작성해 가입하기 — 콘솔 출력은:</p>
+<pre><code>받은 회원: Member(id=null, pwd=mypw1234, nick=홍길동)
+                    ↑
+              아이디만 null 로 들어옴</code></pre>
+<div class="checkpoint"><div class="check-title">CHECKPOINT — 콘솔 + F12 Network</div>
+<ul>
+<li>F12 → Network 의 Payload 에는 <code>userId=hong</code> 으로 잘 보내졌는가? (브라우저는 잘못 없음)</li>
+<li>그런데 콘솔에는 <code>id=null</code> — VO 에 <code>userId</code> 필드가 없으니 setter 가 호출되지 않은 것</li>
+<li>「약속이 깨지면 그 칸만 사라진다」 — 이게 핵심 가르침</li>
+<li>실습이 끝나면 폼을 <code>name="id"</code> 로 되돌려 두기</li>
+</ul></div></div>
+
+<div class="step"><div class="step-header"><div class="step-num">6</div><div class="step-title">비교 — getParameter 로 받았다면?</div></div>
+<p>같은 일을 옛날 방식으로 쓰면 다음과 같습니다 (참고만 — 실제 코드는 그대로 두세요).</p>
+<pre><code>@PostMapping("/signup")
+public String signup(HttpServletRequest req) {
+    String id   = req.getParameter("id");
+    String pwd  = req.getParameter("pwd");
+    String nick = req.getParameter("nick");
+    Member m = new Member();
+    m.setId(id); m.setPwd(pwd); m.setNick(nick);
+    System.out.println("받은 회원: " + m);
+    return "redirect:/signup";
+}</code></pre>
+<p>Step 3 의 <code>signup(Member m)</code> 한 줄과 비교해보면 — 줄 수가 차이나는 게 아니라, <strong>「데이터 꺼내기」 라는 관심사가 사라진다</strong> 는 게 핵심입니다.</p>
+<div class="checkpoint"><div class="check-title">CHECKPOINT</div>
+<ul>
+<li>「칸이 6 개, 10 개로 늘면 — 어느 쪽이 더 손이 가나?」 자기 말로 정리</li>
+<li>다음 차시(★ v2) 에서 이 폼이 그대로 DB 에 INSERT 되는 흐름을 만난다</li>
+</ul></div></div>
+
+<div class="checklist"><h3>실습 완료 체크리스트</h3>
+<div class="check-item"><input type="checkbox"> Member VO 의 필드명을 폼의 name 과 같게 맞췄다</div>
+<div class="check-item"><input type="checkbox"> Controller 의 매개변수에 <code>Member m</code> 한 줄만 둬도 자동으로 채워지는 것을 봤다</div>
+<div class="check-item"><input type="checkbox"> 콘솔에 세 필드가 모두 채워져 출력되는 것을 확인했다</div>
+<div class="check-item"><input type="checkbox"> 일부러 name 을 어긋나게 해 그 필드만 null 이 되는 것을 봤다</div>
+<div class="check-item"><input type="checkbox"> 같은 이름 약속이 「폼 ↔ VO」 를 잇는다는 것을 자기 말로 설명할 수 있다</div>
+</div>
+
+<div class="nav"><a href="../index.html">&larr; 메인</a><a href="../index.html">메인으로</a><a href="auth-v2-raw.html">다음 &rarr;</a></div>
+</div><script src="../js/screenshot.js?v=2"></script></body></html>

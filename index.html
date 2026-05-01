@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>course-template</title>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+
+  <style>
+    :root {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --text: #e2e8f0;
+      --text-muted: #94a3b8;
+      --accent: #f59e0b;
+      --border: #334155;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Pretendard', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+    }
+    .wrap {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 4rem 1.5rem 6rem;
+    }
+    h1 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin: 0 0 0.4rem;
+    }
+    .lede {
+      color: var(--text-muted);
+      font-size: 0.98rem;
+      margin: 0 0 2.5rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    h2 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin: 2.2rem 0 0.6rem;
+      color: var(--text);
+    }
+    p { margin: 0.5rem 0; }
+    a {
+      color: var(--accent);
+      text-decoration: none;
+      border-bottom: 1px dotted var(--accent);
+    }
+    a:hover { border-bottom-style: solid; }
+    code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.86em;
+      background: #0b1220;
+      padding: 1px 6px;
+      border-radius: 3px;
+      color: #fcd34d;
+      border: 1px solid var(--border);
+    }
+    .nav {
+      list-style: none;
+      padding: 0;
+      margin: 0.6rem 0 0;
+    }
+    .nav li {
+      padding: 0.7rem 0;
+      border-top: 1px solid var(--border);
+    }
+    .nav li:last-child { border-bottom: 1px solid var(--border); }
+    .nav .name { font-weight: 600; }
+    .nav .desc {
+      display: block;
+      color: var(--text-muted);
+      font-size: 0.92rem;
+      margin-top: 0.2rem;
+    }
+    footer {
+      margin-top: 3rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 0.86rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+
+    <h1>course-template</h1>
+    <p class="lede">
+      Claude Code 와 함께 강의용 정적 웹사이트를 만드는 작업 흐름과, 그 흐름의 결과로 만들어진 한 가지 예시(Spring 기초) 가 들어 있는 저장소입니다.
+    </p>
+
+    <h2>이 저장소에서 볼 것</h2>
+    <ul class="nav">
+      <li>
+        <a href="for-instructors.html" class="name">강사용 메뉴얼 →</a>
+        <span class="desc">CLI 설치부터 첫 차시까지 6단계. 다른 강의를 만들고 싶다면 여기부터.</span>
+      </li>
+      <li>
+        <a href="behind-the-scenes.html" class="name">이 사이트가 만들어진 과정 →</a>
+        <span class="desc">실제 대화·삽질·토큰 사용량의 솔직한 기록. 메뉴얼만 보면 빠지는 시행착오들.</span>
+      </li>
+      <li>
+        <a href="starter/README.md" class="name">starter/ — 시작 키트</a>
+        <span class="desc">새 코스를 만들 때 그대로 복제해서 쓸 빈 골격. <code>cp -r starter/ ~/my-course/</code></span>
+      </li>
+      <li>
+        <a href="spring/index.html" class="name">spring/ — 결과물 예시 (Spring 기초) →</a>
+        <span class="desc">위 흐름으로 만들어진 코스 사이트 한 채. 슬라이드·예제·실습·핸드아웃 4종 자료가 60+ 차시 분량.</span>
+      </li>
+    </ul>
+
+    <h2>구조</h2>
+    <pre style="font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; background: #0b1220; border: 1px solid var(--border); border-radius: 4px; padding: 1rem 1.1rem; overflow-x: auto;"><code>course-template/
+├─ index.html              ← 이 페이지
+├─ for-instructors.html    ← 6단계 메뉴얼
+├─ behind-the-scenes.html  ← 솔직한 회고
+├─ starter/                ← 시작 키트 (복제용)
+└─ spring/                 ← Spring 기초 — 만들어진 결과물 예시</code></pre>
+
+    <h2>이 저장소를 어떻게 쓰는가</h2>
+    <p>
+      <strong>강의를 들으러 온 학생</strong> 이라면 <a href="spring/index.html">spring/</a> 만 보면 됩니다.
+    </p>
+    <p>
+      <strong>비슷한 강의 사이트를 만들려는 강사</strong> 라면 <a href="for-instructors.html">강사용 메뉴얼</a> 부터 시작하세요. <code>starter/</code> 를 복제해서 본인 코스로 채우면 됩니다.
+    </p>
+
+    <footer>
+      <p>이 저장소는 자유롭게 복제·수정 가능합니다. <code>spring/자료/</code> 는 강사 사전 자료라 공개 저장소에서 제외되어 있습니다.</p>
+    </footer>
+
+  </div>
+</body>
+</html>

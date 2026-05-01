@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>클라이언트와 서버 — 실습</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+  <link rel="stylesheet" href="css/lab.css">
+</head>
+<body>
+  <div class="container">
+
+    <!-- ============== 헤더 ============== -->
+    <div class="header">
+      <div class="badge">▣ LAB · WEB</div>
+      <h1>요청·응답을 직접 눈으로 보기</h1>
+      <p class="subtitle">클라이언트와 서버 — 실습 / 소요 시간: 약 15분</p>
+    </div>
+
+    <!-- ============== 미니맵 ============== -->
+    <div class="minimap">
+      <div class="minimap-title">📍 지금 어디를 만지고 있나요?</div>
+      <div class="flow">
+        <div class="box active">브라우저</div>
+        <span class="arrow">⇄</span>
+        <div class="box active">서버</div>
+        <span class="arrow">→</span>
+        <div class="box">Controller</div>
+        <span class="arrow">→</span>
+        <div class="box">Service</div>
+        <span class="arrow">→</span>
+        <div class="box">DB</div>
+      </div>
+    </div>
+
+    <!-- ============== 사전 준비 ============== -->
+    <div class="prerequisites">
+      <h3>사전 준비</h3>
+      <ul>
+        <li>크롬(Chrome) 브라우저 — 사파리·엣지·파이어폭스도 가능합니다</li>
+        <li>인터넷 연결</li>
+        <li>(선택) 노트 — 직접 본 것을 짧게 메모해두면 좋습니다</li>
+      </ul>
+    </div>
+
+    <div class="box box-info">
+      <div class="box-title">이번 실습의 목표</div>
+      <p>코드는 한 줄도 쓰지 않습니다. 대신 <strong>매일 보는 웹사이트에서 진짜로 요청과 응답이 오가는 장면</strong>을 직접 보고, 흐름을 손가락으로 짚을 수 있게 됩니다.</p>
+    </div>
+
+    <!-- ============== Step 1 ============== -->
+    <div class="step">
+      <div class="step-header">
+        <div class="step-num">1</div>
+        <div class="step-title">크롬을 열고 네이버에 접속하기</div>
+      </div>
+
+      <p>가장 익숙한 일부터 시작합니다.</p>
+      <ol>
+        <li>크롬을 엽니다.</li>
+        <li>주소창에 <code>www.naver.com</code> 을 입력하고 엔터를 누릅니다.</li>
+        <li>화면이 뜰 때까지 기다립니다 (보통 1초 이내).</li>
+      </ol>
+
+      <div class="expected">
+        <div class="expected-title">예상 결과</div>
+        <p>네이버 메인 화면이 보입니다.</p>
+      </div>
+
+      <div class="checkpoint">
+        <div class="check-title">CHECKPOINT — 잠시 멈춰서 생각해보기</div>
+        <ul>
+          <li>주소창에 글자를 친 순간부터 화면이 뜨기까지 — <strong>누가 누구에게</strong> 무엇을 부탁했나요?</li>
+          <li>"네이버 줘"라는 요청을 받은 쪽은 어디에 있을까요? (힌트: 우리 컴퓨터가 아닙니다)</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ============== Step 2 ============== -->
+    <div class="step">
+      <div class="step-header">
+        <div class="step-num">2</div>
+        <div class="step-title">개발자 도구 열기 — F12</div>
+      </div>
+
+      <p>네이버 화면이 떠 있는 상태에서 키보드의 <code>F12</code> 키를 누릅니다.</p>
+
+      <div class="box box-tip">
+        <div class="box-title">F12 가 안 눌린다면</div>
+        <p>맥북 노트북: <code>fn</code> + <code>F12</code> 를 눌러보세요.<br>
+        또는 화면 어디든 우클릭 → <strong>"검사"</strong> 메뉴를 클릭해도 됩니다.</p>
+      </div>
+
+      <p>화면 한쪽에 처음 보는 검은 패널이 나타납니다. 두려워하지 마세요 — 이게 바로 <strong>개발자 도구(DevTools)</strong> 입니다.</p>
+
+      <div class="screenshot">
+        <div class="label">스크린샷</div>
+        <div class="desc">F12 를 눌러 개발자 도구 패널이 처음 열린 화면. 우측 또는 하단에 새 패널이 등장</div>
+      </div>
+
+      <div class="expected">
+        <div class="expected-title">예상 결과</div>
+        <p>화면 한쪽에 검은(또는 흰) 패널이 새로 보이고, 위쪽에 「Elements / Console / Sources / <strong>Network</strong>」 같은 탭이 나란히 있습니다.</p>
+      </div>
+
+      <div class="checkpoint">
+        <div class="check-title">CHECKPOINT</div>
+        <ul>
+          <li>개발자 도구의 위쪽 탭들 중 「<strong>Network</strong>」 가 보이나요?</li>
+          <li>안 보이면 탭 영역에서 <code>≫</code> 표시를 눌러 더 많은 탭을 펼쳐보세요.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ============== Step 3 ============== -->
+    <div class="step">
+      <div class="step-header">
+        <div class="step-num">3</div>
+        <div class="step-title">Network 탭 켜고 새로고침</div>
+      </div>
+
+      <ol>
+        <li>개발자 도구의 위쪽에서 <strong>「Network」</strong> 탭을 클릭합니다.</li>
+        <li>탭이 비어 있어도 괜찮습니다.</li>
+        <li>이 상태에서 키보드의 <code>F5</code> 또는 주소창 옆 새로고침 아이콘을 누릅니다.</li>
+        <li>탭 안에 <strong>줄이 좌르르 채워지는 것</strong> 을 봅니다.</li>
+      </ol>
+
+      <div class="screenshot">
+        <div class="label">스크린샷</div>
+        <div class="desc">Network 탭에 수십 개의 요청·응답이 줄로 나열된 화면. 파일명·상태코드·시간이 표 형태로 보임</div>
+      </div>
+
+      <div class="expected">
+        <div class="expected-title">예상 결과</div>
+        <p>수십 줄의 항목이 표 형태로 나타납니다. 각 줄이 <strong>하나의 요청·응답</strong> 입니다.</p>
+      </div>
+
+      <div class="checkpoint">
+        <div class="check-title">CHECKPOINT — 직접 세어보기</div>
+        <ul>
+          <li>네이버 메인 한 페이지를 띄우는 데 <strong>요청이 몇 개</strong> 일어났나요? (대략 30~100개)</li>
+          <li>한 번 클릭으로 한 개만 가는 줄 알았는데, 왜 이렇게 많을까요? (HTML, 이미지, JS, CSS, 폰트 등 각자 별도 요청)</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ============== Step 4 ============== -->
+    <div class="step">
+      <div class="step-header">
+        <div class="step-num">4</div>
+        <div class="step-title">요청 하나를 클릭해서 안을 보기</div>
+      </div>
+
+      <p>줄 중에서 가장 위쪽의 <code>www.naver.com</code> 같은 항목 하나를 클릭합니다.</p>
+
+      <p>오른쪽(또는 아래)에 새 패널이 열리고, 그 안에 <strong>Headers / Payload / Response</strong> 같은 작은 탭들이 보입니다.</p>
+
+      <div class="box box-info">
+        <div class="box-title">지금은 자세히 안 봐도 됩니다</div>
+        <p>이 안의 글자들이 무엇인지 다 외울 필요 없습니다. <strong>다음 차시(HTTP 해부)</strong> 에서 한 줄씩 뜯어봅니다. 오늘은 그저 「<strong>안에 뭔가 글자가 있구나</strong>」 정도만 보고 가도 충분합니다.</p>
+      </div>
+
+      <div class="screenshot">
+        <div class="label">스크린샷</div>
+        <div class="desc">Network 탭의 한 항목을 클릭하면 우측에 Headers·Payload·Response 등의 상세 패널이 열린 화면</div>
+      </div>
+
+      <div class="checkpoint">
+        <div class="check-title">CHECKPOINT</div>
+        <ul>
+          <li>클릭한 줄의 <strong>Status</strong> 항목에 무엇이 적혀 있나요? (대부분 <code>200</code> 일 겁니다)</li>
+          <li><code>200</code> 이라는 숫자가 어떤 뜻일지 — 다음 차시에서 다룹니다. 일단 「잘 됐다」 의 뜻이라고 알아두세요.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ============== Step 5 ============== -->
+    <div class="step">
+      <div class="step-header">
+        <div class="step-num">5</div>
+        <div class="step-title">클라이언트와 서버의 대화를 그림으로 그려보기</div>
+      </div>
+
+      <p>오늘 본 것을 머릿속에 박아두기 위해 — 종이나 메모장에 직접 그림을 그려보세요.</p>
+
+      <div class="diagram">
+   ┌─────────────┐                    ┌──────────────┐
+   │             │  ① "이거 주세요"    │              │
+   │ (내가 그릴   │ ─────────────────→ │  (내가 그릴  │
+   │  손님)      │                    │   가게)     │
+   │             │ ←───────────────── │              │
+   │             │  ② "여기 있습니다"  │              │
+   └─────────────┘                    └──────────────┘
+      </div>
+
+      <ol>
+        <li>왼쪽에 <strong>클라이언트</strong>(내 브라우저)를 그립니다.</li>
+        <li>오른쪽에 <strong>서버</strong>(네이버 컴퓨터)를 그립니다.</li>
+        <li>두 사이에 화살표 두 개를 그립니다 — 하나는 요청, 하나는 응답.</li>
+        <li>각 화살표 위에 무엇이 오갔는지 적습니다.</li>
+      </ol>
+
+      <div class="checkpoint">
+        <div class="check-title">CHECKPOINT — 마지막 점검</div>
+        <ul>
+          <li>그림을 보면서 누군가에게 <strong>30초 안에 설명할 수 있나요</strong>?</li>
+          <li>"브라우저가 네이버에게 ___을 요청하고, 네이버가 ___을 돌려줘서 화면이 뜬다" 의 빈칸을 채울 수 있나요?</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ============== 완료 체크리스트 ============== -->
+    <div class="checklist">
+      <h3>실습 완료 체크리스트</h3>
+      <div class="check-item"><input type="checkbox"> 크롬에서 네이버에 접속했다</div>
+      <div class="check-item"><input type="checkbox"> F12 로 개발자 도구를 처음 열어봤다</div>
+      <div class="check-item"><input type="checkbox"> Network 탭에서 새로고침 시 수십 개 요청이 발생함을 확인했다</div>
+      <div class="check-item"><input type="checkbox"> 한 요청을 클릭해 상세 패널을 열어봤다</div>
+      <div class="check-item"><input type="checkbox"> 손님 ↔ 가게 그림을 직접 그려봤다</div>
+      <div class="check-item"><input type="checkbox"> 「웹은 요청과 응답의 반복」이라는 한 줄을 입으로 말할 수 있다</div>
+    </div>
+
+    <!-- ============== 네비게이션 ============== -->
+    <div class="nav">
+      <a href="#" style="opacity:0.4; pointer-events:none;">&larr; 이전</a>
+      <a href="../index.html">메인으로</a>
+      <a href="#" style="opacity:0.4; pointer-events:none;">다음: HTTP 해부 &rarr;</a>
+    </div>
+
+  </div>
+  <script src="../js/screenshot.js?v=2"></script>
+</body>
+</html>

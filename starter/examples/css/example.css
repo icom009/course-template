@@ -1,0 +1,357 @@
+/* =========================================================================
+   examples/css/example.css — 읽기 자료 (개념 설명 + 비유)
+   ========================================================================= */
+
+:root {
+  --bg: #0f172a;
+  --surface: #1e293b;
+  --surface-2: #273449;
+  --text: #e2e8f0;
+  --text-muted: #94a3b8;
+  --accent: #f59e0b;
+  --blue: #3b82f6;
+  --green: #22c55e;
+  --red: #ef4444;
+  --purple: #a855f7;
+  --teal: #14b8a6;
+  --border: #475569;
+  --code-bg: #0d1117;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: 'Pretendard', 'Pretendard Variable', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+}
+
+.container {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 3rem 2rem 5rem;
+}
+
+/* ---- 헤더 ---- */
+.header {
+  margin-bottom: 2.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+.header .session-num {
+  display: inline-block;
+  padding: 4px 14px;
+  background: linear-gradient(135deg, var(--accent), #d97706);
+  color: white;
+  font-weight: 700;
+  font-size: 13px;
+  border-radius: 999px;
+  margin-bottom: 0.6rem;
+  letter-spacing: 0.05em;
+}
+.header h1 {
+  margin: 0.2rem 0;
+  font-size: 2.2rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.header .subtitle {
+  color: var(--text-muted);
+  margin: 0.2rem 0 0;
+}
+
+/* 버전 뱃지 (마일스톤 차시) */
+.version-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 6px 16px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--accent), var(--red));
+  color: white;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+/* ---- 미니맵 (전체 흐름도에서 이번 차시가 닿는 부분 강조) ---- */
+.minimap {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(59, 130, 246, 0.02));
+  border: 1px solid var(--blue);
+  border-radius: 12px;
+  padding: 1.2rem 1.4rem;
+  margin: 0 0 2rem;
+}
+.minimap .minimap-title {
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  color: var(--blue);
+  font-weight: 700;
+  margin-bottom: 0.8rem;
+}
+.minimap .flow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+}
+.minimap .box {
+  padding: 6px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-muted);
+}
+.minimap .box.active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(245, 158, 11, 0.1);
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15);
+  font-weight: 700;
+}
+.minimap .arrow { color: var(--blue); font-weight: 700; }
+
+/* ---- 용어 사전 ---- */
+.terms {
+  background: var(--surface);
+  border-radius: 12px;
+  padding: 1.4rem 1.6rem;
+  margin: 0 0 2rem;
+}
+.terms h3 {
+  margin: 0 0 1rem;
+  color: var(--accent);
+  font-size: 1.05rem;
+}
+.term-item {
+  display: grid;
+  grid-template-columns: minmax(140px, 200px) 1fr;
+  gap: 1rem;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--border);
+}
+.term-item:last-child { border-bottom: none; }
+.term-name {
+  color: var(--accent);
+  font-weight: 700;
+}
+.term-desc { color: var(--text); }
+
+/* ---- 본문 제목 ---- */
+h2 {
+  font-size: 1.5rem;
+  color: var(--blue);
+  margin: 2.4rem 0 1rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 2px solid rgba(59, 130, 246, 0.3);
+}
+h3 {
+  font-size: 1.15rem;
+  color: var(--green);
+  margin: 1.6rem 0 0.6rem;
+}
+
+p { margin: 0.6rem 0; }
+ul, ol { padding-left: 1.4rem; }
+li { margin: 0.3rem 0; }
+strong { color: var(--accent); }
+
+/* ---- 박스 4종 ---- */
+.box {
+  border-left: 4px solid;
+  padding: 0.8rem 1.1rem;
+  margin: 1rem 0;
+  background: var(--surface);
+  border-radius: 0 10px 10px 0;
+}
+.box-info    { border-left-color: var(--blue); }
+.box-tip     { border-left-color: var(--green); }
+.box-warn    { border-left-color: var(--accent); }
+.box-danger  { border-left-color: var(--red); }
+.box .box-title {
+  font-weight: 700;
+  margin-bottom: 0.3rem;
+  font-size: 0.95rem;
+}
+.box-info    .box-title { color: var(--blue); }
+.box-tip     .box-title { color: var(--green); }
+.box-warn    .box-title { color: var(--accent); }
+.box-danger  .box-title { color: var(--red); }
+
+/* ---- 4단계 패턴 ---- */
+.pain-point {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.02));
+  border: 2px dashed var(--red);
+  border-radius: 12px;
+  padding: 1rem 1.4rem;
+  margin: 1.2rem 0;
+}
+.pain-point .pain-title {
+  color: var(--red);
+  font-weight: 700;
+  margin-bottom: 0.4rem;
+}
+.pain-point .pain-title::before { content: '⚠️ '; }
+
+.new-tool {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(34, 197, 94, 0.02));
+  border: 2px solid var(--green);
+  border-radius: 12px;
+  padding: 1rem 1.4rem;
+  margin: 1.2rem 0;
+}
+.new-tool .tool-title {
+  color: var(--green);
+  font-weight: 700;
+  margin-bottom: 0.4rem;
+}
+.new-tool .tool-title::before { content: '🛠️ '; }
+
+.before-after {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 1rem;
+  margin: 1.2rem 0;
+}
+.before-after .before, .before-after .after {
+  padding: 1rem 1.2rem;
+  border-radius: 10px;
+}
+.before-after .before {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+.before-after .after {
+  background: rgba(34, 197, 94, 0.08);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+.before-after .arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  color: var(--accent);
+}
+.before-after .label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  margin-bottom: 0.4rem;
+}
+.before .label { color: var(--red); }
+.after .label  { color: var(--green); }
+
+/* ---- 다이어그램 (텍스트 아트) ---- */
+.diagram {
+  font-family: 'JetBrains Mono', monospace;
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.2rem 1.4rem;
+  white-space: pre;
+  font-size: 13px;
+  line-height: 1.6;
+  overflow-x: auto;
+  margin: 1.2rem 0;
+}
+
+/* ---- 2단 레이아웃 ---- */
+.columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.2rem;
+  margin: 1.2rem 0;
+}
+
+/* ---- 코드 블록 (인라인 / 블록) ---- */
+code {
+  font-family: 'JetBrains Mono', monospace;
+  background: rgba(245, 158, 11, 0.12);
+  color: var(--accent);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.92em;
+}
+pre {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1rem 1.2rem;
+  overflow-x: auto;
+  font-size: 13px;
+  line-height: 1.55;
+}
+pre code {
+  background: transparent;
+  color: var(--text);
+  padding: 0;
+  font-size: inherit;
+}
+
+/* ---- 스크린샷 자리 ---- */
+.screenshot {
+  background: var(--surface);
+  border: 2px dashed var(--border);
+  border-radius: 10px;
+  padding: 1.2rem;
+  margin: 1.2rem 0;
+  text-align: center;
+}
+.screenshot img {
+  max-width: 100%;
+  border-radius: 8px;
+}
+.screenshot .label {
+  color: var(--text-muted);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+}
+.screenshot .desc {
+  color: var(--text);
+  font-size: 14px;
+  margin-top: 0.4rem;
+}
+
+/* ---- 네비게이션 ---- */
+.nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.8rem;
+  margin-top: 4rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+}
+.nav a {
+  flex: 1;
+  text-align: center;
+  padding: 0.8rem 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+.nav a:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: translateY(-1px);
+}
+
+/* ---- 반응형 ---- */
+@media (max-width: 768px) {
+  .container { padding: 2rem 1rem 3rem; }
+  .header h1 { font-size: 1.6rem; }
+  .columns { grid-template-columns: 1fr; }
+  .before-after { grid-template-columns: 1fr; }
+  .before-after .arrow { transform: rotate(90deg); }
+  .term-item { grid-template-columns: 1fr; gap: 0.2rem; }
+}

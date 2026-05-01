@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GET vs POST — 핸드아웃</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+  <link rel="stylesheet" href="css/print.css">
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="header-left">
+        <div class="session-num">◇ PART · WEB</div>
+        <h1>GET vs POST</h1>
+      </div>
+      <div class="header-right">Spring 기초<br>SMHRD</div>
+    </div>
+
+    <div class="objectives">
+      <h3>학습 목표</h3>
+      <ul>
+        <li>GET 과 POST 가 데이터를 어디에 싣는지 안다</li>
+        <li>언제 GET 을 쓰고 언제 POST 를 쓰는지 판단할 수 있다</li>
+        <li>F12 로 두 메서드의 요청을 구분할 수 있다</li>
+      </ul>
+    </div>
+
+    <h2>1. 두 메서드의 핵심 차이</h2>
+
+    <div class="note">
+      <strong>한 줄 비유:</strong> GET 은 <strong>엽서</strong>(겉에 글씨가 보임), POST 는 <strong>봉투</strong>(안에 넣어 봉인).
+    </div>
+
+    <table>
+      <thead><tr><th style="width:25%;">항목</th><th style="width:37%;">GET</th><th style="width:38%;">POST</th></tr></thead>
+      <tbody>
+        <tr><td><strong>데이터 위치</strong></td><td>URL 의 <code>?</code> 뒤</td><td>메시지 바디</td></tr>
+        <tr><td>길이 제한</td><td>있음 (~2KB)</td><td>사실상 없음</td></tr>
+        <tr><td>즐겨찾기·공유</td><td>가능 (URL 복사)</td><td>불가</td></tr>
+        <tr><td>새로고침</td><td>그냥 다시 요청</td><td>"재제출 하시겠습니까?"</td></tr>
+        <tr><td>민감 데이터</td><td>❌ URL 노출</td><td>✅ 바디 숨김</td></tr>
+        <tr><td><strong>기본 용도</strong></td><td><strong>조회</strong></td><td><strong>제출/생성</strong></td></tr>
+      </tbody>
+    </table>
+
+    <h2>2. 두 메시지의 모습</h2>
+    <h3>GET</h3>
+    <div class="diagram">
+GET /search?q=spring HTTP/1.1
+Host: example.com
+
+(바디 없음)
+    </div>
+    <h3>POST</h3>
+    <div class="diagram">
+POST /search HTTP/1.1
+Host: example.com
+Content-Type: application/x-www-form-urlencoded
+
+q=spring
+    </div>
+
+    <h2>3. 어느 것을 쓸까</h2>
+    <ul>
+      <li><strong>GET</strong>: 검색, 게시판 목록·상세, 공유 가능한 링크</li>
+      <li><strong>POST</strong>: 회원가입, 로그인, 게시글 작성, 댓글</li>
+    </ul>
+
+    <div class="note">
+      <strong>금기:</strong> 비밀번호·주민번호·카드번호는 절대 GET 으로 보내지 않습니다. URL 은 브라우저 기록·서버 로그·검색 엔진 등 여러 곳에 흔적이 남습니다.
+    </div>
+
+    <h2>4. F12 로 구별</h2>
+    <ol>
+      <li>F12 → Network 탭의 <strong>Method</strong> 열을 본다</li>
+      <li>POST 항목을 클릭하면 <strong>Payload</strong> 탭에 바디 데이터가 보인다</li>
+      <li>GET 은 <strong>Request URL</strong> 안에 데이터가 그대로 박혀 있다</li>
+    </ol>
+
+    <h2>5. Before / After</h2>
+    <div class="before-after">
+      <div class="before"><div class="label">전 차시 끝</div><p>메서드 이름은 알지만 둘이 어떻게 다른지 모름.</p></div>
+      <div class="after"><div class="label">이번 차시 끝</div><p>데이터가 URL 인지 바디인지 안다. 회원가입을 GET 으로 보내면 안 되는 이유를 설명할 수 있다.</p></div>
+    </div>
+
+    <div class="checklist">
+      <h3>학습 확인 체크리스트</h3>
+      <ul>
+        <li>GET 과 POST 의 데이터 위치 차이를 한 문장으로 말할 수 있다</li>
+        <li>F12 Network 탭에서 Method 열로 두 메서드를 구별할 수 있다</li>
+        <li>POST 의 Payload / GET 의 Request URL 을 손가락으로 짚을 수 있다</li>
+        <li>비밀번호를 GET 으로 보내면 안 되는 이유를 설명할 수 있다</li>
+      </ul>
+    </div>
+
+    <div class="nav">
+      <a href="web-http-anatomy.html">&larr; 이전</a>
+      <a href="../index.html">메인으로</a>
+      <a href="web-stateless-cookie-session.html">다음 &rarr;</a>
+    </div>
+  </div>
+</body>
+</html>

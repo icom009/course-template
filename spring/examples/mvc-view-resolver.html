@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>View · ViewResolver — 읽기 자료</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/example.css"></head><body>
+<div class="container">
+
+<div class="header"><div class="session-num">◇ PART · MVC</div>
+<h1>View · ViewResolver</h1><p class="subtitle">Spring MVC — 읽기 자료</p></div>
+
+<div class="minimap"><div class="minimap-title">📍 지금 어디를 만지고 있나요?</div><div class="flow">
+<div class="box">브라우저</div><span class="arrow">→</span>
+<div class="box active">Spring MVC</div><span class="arrow">→</span>
+<div class="box">DB</div></div></div>
+
+<div class="terms"><h3>핵심 용어</h3><div class="term-item"><span class="term-name">ViewResolver</span><span class="term-desc">ViewName 을 실제 View 파일로 변환하는 부품.</span></div>
+<div class="term-item"><span class="term-name">InternalResourceViewResolver</span><span class="term-desc">JSP 용 ViewResolver. prefix + name + suffix.</span></div></div>
+
+<h2>1. 문제</h2>
+<div class="pain-point"><div class="pain-title">전 차시까지의 답답함</div><p>컨트롤러가 "home" 만 반환했는데 어떻게 home.jsp 를 찾아낼까?</p></div>
+
+<h2>2. 새 도구</h2>
+<div class="new-tool"><div class="tool-title">ViewResolver — 이름을 경로로</div><p>컨트롤러가 반환한 ViewName(예: "home") 을 실제 JSP 파일 경로(/WEB-INF/views/home.jsp) 로 변환.</p></div>
+
+<h2>3. 코드</h2>
+<pre><code>&lt;!-- servlet-context.xml --&gt;
+&lt;beans:bean class="...InternalResourceViewResolver"&gt;
+    &lt;beans:property name="prefix" value="/WEB-INF/views/" /&gt;
+    &lt;beans:property name="suffix" value=".jsp" /&gt;
+&lt;/beans:bean&gt;
+
+// Controller 에서
+return "home";   // → /WEB-INF/views/home.jsp</code></pre>
+
+<h2>4. 정리</h2>
+<ul><li>컨트롤러는 ViewName 만 반환</li>
+<li>ViewResolver 가 prefix + name + suffix 로 실제 경로 조립</li>
+<li>경로 규칙은 servlet-context.xml 설정</li></ul>
+
+<h2>5. Before / After</h2>
+<div class="before-after">
+<div class="before"><div class="label">전 차시 끝</div><p>컨트롤러가 "home" 만 반환했는데 어떻게 home.jsp 를 찾아낼까?</p></div>
+<div class="arrow">→</div>
+<div class="after"><div class="label">이번 차시 끝</div><p>ViewResolver 의 prefix/suffix 작동 방식을 안다.</p></div>
+</div>
+
+<div class="nav"><a href="mvc-dto-vo-model.html">&larr; 이전</a><a href="../index.html">메인으로</a><a href="mvc-config-files.html">다음 &rarr;</a></div>
+</div><script src="../js/screenshot.js?v=2"></script></body></html>

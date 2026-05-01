@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HTTP 해부 — 읽기 자료</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+  <link rel="stylesheet" href="css/example.css">
+</head>
+<body>
+  <div class="container">
+
+    <div class="header">
+      <div class="session-num">◇ PART · WEB</div>
+      <h1>HTTP 해부</h1>
+      <p class="subtitle">웹의 동작 원리 — 읽기 자료</p>
+    </div>
+
+    <div class="minimap">
+      <div class="minimap-title">📍 지금 어디를 만지고 있나요?</div>
+      <div class="flow">
+        <div class="box active">브라우저</div>
+        <span class="arrow">⇄</span>
+        <div class="box active">서버</div>
+        <span class="arrow">→</span>
+        <div class="box">Controller</div>
+        <span class="arrow">→</span>
+        <div class="box">Service</div>
+        <span class="arrow">→</span>
+        <div class="box">DB</div>
+      </div>
+    </div>
+
+    <div class="terms">
+      <h3>이 차시의 핵심 용어</h3>
+      <div class="term-item">
+        <span class="term-name">HTTP</span>
+        <span class="term-desc">HyperText Transfer Protocol. 클라이언트와 서버가 대화할 때 쓰는 약속된 글자 형식. <strong>한국어도 영어도 아닌 둘만 통하는 대화 규칙</strong>.</span>
+      </div>
+      <div class="term-item">
+        <span class="term-name">요청 메시지 (Request)</span>
+        <span class="term-desc">클라이언트가 서버에 보내는 글자 묶음. <strong>요청 라인 + 헤더들 + (바디)</strong> 의 3단 구조.</span>
+      </div>
+      <div class="term-item">
+        <span class="term-name">응답 메시지 (Response)</span>
+        <span class="term-desc">서버가 클라이언트에 돌려주는 글자 묶음. <strong>상태 라인 + 헤더들 + 바디</strong> 의 3단 구조.</span>
+      </div>
+      <div class="term-item">
+        <span class="term-name">메서드 (Method)</span>
+        <span class="term-desc">요청의 「동사」. 무엇을 하려고 보낸 부탁인지 알린다. <code>GET</code>(보여줘), <code>POST</code>(저장해줘) 등.</span>
+      </div>
+      <div class="term-item">
+        <span class="term-name">상태 코드 (Status Code)</span>
+        <span class="term-desc">응답의 첫 줄에 적히는 세 자리 숫자. 결과를 한눈에 알리는 신호등. <code>200</code> 정상 / <code>404</code> 없음 / <code>500</code> 서버 오류.</span>
+      </div>
+      <div class="term-item">
+        <span class="term-name">헤더 (Header)</span>
+        <span class="term-desc">메시지의 부가 정보. 「내용 형식이 뭐다」, 「쿠키가 뭐다」 같은 메타 데이터를 한 줄에 하나씩.</span>
+      </div>
+      <div class="term-item">
+        <span class="term-name">바디 (Body)</span>
+        <span class="term-desc">메시지의 실제 내용물. 응답에서는 HTML / JSON / 이미지 등이 들어 있고, 요청에서는 POST 일 때만 채워짐.</span>
+      </div>
+    </div>
+
+    <h2>1. 왜 또 들여다봐야 하나</h2>
+    <p>전 차시에서는 「클라이언트가 서버에 부탁하고, 서버가 결과를 돌려준다」는 큰 그림을 봤습니다. 그런데 그 부탁과 결과가 <strong>실제로는 어떤 글자</strong>로 생겼을까요?</p>
+
+    <div class="pain-point">
+      <div class="pain-title">이걸 모르면 일어나는 일</div>
+      <p>나중에 컨트롤러에서 데이터가 안 들어올 때 <strong>"내가 도대체 뭘 보냈는지"</strong> 확인할 방법이 없습니다. 디버깅의 첫 단계는 「내 요청이 진짜 그 모양으로 나갔는지」 검증하는 일입니다.</p>
+    </div>
+
+    <p>좋은 소식: HTTP 메시지의 구조는 단순합니다 — <strong>3단</strong> 으로 끝납니다.</p>
+
+    <h2>2. 요청 메시지의 3단 구조</h2>
+
+    <div class="diagram">
+GET /search?q=spring HTTP/1.1     ← ① 요청 라인
+Host: www.naver.com               ← ② 헤더들 (한 줄에 하나씩)
+User-Agent: Mozilla/5.0 ...
+Accept: text/html
+Cookie: NID_SES=abc123
+
+(여기는 비어있음)                  ← ③ 바디 (GET 은 보통 없음)
+    </div>
+
+    <h3>① 요청 라인 — 가장 중요한 한 줄</h3>
+    <p>이 한 줄이 「<strong>어떤 방법(메서드)으로</strong>, <strong>어디(경로)를</strong>, <strong>어떤 버전(HTTP/1.1)으로</strong> 부르는지」를 모두 담습니다.</p>
+    <ul>
+      <li><code>GET</code> — 메서드 (동사). "보여줘"</li>
+      <li><code>/search?q=spring</code> — 경로 (어디로)</li>
+      <li><code>HTTP/1.1</code> — 프로토콜 버전</li>
+    </ul>
+
+    <h3>② 헤더 — 부가 정보</h3>
+    <p>한 줄에 하나씩 적힌 「이름: 값」 형식의 메타 데이터입니다. 자주 보는 헤더:</p>
+    <ul>
+      <li><code>Host</code> — 어느 사이트에 보내는지</li>
+      <li><code>User-Agent</code> — 어떤 브라우저가 보냈는지</li>
+      <li><code>Accept</code> — 어떤 형식의 응답을 받고 싶은지</li>
+      <li><code>Cookie</code> — 가지고 있는 쿠키 (Part 5 에서 자세히)</li>
+    </ul>
+
+    <h3>③ 바디 — 보낼 내용물</h3>
+    <p>요청 메서드에 따라 다릅니다:</p>
+    <ul>
+      <li><code>GET</code> — <strong>비어 있음</strong> (보낼 게 없음, URL 의 <code>?q=spring</code> 부분이 대신함)</li>
+      <li><code>POST</code> — <strong>여기에 폼 데이터가 담김</strong> (다음 차시에서 직접 확인)</li>
+    </ul>
+
+    <h2>3. 응답 메시지의 3단 구조</h2>
+
+    <div class="diagram">
+HTTP/1.1 200 OK                   ← ① 상태 라인
+Content-Type: text/html           ← ② 헤더들
+Content-Length: 12345
+Set-Cookie: session=abc123
+
+&lt;!DOCTYPE html&gt;                  ← ③ 바디 (실제 HTML 내용)
+&lt;html&gt;
+  &lt;head&gt;...
+    </div>
+
+    <p>요청과 거의 같은 모양인데, <strong>첫 줄</strong>이 「상태 라인」으로 바뀝니다. 가장 중요한 건 가운데의 <strong>세 자리 숫자</strong>입니다.</p>
+
+    <h2>4. 상태 코드 — 한눈에 결과 판단</h2>
+
+    <div class="box box-tip">
+      <div class="box-title">2xx — 잘 됐다</div>
+      <p><code>200 OK</code> 가 99% 입니다. 평소엔 이거만 봅니다.</p>
+    </div>
+
+    <div class="box box-warn">
+      <div class="box-title">3xx — 다른 곳으로 가라</div>
+      <p><code>302 Found</code> — 「여기로 가야 함」. 로그인 성공 후 메인으로 보낼 때 자주 등장.</p>
+    </div>
+
+    <div class="box box-danger">
+      <div class="box-title">4xx — 클라이언트 잘못</div>
+      <ul style="margin: 0.3rem 0 0;">
+        <li><code>404 Not Found</code> — 그런 주소 없다 (URL 오타가 흔한 원인)</li>
+        <li><code>403 Forbidden</code> — 권한 없음</li>
+      </ul>
+    </div>
+
+    <div class="box box-danger">
+      <div class="box-title">5xx — 서버 잘못</div>
+      <p><code>500 Internal Server Error</code> — 서버 코드가 어딘가에서 터진 것. <strong>내 컨트롤러나 서비스 코드를 의심해야 할 신호</strong>.</p>
+    </div>
+
+    <div class="box box-info">
+      <div class="box-title">디버깅 첫 단계</div>
+      <p>오류가 나면 <strong>가장 먼저 상태 코드를 확인</strong>하세요. 4xx 면 "내 URL/요청이 잘못됐나?", 5xx 면 "내 서버 코드가 잘못됐나?" 의 방향이 갈립니다.</p>
+    </div>
+
+    <h2>5. 메서드 — 요청의 「동사」</h2>
+    <p>이번 과정에서는 두 개만 깊게 봅니다:</p>
+
+    <div class="diagram">
+GET    /board/list           "보여줘"     ← 조회 (이미 있는 것 가져오기)
+POST   /board/write          "저장해줘"   ← 작성/제출 (새로운 것 만들기)
+    </div>
+
+    <p>나머지 <code>PUT</code>(수정), <code>DELETE</code>(삭제)는 <strong>Part 6 REST API</strong>에서 만납니다. GET 과 POST 의 결정적 차이는 다음 차시에서 직접 폼을 보내며 확인합니다.</p>
+
+    <h2>6. 직접 보기 — F12 의 Headers 탭</h2>
+    <p>크롬에서 F12 를 누르고 <strong>Network</strong> 탭을 켠 뒤 새로고침 → 첫 줄을 클릭하면 오른쪽 패널이 열립니다.</p>
+
+    <div class="screenshot">
+      <div class="label">스크린샷</div>
+      <div class="desc">F12 → Network → 첫 항목 클릭 → Headers 탭. General(상태 코드) / Response Headers / Request Headers 순서로 보임</div>
+    </div>
+
+    <p>그 안에 적힌 글자들이 정확히 위에서 본 「라인 + 헤더 + 바디」 구조입니다. 한 번 눈으로 매칭해두면 다시는 헷갈리지 않습니다.</p>
+
+    <h2>7. Before / After</h2>
+    <div class="before-after">
+      <div class="before">
+        <div class="label">전 차시 끝</div>
+        <p>웹 = 클라이언트 ↔ 서버의 요청·응답이라는 추상적인 그림.</p>
+      </div>
+      <div class="arrow">→</div>
+      <div class="after">
+        <div class="label">이번 차시 끝</div>
+        <p>요청·응답의 실제 글자 모양을 알고, 상태 코드 4개로 결과를 1초 만에 판단할 수 있다.</p>
+      </div>
+    </div>
+
+    <div class="nav">
+      <a href="web-client-server.html">&larr; 이전: 클라이언트와 서버</a>
+      <a href="../index.html">메인으로</a>
+      <a href="web-get-vs-post.html">다음: GET vs POST &rarr;</a>
+    </div>
+
+  </div>
+  <script src="../js/screenshot.js?v=2"></script>
+</body>
+</html>

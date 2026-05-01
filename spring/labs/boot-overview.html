@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SpringBoot 개요 — 실습</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/lab.css"></head><body>
+<div class="container">
+
+<div class="header">
+  <div class="badge">▣ LAB · BOOT</div>
+  <h1>SpringBoot Hello World</h1>
+  <p class="subtitle">5분 안에 Hello 띄우기 — 실습</p>
+</div>
+
+<div class="minimap">
+  <div class="minimap-title">📍 지금 어디에 있나요? — Part 6 끝 → 후속 과정 첫 입구</div>
+  <div class="flow">
+    <div class="box">v∞ Legacy</div>
+    <span class="arrow">→</span>
+    <div class="box active">SpringBoot 첫 실행</div>
+    <span class="arrow">→</span>
+    <div class="box">후속 과정</div>
+  </div>
+  <p style="margin-top: 0.5em; font-size: 0.88em; color: var(--text-muted);">
+    Legacy 에서 30분 걸리던 Hello 를 — 같은 결과로 5분 안에 띄워봅니다. 「설정의 무게」 가 빠졌을 때 무엇이 달라지는지 손으로 확인.
+  </p>
+</div>
+
+<div class="prerequisites">
+  <h3>사전 준비</h3>
+  <ul>
+    <li>JDK 17 이상 (Boot 3.x 기준) 또는 JDK 11 (Boot 2.7.x)</li>
+    <li>Eclipse / STS 또는 IntelliJ — 본 실습은 Eclipse 기준</li>
+    <li>Maven (Eclipse 내장)</li>
+    <li>인터넷 연결 (의존성 다운로드용)</li>
+    <li>본 과정에서 만든 Legacy Hello 프로젝트 — 비교용으로 옆에 열어두면 좋음</li>
+  </ul>
+</div>
+
+<div class="box box-warn">
+  <div class="box-title">실습 전 마음가짐</div>
+  <p>본 과정에서 Legacy Hello 를 띄우는 데 — 처음에는 30분~1시간이 걸렸을 겁니다. 톰캣 등록, web.xml, servlet-context.xml, ViewResolver, JSP 위치 ··· 이번에는 같은 결과를 <strong>5분</strong> 안에 띄워봅니다. 그 차이가 어디서 오는지 — Step 마다 콘솔과 코드를 비교하며 직접 확인하세요.</p>
+</div>
+
+<div class="box box-info">
+  <div class="box-title">이번 실습의 목표</div>
+  <p>① <code>spring-boot-starter-web</code> 한 줄을 추가하고 ② <code>@SpringBootApplication</code> 클래스를 만들어 ③ <code>main()</code> 으로 톰캣을 띄우고 ④ <code>HelloController</code> 로 화면을 받아냅니다. Legacy 에서 만지던 web.xml / servlet-context.xml / root-context.xml 은 만지지 않습니다.</p>
+</div>
+
+<div class="step">
+  <div class="step-header"><div class="step-num">1</div><div class="step-title">pom.xml 에 starter-web 한 줄</div></div>
+  <p>Eclipse 에서 새 Maven 프로젝트를 만들고 <code>pom.xml</code> 을 다음과 같이 작성합니다. <strong>parent 설정과 starter 의존성 한 줄</strong> 이 핵심.</p>
+<pre><code>&lt;project xmlns="http://maven.apache.org/POM/4.0.0"&gt;
+  &lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;
+
+  &lt;groupId&gt;com.example&lt;/groupId&gt;
+  &lt;artifactId&gt;demo&lt;/artifactId&gt;
+  &lt;version&gt;0.0.1&lt;/version&gt;
+
+  &lt;parent&gt;
+    &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+    &lt;artifactId&gt;spring-boot-starter-parent&lt;/artifactId&gt;
+    &lt;version&gt;3.2.0&lt;/version&gt;
+  &lt;/parent&gt;
+
+  &lt;dependencies&gt;
+    &lt;dependency&gt;
+      &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+      &lt;artifactId&gt;spring-boot-starter-web&lt;/artifactId&gt;
+    &lt;/dependency&gt;
+  &lt;/dependencies&gt;
+&lt;/project&gt;</code></pre>
+  <p>버전 번호가 <strong>한 곳에만</strong> 있습니다 — parent 의 <code>3.2.0</code>. starter-web 자체에는 버전이 없습니다. parent 가 결정합니다.</p>
+
+  <div class="box">
+    <div class="box-title">참고 — Legacy 의 같은 자리는 어땠나</div>
+<pre><code>&lt;!-- Legacy pom.xml — 의존성 한 묶음의 일부 --&gt;
+&lt;dependency&gt;
+  &lt;groupId&gt;org.springframework&lt;/groupId&gt;
+  &lt;artifactId&gt;spring-webmvc&lt;/artifactId&gt;
+  &lt;version&gt;5.3.20&lt;/version&gt;
+&lt;/dependency&gt;
+&lt;dependency&gt;
+  &lt;groupId&gt;javax.servlet&lt;/groupId&gt;
+  &lt;artifactId&gt;jstl&lt;/artifactId&gt;
+  &lt;version&gt;1.2&lt;/version&gt;
+&lt;/dependency&gt;
+&lt;!-- ... 30~50줄 더 ... --&gt;</code></pre>
+    <p>Boot 의 starter 한 줄이 — Legacy 의 30~50줄을 대체합니다. 게다가 버전 충돌도 사라집니다.</p>
+  </div>
+
+  <div class="checkpoint">
+    <div class="check-title">CHECKPOINT</div>
+    <ul>
+      <li>저장 후 Maven 이 의존성을 다운로드하는지 — Eclipse 좌측 하단 진행 표시 확인.</li>
+      <li>프로젝트의 <strong>Maven Dependencies</strong> 폴더를 열어 <code>tomcat-embed-core</code>, <code>spring-webmvc</code>, <code>jackson-databind</code> 가 들어왔는지 눈으로 확인. starter 한 줄이 이만큼을 가져옴.</li>
+      <li>의존성 트리를 자세히 보고 싶다면 — 터미널에서 <code>mvn dependency:tree</code>. starter-web 아래에 무엇이 매달려 있는지 한 눈에.</li>
+      <li>빨간 X 표시가 없으면 통과. 있다면 인터넷 연결 / Maven 저장소 설정 점검.</li>
+    </ul>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-header"><div class="step-num">2</div><div class="step-title">Application.java — 시작점 클래스</div></div>
+  <p><code>src/main/java/com/example/demo/</code> 아래에 <code>DemoApplication.java</code> 작성:</p>
+<pre><code>package com.example.demo;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class DemoApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(DemoApplication.class, args);
+    }
+}</code></pre>
+  <p>이 10줄짜리 파일이 — Legacy 의 web.xml + servlet-context.xml + root-context.xml + 톰캣 등록을 전부 대체합니다. <code>@SpringBootApplication</code> 한 줄이 자동 설정 + 컴포넌트 스캔 + Configuration 을 모두 켭니다.</p>
+
+  <div class="box box-info">
+    <div class="box-title">패키지 위치가 「루트」 여야 하는 이유</div>
+    <p><code>@SpringBootApplication</code> 안에는 <code>@ComponentScan</code> 이 들어 있고, 이 스캔의 시작점은 <strong>이 클래스가 속한 패키지 (그리고 그 하위)</strong> 입니다. 컨트롤러·서비스를 <code>com.example.demo</code> 와 동일하거나 그 아래 (예: <code>com.example.demo.controller</code>) 에 둬야 잡힙니다. 위로(예: <code>com.example.other</code>) 두면 못 찾아서 404.</p>
+  </div>
+
+  <div class="checkpoint">
+    <div class="check-title">CHECKPOINT</div>
+    <ul>
+      <li>Eclipse 가 <code>SpringApplication</code>, <code>@SpringBootApplication</code> import 를 자동으로 잡아주는지 확인. 빨간 줄 없음.</li>
+      <li>패키지 구조가 <code>com.example.demo</code> 인지 확인 — 이 패키지 <strong>아래</strong> 가 컴포넌트 스캔 범위. 컨트롤러를 다른 위치에 두면 못 찾음.</li>
+      <li><code>@SpringBootApplication</code> 에 마우스를 올리면 — 이 어노테이션이 <code>@Configuration</code>, <code>@EnableAutoConfiguration</code>, <code>@ComponentScan</code> 세 개를 묶은 것이라는 설명이 보임. 셋의 묶음임을 한 번 눈으로 확인.</li>
+    </ul>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-header"><div class="step-num">3</div><div class="step-title">실행 — main() 우클릭 → Run As → Java Application</div></div>
+  <p>「Run on Server」 가 아닙니다. 일반 Java 프로그램처럼 <strong><code>main()</code> 을 그냥 실행</strong> 합니다. 임베디드 톰캣이 따라옵니다.</p>
+  <p>콘솔에 다음과 비슷한 로그가 흘러야 합니다:</p>
+<pre><code>  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ :: Spring Boot ::                (v3.2.0)
+
+INFO ... Tomcat initialized with port(s): 8080 (http)
+INFO ... Starting service [Tomcat]
+INFO ... Starting Servlet engine: [Apache Tomcat/10.1.x]
+INFO ... Tomcat started on port(s): 8080 (http) with context path ''
+INFO ... Started DemoApplication in 2.341 seconds (process running for 2.879)</code></pre>
+
+  <div class="box">
+    <div class="box-title">로그 한 줄씩 풀어보기</div>
+    <ul>
+      <li><strong>Tomcat initialized with port(s): 8080</strong> — 임베디드 톰캣이 메모리에 올라옴. Legacy 의 「Server Start」 자리.</li>
+      <li><strong>Starting Servlet engine</strong> — 서블릿 컨테이너가 켜짐. DispatcherServlet 이 자동 등록되는 자리.</li>
+      <li><strong>Tomcat started on port(s): 8080</strong> — 실제로 8080 포트가 listen 상태가 됨.</li>
+      <li><strong>Started DemoApplication in X.XXX seconds</strong> — 모든 자동 설정이 끝나고 요청을 받을 준비. <strong>이 줄이 안 나오면 안 뜬 것</strong>.</li>
+    </ul>
+  </div>
+
+  <div class="checkpoint">
+    <div class="check-title">CHECKPOINT — 로그 확인</div>
+    <ul>
+      <li>마지막 줄에 <code>Started DemoApplication in X.XXX seconds</code> 가 나오는가? — <strong>이 한 줄이 「뜨기 성공」 의 신호</strong>.</li>
+      <li><code>Tomcat started on port(s): 8080</code> 가 보이는가? — 임베디드 톰캣이 켜진 증거.</li>
+      <li>포트 충돌(<code>Port 8080 was already in use</code>) 이면 — 기존에 실행 중인 톰캣 종료, 또는 Step 6 에서 포트 변경.</li>
+      <li>예외 스택 트레이스가 길게 떨어지면 — 「Caused by:」 줄을 끝까지 따라가서 원인 메시지 확인. 본 과정의 디버깅 사고와 동일.</li>
+    </ul>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-header"><div class="step-num">4</div><div class="step-title">HelloController — 화면 응답</div></div>
+  <p><code>com.example.demo</code> 패키지 아래에 <code>HelloController.java</code> 작성:</p>
+<pre><code>package com.example.demo;
+
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+public class HelloController {
+
+    @GetMapping("/hello")
+    public String hello() {
+        return "안녕, SpringBoot!";
+    }
+}</code></pre>
+  <p><code>@RestController</code> 는 본 과정의 Part 6 에서 만난 <code>@Controller + @ResponseBody</code> 와 같은 역할입니다. 응답을 JSP 가 아니라 <strong>본문 텍스트로 바로</strong> 보냅니다.</p>
+  <p>저장하면 SpringBoot DevTools 가 있다면 자동 재시작, 없으면 Step 3 처럼 <code>main()</code> 을 다시 실행합니다.</p>
+
+  <div class="box box-info">
+    <div class="box-title">Legacy 컨트롤러와 한 줄씩 비교</div>
+<pre><code>// Legacy
+@Controller
+public class HelloController {
+    @GetMapping("/hello")
+    @ResponseBody
+    public String hello() { return "안녕"; }
+}
+
+// SpringBoot
+@RestController                          // ← @Controller + @ResponseBody 묶음
+public class HelloController {
+    @GetMapping("/hello")
+    public String hello() { return "안녕"; }
+}</code></pre>
+    <p>차이는 <code>@RestController</code> 한 단어. 본 과정에서 익힌 모든 어노테이션, 시그니처, 반환값 — 100% 그대로.</p>
+  </div>
+
+  <div class="checkpoint">
+    <div class="check-title">CHECKPOINT</div>
+    <ul>
+      <li>저장 후 빨간 X 가 없는가?</li>
+      <li>콘솔에 <code>Started DemoApplication</code> 가 다시 보이는가?</li>
+      <li>이 컨트롤러는 <strong>Legacy 의 컨트롤러와 코드가 똑같다</strong> 는 점을 확인. 어노테이션, 시그니처, 반환 — 동일.</li>
+      <li>Mapped 로그를 보고 싶다면 — application.properties 에 <code>logging.level.org.springframework.web=DEBUG</code> 한 줄. 콘솔에 <code>Mapped "{[/hello]}"</code> 가 나옴.</li>
+    </ul>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-header"><div class="step-num">5</div><div class="step-title">브라우저 확인 — localhost:8080/hello</div></div>
+  <p>크롬에서 <code>http://localhost:8080/hello</code> 접속. 화면에 <strong>「안녕, SpringBoot!」</strong> 가 보여야 합니다.</p>
+  <p>Legacy 와 비교해보면 — <code>http://localhost:8080/<strong>myapp</strong>/hello</code> 처럼 컨텍스트 패스가 끼지 않습니다. SpringBoot 는 기본 컨텍스트 패스가 <strong>루트 (<code>/</code>)</strong> 입니다.</p>
+  <div class="box">
+    <div class="box-title">F12 에서 무엇을 봐야 하는가</div>
+    <ul>
+      <li><strong>Headers 탭</strong> — Request URL, Request Method (GET), Status Code (200) 가 한 화면에. 본 과정의 web-http-anatomy 에서 익힌 그대로.</li>
+      <li><strong>Response 탭</strong> — 서버가 실제로 보낸 본문. 「안녕, SpringBoot!」 텍스트가 그대로.</li>
+      <li><strong>Timing 탭</strong> — Waiting (TTFB) 이 보통 5~50ms 사이. 임베디드 톰캣은 외부 톰캣과 성능 차이 거의 없음.</li>
+    </ul>
+  </div>
+
+  <div class="checkpoint">
+    <div class="check-title">CHECKPOINT — F12 Network 탭</div>
+    <ul>
+      <li>F12 → Network 탭 → 페이지 새로고침. <code>hello</code> 요청이 보이는가?</li>
+      <li>Status: <strong>200 OK</strong> 인지 확인.</li>
+      <li>Response Headers 의 <code>Server: ...</code> 또는 응답 본문이 「안녕, SpringBoot!」 인지 확인.</li>
+      <li>Content-Type 헤더가 <code>text/plain;charset=UTF-8</code> 인지 확인 — UTF-8 이 자동으로 켜진 증거 (Legacy 의 CharacterEncodingFilter 자리).</li>
+      <li>404 가 뜨면 — ① 컨트롤러 패키지가 <code>com.example.demo</code> 아래인지, ② <code>@RestController</code> 가 붙어있는지, ③ <code>main()</code> 이 다시 실행됐는지 점검.</li>
+      <li>한글이 깨져서 보인다면 — 브라우저 인코딩 설정(거의 없음) 또는 컨트롤러 반환을 <code>produces = "text/plain;charset=UTF-8"</code> 로 명시.</li>
+    </ul>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-header"><div class="step-num">6</div><div class="step-title">application.properties — 포트 변경</div></div>
+  <p><code>src/main/resources/application.properties</code> 파일을 만들고 한 줄 추가:</p>
+<pre><code>server.port=9090</code></pre>
+  <p>저장 후 <code>main()</code> 을 다시 실행합니다.</p>
+  <div class="box box-info">
+    <div class="box-title">application.properties 에 자주 쓰는 한 줄들</div>
+<pre><code># 서버 포트
+server.port=9090
+
+# 컨텍스트 패스 (Legacy 에서 /myapp 같은 자리)
+server.servlet.context-path=/api
+
+# JSON 한글 응답이 안 깨지게
+server.servlet.encoding.charset=UTF-8
+server.servlet.encoding.force=true
+
+# 로그 레벨
+logging.level.com.example=DEBUG
+logging.level.org.springframework.web=INFO
+
+# JSP 위치 (JSP 를 쓸 경우)
+spring.mvc.view.prefix=/WEB-INF/views/
+spring.mvc.view.suffix=.jsp
+
+# DB 연결
+spring.datasource.url=jdbc:mysql://localhost:3306/myapp
+spring.datasource.username=root
+spring.datasource.password=secret</code></pre>
+    <p>각 줄 옆에 — Legacy 에서 어느 XML 의 어느 자리에 해당하는지 머릿속으로 매핑해보세요.</p>
+  </div>
+
+  <div class="checkpoint">
+    <div class="check-title">CHECKPOINT — 포트가 바뀌었는가?</div>
+    <ul>
+      <li>콘솔에 <code>Tomcat started on port(s): <strong>9090</strong> (http)</code> 가 나오는가?</li>
+      <li><code>http://localhost:<strong>9090</strong>/hello</code> 로 접속 — 「안녕, SpringBoot!」 가 보이는가?</li>
+      <li><code>http://localhost:<strong>8080</strong>/hello</code> 로 접속 — 이번에는 연결 거부 (이 포트로 더 이상 안 뜸).</li>
+      <li>이 한 줄을 Legacy 에서 바꾸려면 — 톰캣의 <code>server.xml</code> 을 열어 Connector 의 port 속성을 수정해야 했음. SpringBoot 는 properties 한 줄.</li>
+      <li>한 걸음 더 — <code>debug=true</code> 한 줄을 추가하고 다시 실행. 콘솔에 「CONDITIONS EVALUATION REPORT」 라는 긴 표가 나옴. SpringBoot 가 「자동으로」 켠 빈 목록을 직접 눈으로 볼 수 있음.</li>
+    </ul>
+  </div>
+</div>
+
+<div class="checklist">
+  <h3>실습 완료 체크리스트</h3>
+  <div class="check-item"><input type="checkbox"> pom.xml 에 starter-web 한 줄로 webmvc + 톰캣 + jackson 이 들어왔다</div>
+  <div class="check-item"><input type="checkbox"> @SpringBootApplication 클래스가 main() 으로 실행됐다</div>
+  <div class="check-item"><input type="checkbox"> 콘솔에서 "Started ... in X.XXX seconds" 를 확인했다</div>
+  <div class="check-item"><input type="checkbox"> /hello 응답을 F12 Network 탭에서 200 OK 로 확인했다</div>
+  <div class="check-item"><input type="checkbox"> application.properties 한 줄로 포트가 바뀌었다</div>
+  <div class="check-item"><input type="checkbox"> Legacy 에서 7개 XML 로 했던 일이 어디로 갔는지 자기 말로 설명할 수 있다</div>
+</div>
+
+<div class="box box-info" style="margin-top: 1.2em;">
+  <div class="box-title">데이터 흐름 — 이번 실습이 닿은 자리</div>
+<pre><code>[브라우저]
+   ↓ HTTP GET /hello
+[임베디드 톰캣 — Boot 가 자동 시작]
+   ↓
+[DispatcherServlet — Boot 가 자동 등록]
+   ↓
+[HelloController — 우리가 작성]
+   ↓
+[String "안녕, SpringBoot!" — 우리가 반환]
+   ↓
+[브라우저 화면]</code></pre>
+  <p>본 과정의 흐름도와 정확히 같은 모양 — 단지 「설정」 박스가 사라졌을 뿐입니다.</p>
+</div>
+
+<div class="box" style="margin-top: 0.8em;">
+  <div class="box-title">스스로 점검 — 5분 안에 답해보세요</div>
+  <ol>
+    <li>이 프로젝트에는 <code>web.xml</code> 이 없습니다. DispatcherServlet 은 어디서 등록됐을까요?</li>
+    <li><code>spring-boot-starter-web</code> 한 줄을 빼면 — 어떤 일이 일어날까요? (힌트: <code>main()</code> 실행은 되지만 톰캣이 안 뜸)</li>
+    <li><code>HelloController</code> 를 <code>com.example.other</code> 패키지에 두면 왜 404 가 날까요?</li>
+    <li>Legacy 의 <code>CharacterEncodingFilter</code> 는 SpringBoot 의 어디로 갔을까요?</li>
+    <li><code>application.properties</code> 의 <code>server.port=9090</code> 한 줄은 — Legacy 에서 어떤 파일의 어떤 속성이었을까요?</li>
+  </ol>
+  <p>다섯 질문에 모두 답할 수 있다면, 다음 차시(후속 과정) 에서 만날 「Spring Initializr 로 첫 프로젝트」 가 자연스럽게 이어집니다.</p>
+</div>
+
+<div class="box box-info" style="margin-top: 1.2em;">
+  <div class="box-title">한 걸음 더 — 직접 비교해보기</div>
+  <p>본 과정에서 만든 Legacy 프로젝트의 <code>web.xml</code>, <code>servlet-context.xml</code>, <code>root-context.xml</code> 을 열어보세요. 이 중 어떤 줄이 SpringBoot 의 어떤 자동 설정으로 대체됐는지 — 한 줄씩 매핑해보면 「설정의 무게」 가 어디로 사라졌는지가 손에 잡힙니다.</p>
+  <ul>
+    <li>Legacy 의 <code>&lt;servlet-class&gt;DispatcherServlet&lt;/servlet-class&gt;</code> → Boot 의 <code>spring-boot-starter-web</code> 자동 등록</li>
+    <li>Legacy 의 <code>InternalResourceViewResolver</code> 빈 → Boot 의 <code>spring.mvc.view.prefix/suffix</code> 두 줄</li>
+    <li>Legacy 의 <code>HikariDataSource</code> 빈 → Boot 의 <code>spring.datasource.*</code> 네 줄</li>
+    <li>Legacy 의 <code>SqlSessionFactoryBean</code> 빈 → Boot 의 <code>mybatis.mapper-locations</code> 한 줄</li>
+    <li>Legacy 의 톰캣 외부 설치 → Boot 의 <code>tomcat-embed-core</code> jar (자동 포함)</li>
+  </ul>
+</div>
+
+<div class="box box-warn" style="margin-top: 0.8em;">
+  <div class="box-title">자주 만나는 함정</div>
+  <ul>
+    <li><strong>패키지 위치</strong> — 컨트롤러를 Application 클래스보다 「위」 패키지에 두면 컴포넌트 스캔이 못 잡음. 같거나 「아래」 에 둘 것.</li>
+    <li><strong>포트 충돌</strong> — Legacy 톰캣이 8080 으로 켜져 있는 채로 Boot 도 8080 으로 띄우면 「Port 8080 was already in use」. 둘 중 하나를 끄거나 server.port 변경.</li>
+    <li><strong>JSP 가 안 보임</strong> — Boot 에서 JSP 를 쓰려면 추가 의존성(<code>tomcat-embed-jasper</code>) 과 prefix/suffix 설정이 필요. 본 실습에서는 <code>@RestController</code> 만 사용해서 우회.</li>
+    <li><strong>UTF-8 깨짐</strong> — Boot 3.x 는 기본 UTF-8. 그래도 한글이 깨지면 IDE 의 파일 인코딩(Eclipse: Window → Preferences → General → Workspace) 부터 점검.</li>
+  </ul>
+</div>
+
+<div class="nav">
+  <a href="rest-debug-workshop.html">&larr; 이전</a>
+  <a href="../index.html">메인으로</a>
+  <span></span>
+</div>
+</div><script src="../js/screenshot.js?v=2"></script></body></html>

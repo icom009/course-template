@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>6개 계층 한눈에 — 핸드아웃</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/print.css"></head><body>
+<div class="container">
+
+<div class="header">
+<div class="header-left"><div class="session-num">◇ PART · MVC</div>
+<h1>6개 계층 한눈에</h1></div>
+<div class="header-right">Spring 기초<br>SMHRD</div></div>
+
+<div class="objectives"><h3>학습 목표</h3>
+<ul><li>6개 계층 한눈에 의 핵심 개념을 안다</li><li>식당으로 매핑 의 동작을 안다</li><li>6 계층 각자의 책임을 한 그림으로 외운다.</li></ul></div>
+
+<h2>1. 문제</h2>
+<p>전 차시에서 6 계층의 이름만 들었다. 각자 무슨 일을 하는지는 아직 흐릿.</p>
+
+<h2>2. 새 도구</h2>
+<div class="note"><strong>식당으로 매핑:</strong> Spring MVC 의 6 계층은 「고급 식당의 분업 구조」와 정확히 매칭된다.</div>
+
+<h2>3. 코드</h2>
+<div class="diagram">@Controller     // 종업원
+class HomeController {
+    @Autowired Service service;       // 셰프 호출
+}
+@Service        // 메인 셰프
+class HomeService {
+    @Autowired Mapper mapper;         // 창고 관리자 호출
+}
+@Repository     // 창고 관리자
+interface HomeMapper { ... }</div>
+
+<h2>4. 정리</h2>
+<ul><li>DispatcherServlet — 모든 요청 진입점</li>
+<li>Controller — 요청 응대</li>
+<li>Service — 비즈니스 로직</li>
+<li>DAO/Repository — DB 접근</li>
+<li>DTO/VO — 데이터 운반</li>
+<li>View — 화면</li></ul>
+
+<h2>5. Before / After</h2>
+<div class="before-after">
+<div class="before"><div class="label">전 차시</div><p>전 차시에서 6 계층의 이름만 들었다. 각자 무슨 일을 하는지는 아직 흐릿.</p></div>
+<div class="after"><div class="label">이번 차시</div><p>6 계층 각자의 책임을 한 그림으로 외운다.</p></div>
+</div>
+
+<div class="checklist"><h3>학습 확인 체크리스트</h3>
+<ul><li>DispatcherServlet — 모든 요청 진입점</li>
+<li>Controller — 요청 응대</li>
+<li>Service — 비즈니스 로직</li>
+<li>DAO/Repository — DB 접근</li>
+<li>DTO/VO — 데이터 운반</li>
+<li>View — 화면</li></ul></div>
+
+<div class="nav"><a href="mvc-why-separation.html">&larr; 이전</a><a href="../index.html">메인으로</a><a href="mvc-dispatcher-servlet.html">다음 &rarr;</a></div>
+</div></body></html>

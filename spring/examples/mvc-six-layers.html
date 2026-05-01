@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>6개 계층 한눈에 — 읽기 자료</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/example.css"></head><body>
+<div class="container">
+
+<div class="header"><div class="session-num">◇ PART · MVC</div>
+<h1>6개 계층 한눈에</h1><p class="subtitle">Spring MVC — 읽기 자료</p></div>
+
+<div class="minimap"><div class="minimap-title">📍 지금 어디를 만지고 있나요?</div><div class="flow">
+<div class="box">브라우저</div><span class="arrow">→</span>
+<div class="box active">Spring MVC</div><span class="arrow">→</span>
+<div class="box">DB</div></div></div>
+
+<div class="terms"><h3>핵심 용어</h3><div class="term-item"><span class="term-name">DispatcherServlet</span><span class="term-desc">모든 HTTP 요청을 가장 먼저 받아 적절한 Controller 에게 분배.</span></div>
+<div class="term-item"><span class="term-name">Controller</span><span class="term-desc">요청을 받아 검증하고 Service 호출. 결과를 Model 에 담아 View 로.</span></div>
+<div class="term-item"><span class="term-name">Service</span><span class="term-desc">비즈니스 로직과 트랜잭션 처리.</span></div>
+<div class="term-item"><span class="term-name">Repository</span><span class="term-desc">DB 와의 데이터 송수신.</span></div></div>
+
+<h2>1. 문제</h2>
+<div class="pain-point"><div class="pain-title">전 차시까지의 답답함</div><p>전 차시에서 6 계층의 이름만 들었다. 각자 무슨 일을 하는지는 아직 흐릿.</p></div>
+
+<h2>2. 새 도구</h2>
+<div class="new-tool"><div class="tool-title">식당으로 매핑</div><p>Spring MVC 의 6 계층은 「고급 식당의 분업 구조」와 정확히 매칭된다.</p></div>
+
+<h2>3. 코드</h2>
+<pre><code>@Controller     // 종업원
+class HomeController {
+    @Autowired Service service;       // 셰프 호출
+}
+@Service        // 메인 셰프
+class HomeService {
+    @Autowired Mapper mapper;         // 창고 관리자 호출
+}
+@Repository     // 창고 관리자
+interface HomeMapper { ... }</code></pre>
+
+<h2>4. 정리</h2>
+<ul><li>DispatcherServlet — 모든 요청 진입점</li>
+<li>Controller — 요청 응대</li>
+<li>Service — 비즈니스 로직</li>
+<li>DAO/Repository — DB 접근</li>
+<li>DTO/VO — 데이터 운반</li>
+<li>View — 화면</li></ul>
+
+<h2>5. Before / After</h2>
+<div class="before-after">
+<div class="before"><div class="label">전 차시 끝</div><p>전 차시에서 6 계층의 이름만 들었다. 각자 무슨 일을 하는지는 아직 흐릿.</p></div>
+<div class="arrow">→</div>
+<div class="after"><div class="label">이번 차시 끝</div><p>6 계층 각자의 책임을 한 그림으로 외운다.</p></div>
+</div>
+
+<div class="nav"><a href="mvc-why-separation.html">&larr; 이전</a><a href="../index.html">메인으로</a><a href="mvc-dispatcher-servlet.html">다음 &rarr;</a></div>
+</div><script src="../js/screenshot.js?v=2"></script></body></html>

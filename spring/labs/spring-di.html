@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DI — 실습</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/lab.css"></head><body>
+<div class="container">
+<div class="header"><div class="badge">◆ TURNING LAB</div><h1>@Autowired 첫 사용</h1><p class="subtitle">DI — 실습 / 약 20분</p></div>
+
+<div class="minimap"><div class="minimap-title">📍 지금 어디를 만지고 있나요?</div><div class="flow">
+<div class="box">브라우저</div><span class="arrow">→</span><div class="box">Tomcat</div><span class="arrow">→</span>
+<div class="box active">Spring + @Autowired</div><span class="arrow">→</span><div class="box">Controller</div><span class="arrow">→</span><div class="box">DB</div></div></div>
+
+<div class="prerequisites"><h3>사전 준비</h3><ul>
+<li>Eclipse + Tomcat 환경 구축 완료 (Part 1 의 Hello Servlet 차시)</li>
+<li>전 차시 「IoC」 실습에서 인터페이스 + 외부 주입 코드 경험</li>
+</ul></div>
+
+<div class="box box-info"><div class="box-title">이번 실습의 목표</div>
+<p>전 차시 IoC 코드를 Spring 으로 다시 짭니다. <code>@Service</code>, <code>@Autowired</code> 한 줄씩이 main 메서드의 수동 주입을 어떻게 대체하는지 직접 봅니다.</p></div>
+
+<div class="step"><div class="step-header"><div class="step-num">1</div><div class="step-title">Spring Legacy Project 생성</div></div>
+<p>Eclipse 메뉴: <code>File → New → Spring Legacy Project</code>. <code>Spring MVC Project</code> 템플릿 선택. (강사의 안내가 있다면 그대로 따르기.)</p>
+<div class="checkpoint"><div class="check-title">CHECKPOINT</div><ul>
+<li>Project 안에 <code>pom.xml</code>, <code>web.xml</code>, <code>servlet-context.xml</code>, <code>root-context.xml</code> 이 보이나요?</li>
+</ul></div></div>
+
+<div class="step"><div class="step-header"><div class="step-num">2</div><div class="step-title">인터페이스와 두 구현체 작성</div></div>
+<pre><code>// MessageSender.java
+package com.example.demo;
+public interface MessageSender {
+    void send(String msg);
+}
+
+// GmailSender.java
+@Service
+public class GmailSender implements MessageSender {
+    public void send(String msg) {
+        System.out.println("📧 " + msg);
+    }
+}</code></pre>
+</div>
+
+<div class="step"><div class="step-header"><div class="step-num">3</div><div class="step-title">OrderService — @Autowired</div></div>
+<pre><code>@Service
+public class OrderService {
+    @Autowired
+    private MessageSender sender;
+
+    public void order() {
+        sender.send("주문 완료");
+    }
+}</code></pre>
+<p><code>@Autowired</code> 한 줄로 컨테이너가 GmailSender 를 자동 주입합니다.</p>
+</div>
+
+<div class="step"><div class="step-header"><div class="step-num">4</div><div class="step-title">테스트 실행</div></div>
+<p>가장 간단한 방법은 컨트롤러에서 호출:</p>
+<pre><code>@Controller
+public class HomeController {
+    @Autowired
+    private OrderService orderService;
+
+    @RequestMapping("/test")
+    public String test() {
+        orderService.order();
+        return "home";
+    }
+}</code></pre>
+<p>Tomcat 실행 후 <code>http://localhost:8080/.../test</code> 접속. 콘솔에 "📧 주문 완료" 출력.</p>
+<div class="checkpoint"><div class="check-title">CHECKPOINT</div><ul>
+<li>전 차시처럼 <code>main</code> 에서 부품을 직접 만들어 넘기는 코드가 있나요? 없습니다 — Spring 컨테이너가 자동으로 했음.</li>
+<li>OrderService 안에 <code>new GmailSender()</code> 가 있나요? 없습니다 — <code>@Autowired</code> 가 했음.</li>
+</ul></div></div>
+
+<div class="step"><div class="step-header"><div class="step-num">5</div><div class="step-title">부품 교체 체험</div></div>
+<p>KakaoSender 를 추가하고 GmailSender 의 <code>@Service</code> 를 잠시 주석 처리:</p>
+<pre><code>// @Service  ← 주석
+public class GmailSender implements MessageSender { ... }
+
+@Service
+public class KakaoSender implements MessageSender {
+    public void send(String msg) {
+        System.out.println("💬 " + msg);
+    }
+}</code></pre>
+<p>OrderService 코드는 한 줄도 수정하지 않았는데 Kakao 가 호출됩니다.</p>
+</div>
+
+<div class="checklist"><h3>실습 완료 체크리스트</h3>
+<div class="check-item"><input type="checkbox"> Spring Legacy Project 생성</div>
+<div class="check-item"><input type="checkbox"> <code>@Service</code> 로 Bean 등록</div>
+<div class="check-item"><input type="checkbox"> <code>@Autowired</code> 로 자동 주입</div>
+<div class="check-item"><input type="checkbox"> 컨트롤러로 호출 후 콘솔에 결과 확인</div>
+<div class="check-item"><input type="checkbox"> 부품 교체 시 OrderService 가 그대로임을 확인</div>
+</div>
+
+<div class="nav"><a href="spring-ioc.html">&larr; 이전</a><a href="../index.html">메인으로</a><a href="spring-vs-springboot.html">다음 &rarr;</a></div>
+</div><script src="../js/screenshot.js?v=2"></script></body></html>

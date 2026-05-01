@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JSON 형식 깊이 — 핸드아웃</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/print.css"></head><body>
+<div class="container">
+
+<div class="header">
+<div class="header-left"><div class="session-num">◇ PART · REST</div>
+<h1>JSON 형식 깊이</h1></div>
+<div class="header-right">Spring 기초<br>SMHRD</div></div>
+
+<div class="objectives"><h3>학습 목표</h3>
+<ul><li>JSON 형식 깊이 의 핵심 개념을 안다</li><li>Jackson 자동 변환 의 동작을 안다</li><li>DTO 가 JSON 으로 변환되는 순간을 본다.</li></ul></div>
+
+<h2>1. 문제</h2>
+<p>JSON 이라는 글자 형식이 자바 객체와 어떻게 변환되는지 흐릿하다.</p>
+
+<h2>2. 새 도구</h2>
+<div class="note"><strong>Jackson 자동 변환:</strong> Spring 이 내장한 Jackson 라이브러리가 자바 객체 ↔ JSON 문자열을 자동 변환.</div>
+
+<h2>3. 코드</h2>
+<div class="diagram">// Java 객체 (com.smhrd.domain.Reply)
+public class Reply {
+    private int num;
+    private String content;
+    private String writer;
+}
+
+// 자동 변환된 JSON
+{
+    "num": 1,
+    "content": "좋은 글이네요",
+    "writer": "hong"
+}
+
+// 반대 방향: 클라이언트가 보낸 JSON → 자바 객체
+fetch('/api/replies', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({content: "댓글", boardnum: 3})
+});
+
+// 서버 (com.smhrd.controller)
+@PostMapping("/api/replies")
+public Reply add(@RequestBody Reply r) {  // JSON → Reply 자동
+    return service.add(r);                 // Reply → JSON 자동
+}</div>
+
+<h2>4. 정리</h2>
+<ul><li>JSON = JavaScript Object Notation</li>
+<li>키-값 쌍의 글자 형식</li>
+<li>Jackson 이 자동 변환</li>
+<li>@RequestBody / @ResponseBody 가 키</li></ul>
+
+<h2>5. Before / After</h2>
+<div class="before-after">
+<div class="before"><div class="label">전 차시</div><p>JSON 이라는 글자 형식이 자바 객체와 어떻게 변환되는지 흐릿하다.</p></div>
+<div class="after"><div class="label">이번 차시</div><p>DTO 가 JSON 으로 변환되는 순간을 본다.</p></div>
+</div>
+
+<div class="checklist"><h3>학습 확인 체크리스트</h3>
+<ul><li>JSON = JavaScript Object Notation</li>
+<li>키-값 쌍의 글자 형식</li>
+<li>Jackson 이 자동 변환</li>
+<li>@RequestBody / @ResponseBody 가 키</li></ul></div>
+
+<div class="nav"><a href="rest-async-need.html">&larr; 이전</a><a href="../index.html">메인으로</a><a href="rest-controller.html">다음 &rarr;</a></div>
+</div></body></html>

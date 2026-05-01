@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DB 기초 — 실습</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/lab.css"></head><body>
+<div class="container">
+
+<div class="header"><div class="badge">◇ LAB · DB</div>
+<h1>DB 기초</h1><p class="subtitle">데이터와 MyBatis — 실습</p></div>
+
+<div class="minimap"><div class="minimap-title">📍 지금 어디를 만지고 있나요?</div><div class="flow">
+<div class="box">브라우저</div><span class="arrow">→</span>
+<div class="box active">데이터와 MyBatis</div><span class="arrow">→</span>
+<div class="box">DB</div></div></div>
+
+<div class="prerequisites"><h3>사전 준비</h3>
+<ul><li>전 차시 완료</li><li>Eclipse + Tomcat 동작 환경</li></ul></div>
+
+<div class="box box-info"><div class="box-title">이번 실습의 목표</div>
+<p>데이터베이스는 익숙한 엑셀 시트와 똑같이 생겼다. 시트 = 테이블, 행 = 레코드, 열 = 컬럼.</p></div>
+
+<div class="step"><div class="step-header"><div class="step-num">1</div><div class="step-title">코드 작성</div></div>
+<pre><code>-- 테이블 만들기 (CREATE TABLE)
+CREATE TABLE mymember (
+    id   VARCHAR(50)  PRIMARY KEY,
+    pwd  VARCHAR(20)  NOT NULL
+);
+
+-- 행 추가
+INSERT INTO mymember (id, pwd)
+VALUES ('hong', 'temp1234');</code></pre>
+<div class="checkpoint"><div class="check-title">CHECKPOINT</div>
+<ul><li>코드를 작성한 뒤 빨간 줄(컴파일 오류)이 없는가?</li></ul></div></div>
+
+<div class="step"><div class="step-header"><div class="step-num">2</div><div class="step-title">실행 + 결과 확인</div></div>
+<p>Run on Server 또는 javac+java 로 실행하고 결과를 확인합니다.</p>
+<div class="checkpoint"><div class="check-title">CHECKPOINT</div>
+<ul><li>예상한 동작이 일어났는가?</li><li>안 됐다면 F12 / 콘솔 / 로그 어디서 단서가 보이는가?</li></ul></div></div>
+
+<div class="checklist"><h3>실습 완료 체크리스트</h3>
+<div class="check-item"><input type="checkbox"> 테이블 = 엑셀 시트 한 장</div>
+<div class="check-item"><input type="checkbox"> 행(Row) = 데이터 한 건</div>
+<div class="check-item"><input type="checkbox"> 열(Column) = 속성</div>
+<div class="check-item"><input type="checkbox"> PK = 고유 식별자</div>
+<div class="check-item"><input type="checkbox"> FK = 다른 테이블 참조</div></div>
+
+<div class="nav"><a href="mvc-end-to-end-no-db.html">&larr; 이전</a><a href="../index.html">메인으로</a><a href="db-sql-basics.html">다음 &rarr;</a></div>
+</div><script src="../js/screenshot.js?v=2"></script></body></html>

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DB 붙이려면 어디를 손대나 — 읽기 자료</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/example.css"></head><body>
+<div class="container">
+
+<div class="header"><div class="session-num">◆ PART · DB</div>
+<h1>DB 붙이려면 어디를 손대나</h1><p class="subtitle">데이터와 MyBatis — 읽기 자료</p></div>
+
+<div class="minimap"><div class="minimap-title">📍 지금 어디를 만지고 있나요?</div><div class="flow">
+<div class="box">브라우저</div><span class="arrow">→</span>
+<div class="box active">데이터와 MyBatis</div><span class="arrow">→</span>
+<div class="box">DB</div></div></div>
+
+<div class="terms"><h3>핵심 용어</h3><div class="term-item"><span class="term-name">mysql-connector-j</span><span class="term-desc">MySQL JDBC 드라이버.</span></div>
+<div class="term-item"><span class="term-name">mybatis-spring</span><span class="term-desc">MyBatis 와 Spring 을 연결하는 어댑터.</span></div>
+<div class="term-item"><span class="term-name">MapperScannerConfigurer</span><span class="term-desc">Mapper 인터페이스를 자동 스캔해 Bean 으로 등록.</span></div></div>
+
+<h2>1. 문제</h2>
+<div class="pain-point"><div class="pain-title">전 차시까지의 답답함</div><p>Spring 에 DB 를 붙이려면 어디 어디를 수정해야 할지가 흐릿하다. 한 곳이라도 빠지면 전체가 동작 안 한다.</p></div>
+
+<h2>2. 새 도구</h2>
+<div class="new-tool"><div class="tool-title">5 곳 점검표</div><p>본 과정 디버깅 1순위. 「DB 안 됨」 만나면 이 5 곳부터.</p></div>
+
+<h2>3. 코드</h2>
+<pre><code>① pom.xml
+   &lt;dependency&gt; mysql-connector-j &lt;/dependency&gt;
+   &lt;dependency&gt; mybatis &lt;/dependency&gt;
+   &lt;dependency&gt; mybatis-spring &lt;/dependency&gt;
+
+② root-context.xml
+   &lt;bean id="dataSource" class="HikariDataSource"&gt;...&lt;/bean&gt;
+   &lt;bean id="sqlSessionFactory" .../&gt;
+   &lt;bean class="MapperScannerConfigurer".../&gt;
+
+③ src/main/resources/mybatis-config.xml
+   &lt;settings&gt;
+     &lt;setting name="mapUnderscoreToCamelCase" value="true"/&gt;
+   &lt;/settings&gt;
+
+④ Mapper 인터페이스 + XML (com.smhrd.mapper)
+   @Mapper interface BoardMapper { ... }
+   &lt;mapper namespace="com.smhrd.mapper.BoardMapper"&gt;
+       &lt;select id="selectList" resultType="com.smhrd.domain.Board"&gt;
+           SELECT num, title, writer, content FROM myboard
+       &lt;/select&gt;
+   &lt;/mapper&gt;
+
+⑤ Service 에서 주입
+   @Autowired BoardMapper mapper;</code></pre>
+
+<h2>4. 정리</h2>
+<ul><li>① pom.xml 의존성</li>
+<li>② root-context.xml DataSource·SqlSessionFactory</li>
+<li>③ mybatis-config.xml 옵션</li>
+<li>④ Mapper 인터페이스 + XML</li>
+<li>⑤ Service 에서 @Autowired</li></ul>
+
+<h2>5. Before / After</h2>
+<div class="before-after">
+<div class="before"><div class="label">전 차시 끝</div><p>Spring 에 DB 를 붙이려면 어디 어디를 수정해야 할지가 흐릿하다. 한 곳이라도 빠지면 전체가 동작 안 한다.</p></div>
+<div class="arrow">→</div>
+<div class="after"><div class="label">이번 차시 끝</div><p>DB 연결 안 됨 오류를 만났을 때 점검할 5 곳을 외운다.</p></div>
+</div>
+
+<div class="nav"><a href="db-jdbc-vs-mybatis.html">&larr; 이전</a><a href="../index.html">메인으로</a><a href="db-hikari-pool.html">다음 &rarr;</a></div>
+</div><script src="../js/screenshot.js?v=2"></script></body></html>

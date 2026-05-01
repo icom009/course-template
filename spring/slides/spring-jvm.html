@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JVM 한눈에 | Spring 기초</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/night.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/custom.css"></head><body>
+<div class="reveal"><div class="slides">
+
+<section><div class="session-title"><span class="session-glyph">◇ PART · SPRING</span><h1>JVM 한눈에</h1><p class="subtitle">자바가 OS 위에서 어떻게 돌아가는가</p></div></section>
+
+<section><h2>학습 목표</h2><div class="objectives"><ul>
+<li class="fragment fade-up"><span class="keyword">JVM</span> 이 무엇이고 왜 필요한지 안다</li>
+<li class="fragment fade-up">컴파일·로딩·실행 흐름을 큰 그림으로 그릴 수 있다</li>
+<li class="fragment fade-up"><span class="keyword">GC</span> 가 자동으로 무엇을 청소하는지 안다</li>
+</ul></div></section>
+
+<section><h2>⚠️ 어디가 답답한가</h2><div class="pain-point"><div class="pain-title">자바의 미스터리</div>
+<p>"내가 짠 <code>.java</code> 파일이 어떻게 윈도우·맥·리눅스에서 똑같이 돌아갈까?"</p>
+<p>다른 OS 면 다른 명령어인데, 자바는 한 번 짜면 어디든 돈다. 마법 같은 이 일을 누가 하나?</p></div></section>
+
+<section><h2>🛠️ JVM (Java Virtual Machine)</h2><div class="new-tool"><div class="tool-title">자바의 가상 머신</div>
+<p>OS 별 차이를 숨기고 자바 코드만 받아주는 「번역기 + 실행기」. 윈도우용 JVM, 맥용 JVM 이 따로 있고, 각자 OS 명령어로 변환해 실행합니다.</p></div></section>
+
+<section><h2>실행 흐름</h2><div class="diagram">
+   .java (소스)
+      │ javac (컴파일)
+      ▼
+   .class (바이트 코드)  ← OS 와 무관한 중간 형태
+      │
+      ▼
+   ┌──────────────────┐
+   │      JVM         │
+   │  ① Class Loader  │  → 메모리에 적재
+   │  ② Execution     │  → 인터프리터 + JIT 컴파일러
+   │  ③ GC            │  → 안 쓰는 객체 자동 청소
+   └──────────────────┘
+      │
+      ▼
+   OS 명령어 실행
+</div></section>
+
+<section><h2>핵심 부품 3가지</h2>
+<ul>
+<li><strong>Class Loader</strong> — <code>.class</code> 파일을 메모리에 적재</li>
+<li><strong>Execution Engine</strong> — 인터프리터(한 줄씩) + JIT 컴파일러(자주 쓰는 부분 통째로)</li>
+<li><strong>Garbage Collector (GC)</strong> — 더 이상 참조 안 되는 객체를 자동 회수</li>
+</ul>
+<p style="font-size:0.85em; margin-top:0.6em; color:var(--text-muted);">개발자는 메모리 해제를 직접 신경 쓰지 않아도 됨 — GC 가 알아서.</p></section>
+
+<section><h2>🔄 Before / After</h2><div class="before-after">
+<div class="before"><div class="label">Part 1 끝</div><p>자바 코드가 Tomcat 안에서 돌아간다는 사실은 안다.</p></div>
+<div class="arrow">→</div>
+<div class="after"><div class="label">이번 차시 끝</div><p>그 자바 코드가 JVM 위에서 어떻게 변환·실행되는지 큰 그림을 안다.</p></div>
+</div></section>
+
+<section><h2>이번 차시의 데이터 흐름</h2><div class="flow-diagram"><div class="flow">
+<div class="box">.java 소스</div><span class="arrow">→</span>
+<div class="box new">JVM<br><small>로딩+실행+GC</small></div><span class="arrow">→</span>
+<div class="box">OS 명령어</div>
+</div><div class="caption"><span class="new-mark">●</span> 자바 코드의 실행 환경(JVM)이 흐름에 등장</div></div></section>
+
+<section><h2>정리</h2><div class="summary"><h3>오늘 들고 가는 것</h3><ul>
+<li>JVM = OS 별 차이를 숨기는 가상 머신</li>
+<li>3 단계: 로딩 → 실행 → GC</li>
+<li>"한 번 짜면 어디든" 의 비밀</li>
+</ul></div>
+<p style="margin-top:0.8em; font-size:0.7em; color:var(--text-muted);">다음: <strong>Call by Value</strong> — 자바의 데이터 전달 방식.</p></section>
+
+</div></div>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"></script>
+<script>Reveal.initialize({hash:true,slideNumber:'c/t',width:1280,height:720,margin:0.06,transition:'slide',plugins:[RevealHighlight,RevealNotes]});</script>
+<script src="../js/infographics.js?v=2"></script>
+<script src="../js/screenshot.js?v=2"></script></body></html>

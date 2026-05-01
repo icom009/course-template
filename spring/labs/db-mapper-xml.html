@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mapper 인터페이스 ↔ XML — 실습</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/lab.css"></head><body>
+<div class="container">
+
+<div class="header"><div class="badge">▣ LAB · DB</div>
+<h1>Mapper 인터페이스 ↔ XML</h1><p class="subtitle">데이터와 MyBatis — 실습</p></div>
+
+<div class="minimap"><div class="minimap-title">📍 지금 어디를 만지고 있나요?</div><div class="flow">
+<div class="box">브라우저</div><span class="arrow">→</span>
+<div class="box active">데이터와 MyBatis</div><span class="arrow">→</span>
+<div class="box">DB</div></div></div>
+
+<div class="prerequisites"><h3>사전 준비</h3>
+<ul><li>전 차시 완료</li><li>Eclipse + Tomcat 동작 환경</li></ul></div>
+
+<div class="box box-info"><div class="box-title">이번 실습의 목표</div>
+<p>XML 의 namespace = 인터페이스의 풀 클래스명. 각 메서드 = 같은 id 의 SQL.</p></div>
+
+<div class="step"><div class="step-header"><div class="step-num">1</div><div class="step-title">BoardMapper 인터페이스 작성</div></div>
+<pre><code>// src/main/java/com/smhrd/mapper/BoardMapper.java
+package com.smhrd.mapper;
+
+import java.util.List;
+import org.apache.ibatis.annotations.Mapper;
+import com.smhrd.domain.Board;
+
+@Mapper
+public interface BoardMapper {
+    List&lt;Board&gt; selectList();
+    Board     selectOne(int num);
+    void      insert(Board b);
+}</code></pre>
+<div class="checkpoint"><div class="check-title">CHECKPOINT</div>
+<ul><li>패키지가 <code>com.smhrd.mapper</code> 인가?</li><li>임포트한 도메인이 <code>com.smhrd.domain.Board</code> 인가?</li></ul></div></div>
+
+<div class="step"><div class="step-header"><div class="step-num">2</div><div class="step-title">BoardMapper.xml 작성 (같은 경로)</div></div>
+<pre><code>&lt;!-- src/main/resources/com/smhrd/mapper/BoardMapper.xml --&gt;
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd"&gt;
+&lt;mapper namespace="com.smhrd.mapper.BoardMapper"&gt;
+
+    &lt;select id="selectList" resultType="com.smhrd.domain.Board"&gt;
+        SELECT num, title, writer, content
+        FROM myboard ORDER BY num DESC
+    &lt;/select&gt;
+
+    &lt;select id="selectOne"
+            parameterType="int"
+            resultType="com.smhrd.domain.Board"&gt;
+        SELECT num, title, writer, content
+        FROM myboard WHERE num = #{num}
+    &lt;/select&gt;
+
+    &lt;insert id="insert" parameterType="com.smhrd.domain.Board"&gt;
+        INSERT INTO myboard(title, writer, content)
+        VALUES(#{title}, #{writer}, #{content})
+    &lt;/insert&gt;
+&lt;/mapper&gt;</code></pre>
+<div class="checkpoint"><div class="check-title">CHECKPOINT</div>
+<ul><li>XML 의 namespace 가 인터페이스 풀 클래스명과 글자 그대로 같은가?</li><li>각 <code>id</code> 가 인터페이스 메서드명과 같은가? (selectList / selectOne / insert)</li></ul></div></div>
+
+<div class="step"><div class="step-header"><div class="step-num">3</div><div class="step-title">실행 + MyBatis SQL 로그 확인</div></div>
+<p>Service 에서 <code>boardMapper.selectList()</code> 를 호출하고 콘솔에서 MyBatis SQL 로그를 확인합니다.</p>
+<div class="checkpoint"><div class="check-title">CHECKPOINT</div>
+<ul><li>콘솔에 <code>SELECT num, title, writer, content FROM myboard</code> SQL 이 찍혔는가?</li><li>「Invalid bound statement」 가 나오면 namespace 또는 id 의 오타다 — 다시 비교.</li></ul></div></div>
+
+<div class="checklist"><h3>실습 완료 체크리스트</h3>
+<div class="check-item"><input type="checkbox"> 인터페이스 패키지 <code>com.smhrd.mapper</code></div>
+<div class="check-item"><input type="checkbox"> XML namespace = <code>com.smhrd.mapper.BoardMapper</code></div>
+<div class="check-item"><input type="checkbox"> id ↔ 메서드명 (selectList / selectOne / insert) 일치</div>
+<div class="check-item"><input type="checkbox"> SQL 로그에 <code>myboard</code> 쿼리 출력 확인</div></div>
+
+<div class="nav"><a href="db-hikari-pool.html">&larr; 이전</a><a href="../index.html">메인으로</a><a href="db-camel-snake-trap.html">다음 &rarr;</a></div>
+</div><script src="../js/screenshot.js?v=2"></script></body></html>

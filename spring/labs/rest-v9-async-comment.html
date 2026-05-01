@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>비동기 댓글 — 실습</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/lab.css"></head><body>
+<div class="container">
+
+<div class="header"><div class="version-badge">v9</div><div class="badge">★ LAB · REST</div>
+<h1>비동기 댓글</h1><p class="subtitle">REST API와 마무리 — 실습</p></div>
+
+<div class="minimap"><div class="minimap-title">📍 지금 어디를 만지고 있나요?</div><div class="flow">
+<div class="box">브라우저</div><span class="arrow">→</span>
+<div class="box active">REST API와 마무리</div><span class="arrow">→</span>
+<div class="box">DB</div></div></div>
+
+<div class="prerequisites"><h3>사전 준비</h3>
+<ul><li>전 차시 완료</li><li>Eclipse + Tomcat 동작 환경</li></ul></div>
+
+<div class="box box-info"><div class="box-title">이번 실습의 목표</div>
+<p>myreply 테이블을 FK 로 myboard 와 연결하고, ReplyApiController 를 만들어 fetch 로 비동기 등록·조회. 응답 JSON 을 DOM 에 직접 추가.</p></div>
+
+<div class="step"><div class="step-header"><div class="step-num">1</div><div class="step-title">코드 작성</div></div>
+<pre><code>-- DB: 새 테이블 + FK
+CREATE TABLE myreply (
+    num        INT          PRIMARY KEY AUTO_INCREMENT,
+    content    VARCHAR(500) NOT NULL,
+    boardnum   INT          NOT NULL,
+    writer     VARCHAR(50)  NOT NULL,
+    created_at DATETIME     DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (boardnum) REFERENCES myboard(num) ON DELETE CASCADE
+);
+
+// 도메인 (com.smhrd.domain)
+@Data @AllArgsConstructor @NoArgsConstructor
+public class Reply {
+    private int num;
+    private String content;
+    private int boardnum;
+    private String writer;
+    private LocalDateTime createdAt;
+}
+
+// 서버 (com.smhrd.controller)
+@RestController @RequestMapping("/api/replies")
+public class ReplyApiController {
+    @GetMapping
+    public List&lt;Reply&gt; list(@RequestParam int boardnum) {
+        return service.list(boardnum);
+    }
+
+    @PostMapping
+    public Reply add(@RequestBody Reply r, HttpSession s) {
+        Member u = (Member) s.getAttribute("loginUser");
+        r.setWriter(u.getId());
+        return service.add(r);
+    }
+}
+
+// 클라이언트 JS
+async function addReply(boardnum, content) {
+    const res = await fetch('/api/replies', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({boardnum, content})
+    });
+    const newReply = await res.json();
+    document.querySelector('#replyList').innerHTML += `
+        &lt;div&gt;${newReply.writer}: ${newReply.content}&lt;/div&gt;
+    `;
+}</code></pre>
+<div class="checkpoint"><div class="check-title">CHECKPOINT</div>
+<ul><li>코드를 작성한 뒤 빨간 줄(컴파일 오류)이 없는가?</li></ul></div></div>
+
+<div class="step"><div class="step-header"><div class="step-num">2</div><div class="step-title">실행 + 결과 확인</div></div>
+<p>Run on Server 또는 javac+java 로 실행하고 결과를 확인합니다.</p>
+<div class="checkpoint"><div class="check-title">CHECKPOINT</div>
+<ul><li>예상한 동작이 일어났는가?</li><li>안 됐다면 F12 / 콘솔 / 로그 어디서 단서가 보이는가?</li></ul></div></div>
+
+<div class="checklist"><h3>실습 완료 체크리스트</h3>
+<div class="check-item"><input type="checkbox"> fetch + JSON.stringify</div>
+<div class="check-item"><input type="checkbox"> 응답 JSON → DOM 추가</div>
+<div class="check-item"><input type="checkbox"> 페이지 깜빡임 사라짐</div>
+<div class="check-item"><input type="checkbox"> v9 마일스톤</div></div>
+
+<div class="nav"><a href="rest-v8-conversion.html">&larr; 이전</a><a href="../index.html">메인으로</a><a href="rest-v10-extras.html">다음 &rarr;</a></div>
+</div><script src="../js/screenshot.js?v=2"></script></body></html>

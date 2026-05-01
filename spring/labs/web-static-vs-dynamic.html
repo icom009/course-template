@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>정적 vs 동적 / WAS — 실습</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+  <link rel="stylesheet" href="css/lab.css">
+</head>
+<body>
+  <div class="container">
+
+    <div class="header">
+      <div class="badge">▣ LAB · WEB</div>
+      <h1>두 종류의 페이지 직접 구별하기</h1>
+      <p class="subtitle">정적 vs 동적 / WAS — 실습 / 소요 시간: 약 10분</p>
+    </div>
+
+    <div class="minimap">
+      <div class="minimap-title">📍 지금 어디를 만지고 있나요?</div>
+      <div class="flow">
+        <div class="box active">브라우저</div>
+        <span class="arrow">⇄</span>
+        <div class="box active">WAS (Tomcat)</div>
+        <span class="arrow">→</span>
+        <div class="box">Controller</div>
+        <span class="arrow">→</span>
+        <div class="box">Service</div>
+        <span class="arrow">→</span>
+        <div class="box">DB</div>
+      </div>
+    </div>
+
+    <div class="prerequisites">
+      <h3>사전 준비</h3>
+      <ul>
+        <li>크롬 + F12 사용법</li>
+      </ul>
+    </div>
+
+    <div class="box box-info">
+      <div class="box-title">이번 실습의 목표</div>
+      <p>새로고침해도 안 변하는 페이지와 매번 변하는 페이지를 직접 비교하면서 「정적」과 「동적」을 몸으로 느낍니다.</p>
+    </div>
+
+    <div class="step">
+      <div class="step-header"><div class="step-num">1</div><div class="step-title">정적 페이지 후보 찾기</div></div>
+      <p>다음 페이지에 들어가서 새로고침을 5번 정도 눌러봅니다.</p>
+      <ul>
+        <li>한국 정부 사이트의 약관 페이지 (예: <code>www.korea.kr</code> 약관)</li>
+        <li>학교 홈페이지의 회사 소개 페이지</li>
+        <li>또는 아무 회사 사이트의 «회사 소개» 페이지</li>
+      </ul>
+      <div class="checkpoint">
+        <div class="check-title">CHECKPOINT</div>
+        <ul>
+          <li>새로고침할 때마다 내용이 달라지나요? (대부분 그대로일 겁니다)</li>
+          <li>이런 페이지는 <strong>정적 페이지</strong>일 가능성이 큽니다.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-header"><div class="step-num">2</div><div class="step-title">동적 페이지 확인</div></div>
+      <p>네이버 메인(<code>www.naver.com</code>)에 접속해서 새로고침을 5번 정도 눌러봅니다.</p>
+      <div class="checkpoint">
+        <div class="check-title">CHECKPOINT</div>
+        <ul>
+          <li>새로고침할 때마다 뉴스 목록이나 추천 컨텐츠가 바뀌나요?</li>
+          <li>로그인했다면 우측 상단에 본인 이름이 보이나요? (<strong>나만 보는 정보</strong> = 동적의 증거)</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-header"><div class="step-num">3</div><div class="step-title">F12 Network 에서 차이 보기</div></div>
+      <p>각 페이지에서 F12 → Network 탭을 켜고 새로고침을 한 뒤, 첫 줄의 <strong>Response Headers</strong> 를 봅니다.</p>
+      <ul>
+        <li>정적 사이트 응답 헤더에 <code>Server: nginx</code> 또는 <code>Apache</code> 가 보일 수 있습니다 → 웹서버</li>
+        <li>동적 사이트라도 헤더만으로는 100% 구별되지 않지만, 매번 다른 내용을 받는다면 분명 동적입니다</li>
+      </ul>
+      <div class="screenshot">
+        <div class="label">스크린샷</div>
+        <div class="desc">F12 Network → 한 응답의 Response Headers 영역에 Server 헤더가 보이는 화면</div>
+      </div>
+      <div class="checkpoint">
+        <div class="check-title">CHECKPOINT</div>
+        <ul>
+          <li>각 사이트의 <code>Server</code> 헤더가 무엇으로 적혀 있나요?</li>
+          <li>어떤 사이트는 헤더를 일부러 숨기기도 합니다 — 못 보여도 정상.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-header"><div class="step-num">4</div><div class="step-title">우리 코드의 미래 위치 그려보기</div></div>
+      <p>다음 그림을 종이에 그려보세요. 다음 차시부터 만들 코드의 「집」이 어디인지 미리 봅니다.</p>
+      <div class="diagram">
+   브라우저 ──→ Tomcat (WAS) ──→ [내가 만들 코드들]
+                                  - Servlet (다음 차시)
+                                  - Controller
+                                  - Service
+                                  - Mapper
+      </div>
+      <div class="checkpoint">
+        <div class="check-title">CHECKPOINT</div>
+        <ul>
+          <li>우리가 만들 모든 코드가 <strong>어디 안에서</strong> 실행되나요? (정답: <strong>Tomcat 안</strong>)</li>
+          <li>왜 Spring 프로젝트는 항상 Tomcat(또는 비슷한 WAS) 이 필요한지 한 문장으로 말할 수 있나요?</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="checklist">
+      <h3>실습 완료 체크리스트</h3>
+      <div class="check-item"><input type="checkbox"> 정적 페이지에서 새로고침해도 같은 내용임을 확인했다</div>
+      <div class="check-item"><input type="checkbox"> 동적 페이지에서 새로고침할 때마다 내용이 바뀌는 것을 확인했다</div>
+      <div class="check-item"><input type="checkbox"> 「웹서버 = 정적 / WAS = 동적」을 입으로 말할 수 있다</div>
+      <div class="check-item"><input type="checkbox"> 우리 Spring 코드가 Tomcat 안에서 돈다는 걸 안다</div>
+    </div>
+
+    <div class="nav">
+      <a href="web-stateless-cookie-session.html">&larr; 이전</a>
+      <a href="../index.html">메인으로</a>
+      <a href="web-hello-servlet.html">다음: ★ Hello Servlet &rarr;</a>
+    </div>
+
+  </div>
+  <script src="../js/screenshot.js?v=2"></script>
+</body>
+</html>

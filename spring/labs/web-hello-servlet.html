@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hello Servlet — 실습</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+  <link rel="stylesheet" href="css/lab.css">
+</head>
+<body>
+  <div class="container">
+
+    <div class="header">
+      <div class="version-badge">v0</div>
+      <div class="badge">★ MILESTONE LAB</div>
+      <h1>Tomcat 위에 첫 자바 코드 띄우기</h1>
+      <p class="subtitle">Hello Servlet — 실습 / 소요 시간: 약 30분</p>
+    </div>
+
+    <div class="minimap">
+      <div class="minimap-title">📍 지금 어디를 만지고 있나요?</div>
+      <div class="flow">
+        <div class="box active">브라우저</div>
+        <span class="arrow">→</span>
+        <div class="box active">Tomcat</div>
+        <span class="arrow">→</span>
+        <div class="box active">Servlet</div>
+        <span class="arrow">→</span>
+        <div class="box">Controller</div>
+        <span class="arrow">→</span>
+        <div class="box">DB</div>
+      </div>
+    </div>
+
+    <div class="prerequisites">
+      <h3>사전 준비</h3>
+      <ul>
+        <li>JDK 설치 완료 (강사 안내 버전 기준)</li>
+        <li>Eclipse IDE for Enterprise Java (또는 STS) 설치 완료</li>
+        <li>Apache Tomcat 압축 풀어둔 폴더 있음</li>
+      </ul>
+    </div>
+
+    <div class="box box-info">
+      <div class="box-title">이번 실습의 목표</div>
+      <p>Eclipse 에서 Dynamic Web Project 를 만들고, Tomcat 서버를 연결한 뒤, 가장 단순한 Servlet 한 개로 브라우저에 「Hello, World」를 띄웁니다.</p>
+    </div>
+
+    <div class="step">
+      <div class="step-header"><div class="step-num">1</div><div class="step-title">Eclipse 에 Tomcat 서버 등록</div></div>
+      <ol>
+        <li>Eclipse 메뉴: <code>Window</code> → <code>Preferences</code></li>
+        <li>왼쪽 검색창에 「Server」입력 → <code>Server &gt; Runtime Environments</code> 선택</li>
+        <li><strong>Add</strong> 버튼 → Apache Tomcat 버전 선택 → <strong>Next</strong></li>
+        <li>「Tomcat installation directory」에 압축 푼 Tomcat 폴더 경로 지정 → <strong>Finish</strong></li>
+      </ol>
+      <div class="screenshot">
+        <div class="label">스크린샷</div>
+        <div class="desc">Eclipse Preferences 의 Server Runtime Environments 화면. Tomcat 이 등록된 후의 모습</div>
+      </div>
+      <div class="checkpoint">
+        <div class="check-title">CHECKPOINT</div>
+        <ul>
+          <li>등록 후 Tomcat 항목이 목록에 보이나요?</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-header"><div class="step-num">2</div><div class="step-title">Dynamic Web Project 생성</div></div>
+      <ol>
+        <li>메뉴: <code>File</code> → <code>New</code> → <code>Dynamic Web Project</code></li>
+        <li>Project name: <code>hello-web</code></li>
+        <li>Target runtime: 위에서 등록한 Tomcat 선택</li>
+        <li><strong>Finish</strong></li>
+      </ol>
+      <div class="checkpoint">
+        <div class="check-title">CHECKPOINT</div>
+        <ul>
+          <li>Project Explorer 에 <code>hello-web</code> 프로젝트가 보이나요?</li>
+          <li>그 안에 <code>src</code>, <code>WebContent</code>(또는 <code>src/main/webapp</code>) 가 보이나요?</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-header"><div class="step-num">3</div><div class="step-title">HelloServlet 클래스 작성</div></div>
+      <ol>
+        <li><code>src</code>(또는 <code>src/main/java</code>)에서 우클릭 → <code>New</code> → <code>Class</code></li>
+        <li>Package: <code>hello</code></li>
+        <li>Name: <code>HelloServlet</code></li>
+        <li><strong>Finish</strong></li>
+        <li>아래 코드로 내용 채우기:</li>
+      </ol>
+      <pre><code>package hello;
+
+import java.io.IOException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+@WebServlet("/hello")
+public class HelloServlet extends HttpServlet {
+
+    @Override
+    protected void doGet(HttpServletRequest req,
+                         HttpServletResponse resp)
+            throws IOException {
+        resp.setContentType("text/html;charset=UTF-8");
+        resp.getWriter().write("&lt;h1&gt;Hello, World&lt;/h1&gt;");
+    }
+}</code></pre>
+
+      <div class="box box-warn">
+        <div class="box-title">빨간 줄이 사라지지 않는다면</div>
+        <p>Servlet API 가 클래스패스에 없는 상태입니다. Project Properties → <strong>Project Facets</strong> 에서 Dynamic Web Module 이 켜져 있는지, Targeted Runtime 에 Tomcat 이 체크되어 있는지 확인.</p>
+      </div>
+
+      <div class="checkpoint">
+        <div class="check-title">CHECKPOINT</div>
+        <ul>
+          <li>코드에 빨간 줄(컴파일 오류)이 없나요?</li>
+          <li><code>@WebServlet</code> 의 import 가 <code>javax.servlet.annotation.WebServlet</code> 로 되었나요?</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-header"><div class="step-num">4</div><div class="step-title">Run on Server</div></div>
+      <ol>
+        <li>프로젝트(또는 HelloServlet 파일) 우클릭 → <code>Run As</code> → <code>Run on Server</code></li>
+        <li>Tomcat 선택 → <strong>Finish</strong></li>
+        <li>Eclipse 가 Tomcat 을 켜는 동안 잠깐 기다림 (Console 창에 로그 흐름)</li>
+      </ol>
+      <div class="screenshot">
+        <div class="label">스크린샷</div>
+        <div class="desc">Eclipse Console 창에 Tomcat 시작 로그가 출력된 화면. 마지막에 Server startup in XXXX ms 메시지</div>
+      </div>
+      <div class="checkpoint">
+        <div class="check-title">CHECKPOINT</div>
+        <ul>
+          <li>Console 마지막에 「Server startup in ...」 같은 메시지가 보이나요?</li>
+          <li>빨간 글씨(에러)가 없는지 한 번 더 확인</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-header"><div class="step-num">5</div><div class="step-title">브라우저에서 첫 응답 보기</div></div>
+      <ol>
+        <li>크롬을 열고 주소창에 입력:</li>
+      </ol>
+      <pre><code>http://localhost:8080/hello-web/hello</code></pre>
+      <p style="font-size: 13px; color: var(--text-muted);">※ 컨텍스트 경로(<code>hello-web</code>) 부분은 강사가 안내한 값과 다를 수 있습니다.</p>
+
+      <div class="expected">
+        <div class="expected-title">예상 결과</div>
+        <p>화면에 큰 글씨로 <strong>Hello, World</strong> 가 보입니다.</p>
+      </div>
+
+      <div class="screenshot">
+        <div class="label">스크린샷</div>
+        <div class="desc">크롬 주소창에 localhost:8080/hello-web/hello 가 적힌 상태에서 "Hello, World" 가 큰 글씨로 보이는 화면</div>
+      </div>
+
+      <div class="checkpoint">
+        <div class="check-title">CHECKPOINT — 그 결과를 만든 흐름</div>
+        <ul>
+          <li>방금 일어난 일: ① 브라우저가 GET 요청을 보냄 → ② Tomcat 이 받음 → ③ HelloServlet.doGet() 실행 → ④ 응답을 만들어 돌려줌 → ⑤ 브라우저가 화면에 그림</li>
+          <li>F12 Network 탭에서 이 요청을 클릭해서 실제 응답 헤더와 바디를 한 번 더 확인해보세요.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-header"><div class="step-num">6</div><div class="step-title">자주 만나는 오류와 해결</div></div>
+      <table style="width:100%; border-collapse: collapse; font-size: 14px;">
+        <thead>
+          <tr style="background: var(--surface);">
+            <th style="padding: 8px; border: 1px solid var(--border);">증상</th>
+            <th style="padding: 8px; border: 1px solid var(--border);">원인 / 해결</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="padding: 8px; border: 1px solid var(--border);">404 Not Found</td>
+            <td style="padding: 8px; border: 1px solid var(--border);">URL 경로 오타. <code>/hello-web/hello</code> 의 <code>hello-web</code> 이 프로젝트 컨텍스트와 다를 수 있음.</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px; border: 1px solid var(--border);">500 Server Error</td>
+            <td style="padding: 8px; border: 1px solid var(--border);">코드 안에서 예외 발생. Console 의 빨간 글씨 스택 트레이스 확인.</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px; border: 1px solid var(--border);">한글 깨짐</td>
+            <td style="padding: 8px; border: 1px solid var(--border);"><code>resp.setContentType("text/html;<strong>charset=UTF-8</strong>")</code> 누락.</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px; border: 1px solid var(--border);">포트 충돌</td>
+            <td style="padding: 8px; border: 1px solid var(--border);">8080 이 이미 사용 중. Tomcat 의 <code>server.xml</code> 에서 포트 변경 또는 사용 중 프로세스 종료.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="checklist">
+      <h3>실습 완료 체크리스트</h3>
+      <div class="check-item"><input type="checkbox"> Eclipse 에 Tomcat Runtime 등록 완료</div>
+      <div class="check-item"><input type="checkbox"> Dynamic Web Project 생성</div>
+      <div class="check-item"><input type="checkbox"> HelloServlet 클래스 작성 (빨간 줄 없음)</div>
+      <div class="check-item"><input type="checkbox"> Run on Server 로 Tomcat 가동</div>
+      <div class="check-item"><input type="checkbox"> 브라우저에서 「Hello, World」 응답 확인</div>
+      <div class="check-item"><input type="checkbox"> F12 Network 탭에서 200 응답 확인</div>
+      <div class="check-item"><input type="checkbox"> 「내가 짠 자바 코드가 Tomcat 안에서 돌아가서 응답을 만들었다」를 입으로 말할 수 있다</div>
+    </div>
+
+    <div class="nav">
+      <a href="web-static-vs-dynamic.html">&larr; 이전</a>
+      <a href="../index.html">메인으로</a>
+      <a href="spring-jvm.html">다음: ◇ JVM 한눈에 &rarr;</a>
+    </div>
+
+  </div>
+  <script src="../js/screenshot.js?v=2"></script>
+</body>
+</html>

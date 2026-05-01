@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spring 기초</title>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+
+  <style>
+    :root {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --surface-2: #273449;
+      --text: #e2e8f0;
+      --text-muted: #94a3b8;
+      --accent: #f59e0b;
+      --accent-light: #fbbf24;
+      --blue: #3b82f6;
+      --green: #22c55e;
+      --red: #ef4444;
+      --purple: #a855f7;
+      --teal: #14b8a6;
+      --border: #475569;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ============== Hero ============== */
+    .hero {
+      padding: 5rem 2rem 4rem;
+      background:
+        radial-gradient(ellipse at top right, rgba(245, 158, 11, 0.18), transparent 60%),
+        radial-gradient(ellipse at bottom left, rgba(168, 85, 247, 0.15), transparent 60%),
+        linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+    }
+    .hero-badge {
+      display: inline-block;
+      padding: 6px 16px;
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--accent-light);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      margin-bottom: 1.5rem;
+    }
+    .hero h1 {
+      font-family: 'Plus Jakarta Sans', 'Pretendard', sans-serif;
+      font-size: clamp(2.2rem, 5vw, 3.6rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      margin: 0.4rem auto 0.8rem;
+      max-width: 880px;
+    }
+    .hero h1 em {
+      font-style: normal;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--red) 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero .subtitle {
+      max-width: 680px;
+      margin: 1rem auto 0;
+      color: var(--text-muted);
+      font-size: 1.05rem;
+      line-height: 1.7;
+    }
+    .hero-stats {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 2.5rem;
+      margin: 2.5rem 0 0;
+    }
+    .stat {
+      text-align: left;
+    }
+    .stat .num {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: var(--accent);
+      letter-spacing: -0.02em;
+    }
+    .stat .label {
+      font-size: 12px;
+      color: var(--text-muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    /* ============== Legend ============== */
+    .legend {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 1.4rem;
+      margin: 2.5rem auto 0;
+      padding: 1rem 1.4rem;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 999px;
+      max-width: fit-content;
+      font-size: 13px;
+    }
+    .legend-item { display: flex; align-items: center; gap: 0.4rem; }
+    .legend-glyph {
+      display: inline-block;
+      width: 18px;
+      text-align: center;
+      font-weight: 700;
+    }
+    .legend-glyph.concept    { color: var(--blue); }
+    .legend-glyph.handson    { color: var(--green); }
+    .legend-glyph.turning    { color: var(--accent); }
+    .legend-glyph.milestone  { color: var(--red); }
+
+    /* ============== Container ============== */
+    .container {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 4rem 2rem 6rem;
+    }
+
+    /* ============== Part ============== */
+    .part {
+      margin: 4rem 0;
+    }
+    .part:first-child { margin-top: 0; }
+
+    .part-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.8rem;
+      padding-bottom: 1rem;
+      border-bottom: 2px solid var(--border);
+    }
+    .part-badge {
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-weight: 800;
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      color: white;
+    }
+    .part-1 .part-badge { background: var(--blue); }
+    .part-2 .part-badge { background: var(--green); }
+    .part-3 .part-badge { background: var(--purple); }
+    .part-4 .part-badge { background: var(--accent); }
+    .part-5 .part-badge { background: var(--red); }
+    .part-6 .part-badge { background: var(--teal); }
+
+    .part-header h2 {
+      margin: 0;
+      font-size: 1.6rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+    .part-header .part-tagline {
+      margin-left: auto;
+      color: var(--text-muted);
+      font-size: 14px;
+      font-style: italic;
+    }
+
+    /* ============== Cards ============== */
+    .sessions {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.2rem 1.3rem;
+      display: flex;
+      flex-direction: column;
+      transition: all 0.2s;
+      position: relative;
+    }
+    .card:hover {
+      transform: translateY(-2px);
+      border-color: var(--accent);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .card-glyph {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 0.3rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .glyph-concept    { color: var(--blue); }
+    .glyph-handson    { color: var(--green); }
+    .glyph-turning    { color: var(--accent); }
+    .glyph-milestone  { color: var(--red); }
+
+    .card-version {
+      display: inline-block;
+      padding: 2px 8px;
+      background: linear-gradient(135deg, var(--accent), var(--red));
+      color: white;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      border-radius: 999px;
+      letter-spacing: 0.05em;
+    }
+
+    .card-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin: 0.3rem 0;
+      letter-spacing: -0.01em;
+    }
+    .card-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.55;
+      flex: 1;
+      margin-bottom: 0.8rem;
+    }
+
+    .card-links {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.4rem;
+      margin-top: auto;
+    }
+    .card-links a {
+      padding: 6px 4px;
+      border-radius: 7px;
+      text-decoration: none;
+      color: white;
+      font-size: 11px;
+      font-weight: 700;
+      text-align: center;
+      letter-spacing: 0.02em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      transition: filter 0.2s, transform 0.2s;
+    }
+    .card-links a:hover {
+      filter: brightness(1.15);
+      transform: translateY(-1px);
+    }
+    .card-links a.disabled {
+      background: var(--surface-2) !important;
+      color: var(--text-muted) !important;
+      pointer-events: none;
+      opacity: 0.5;
+    }
+    .btn-slide    { background: var(--blue); }
+    .btn-example  { background: var(--accent); }
+    .btn-lab      { background: var(--green); }
+    .btn-handout  { background: var(--purple); }
+
+    .card-links svg {
+      width: 12px;
+      height: 12px;
+      flex-shrink: 0;
+    }
+
+    /* ============== Footer ============== */
+    footer {
+      text-align: center;
+      padding: 3rem 2rem;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border);
+      font-size: 13px;
+    }
+    footer p { margin: 0.3rem 0; }
+
+    /* ============== Responsive ============== */
+    @media (max-width: 768px) {
+      .hero { padding: 3rem 1rem 2.5rem; }
+      .container { padding: 2rem 1rem 4rem; }
+      .part-header { flex-wrap: wrap; }
+      .part-header .part-tagline { margin-left: 0; width: 100%; }
+      .legend { gap: 0.8rem; padding: 0.8rem 1rem; }
+    }
+    @media (max-width: 420px) {
+      .card-links { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ============== HERO ============== -->
+  <section class="hero">
+    <div class="hero-badge">SMHRD · Spring Framework</div>
+    <h1><em>Spring 기초</em></h1>
+    <p class="subtitle">
+      코드를 외우는 대신 데이터가 어디로 흐르는지 그림으로 익힙니다.
+      한 번 만든 기능을 다시 만들면서 더 깔끔하게 — 마지막에는 <strong>REST API 게시판</strong> 한 채를 직접 짓습니다.
+    </p>
+
+    <div class="legend">
+      <span class="legend-item"><span class="legend-glyph concept">◇</span> 개념</span>
+      <span class="legend-item"><span class="legend-glyph handson">▣</span> 실습</span>
+      <span class="legend-item"><span class="legend-glyph turning">◆</span> 전환점</span>
+      <span class="legend-item"><span class="legend-glyph milestone">★</span> 마일스톤</span>
+    </div>
+  </section>
+
+  <!-- ============== CONTENT ============== -->
+  <div class="container">
+
+    <!-- ====================== PART 1: 웹의 동작 원리 ====================== -->
+    <section class="part part-1">
+      <div class="part-header">
+        <span class="part-badge">PART · WEB</span>
+        <h2>웹의 동작 원리</h2>
+        <span class="part-tagline">클라이언트 · 서버 · HTTP</span>
+      </div>
+      <div class="sessions">
+
+        <div class="card">
+          <div class="card-glyph"><span class="glyph-concept">◇</span> 클라이언트와 서버</div>
+          <div class="card-title">네트워크 / 클라이언트 / 서버</div>
+          <div class="card-desc">매일 보는 웹사이트는 누가 누구에게 무엇을 부탁하는 일인가. 요청과 응답의 가장 기본 단위.</div>
+          <div class="card-links">
+            <a href="slides/web-client-server.html" class="btn-slide" title="슬라이드"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 3H3a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h7v2H7v2h10v-2h-3v-2h7a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm0 14H3V5h18v12z"/></svg>슬라이드</a>
+            <a href="examples/web-client-server.html" class="btn-example" title="예제"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 5c-1.11-.35-2.33-.5-3.5-.5-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5S2.45 4.9 1 6v14.65c0 .25.25.5.5.5.1 0 .15-.05.25-.05C3.1 20.45 5.05 20 6.5 20c1.95 0 4.05.4 5.5 1.5 1.35-.85 3.8-1.5 5.5-1.5 1.65 0 3.35.3 4.75 1.05.1.05.15.05.25.05.25 0 .5-.25.5-.5V6c-.6-.45-1.25-.75-2-1zm0 13.5c-1.1-.35-2.3-.5-3.5-.5-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5 1.2 0 2.4.15 3.5.5v11.5z"/></svg>예제</a>
+            <a href="labs/web-client-server.html" class="btn-lab" title="실습"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M9.4 16.6 4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0L19.2 12l-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>실습</a>
+            <a href="handouts/web-client-server.html" class="btn-handout" title="핸드아웃"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg>핸드아웃</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-glyph"><span class="glyph-concept">◇</span> HTTP 해부</div>
+          <div class="card-title">F12로 보는 진짜 HTTP</div>
+          <div class="card-desc">크롬 개발자 도구로 실제 요청·응답 메시지를 한 줄씩 뜯어본다. 헤더·바디·상태 코드가 무엇을 하는지.</div>
+          <div class="card-links">
+            <a href="slides/web-http-anatomy.html" class="btn-slide">슬라이드</a>
+            <a href="examples/web-http-anatomy.html" class="btn-example">예제</a>
+            <a href="labs/web-http-anatomy.html" class="btn-lab">실습</a>
+            <a href="handouts/web-http-anatomy.html" class="btn-handout">핸드아웃</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-glyph"><span class="glyph-concept">◇</span> GET vs POST</div>
+          <div class="card-title">URL 에 적느냐, 바디에 숨기느냐</div>
+          <div class="card-desc">같은 폼을 GET 과 POST 로 각각 보내며, 어디에 데이터가 실리는지 눈으로 확인.</div>
+          <div class="card-links">
+            <a href="slides/web-get-vs-post.html" class="btn-slide">슬라이드</a>
+            <a href="examples/web-get-vs-post.html" class="btn-example">예제</a>
+            <a href="labs/web-get-vs-post.html" class="btn-lab">실습</a>
+            <a href="handouts/web-get-vs-post.html" class="btn-handout">핸드아웃</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-glyph"><span class="glyph-concept">◇</span> 무상태성과 쿠키·세션</div>
+          <div class="card-title">서버가 사용자를 기억하지 못하는 이유</div>
+          <div class="card-desc">HTTP 가 왜 기억을 못 하는지, 그래서 어떤 도구가 등장했는지 (개념만 살짝).</div>
+          <div class="card-links">
+            <a href="slides/web-stateless-cookie-session.html" class="btn-slide">슬라이드</a>
+            <a href="examples/web-stateless-cookie-session.html" class="btn-example">예제</a>
+            <a href="labs/web-stateless-cookie-session.html" class="btn-lab">실습</a>
+            <a href="handouts/web-stateless-cookie-session.html" class="btn-handout">핸드아웃</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-glyph"><span class="glyph-concept">◇</span> 정적 vs 동적 / WAS</div>
+          <div class="card-title">정적 페이지와 동적 페이지의 차이</div>
+          <div class="card-desc">같은 HTML 인데 어떨 때 매번 다르게 보일까. 웹서버와 WAS(Tomcat)의 분업.</div>
+          <div class="card-links">
+            <a href="slides/web-static-vs-dynamic.html" class="btn-slide">슬라이드</a>
+            <a href="examples/web-static-vs-dynamic.html" class="btn-example">예제</a>
+            <a href="labs/web-static-vs-dynamic.html" class="btn-lab">실습</a>
+            <a href="handouts/web-static-vs-dynamic.html" class="btn-handout">핸드아웃</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-glyph"><span class="glyph-milestone">★</span> Hello Servlet <span class="card-version">v0</span></div>
+          <div class="card-title">브라우저에 내 응답이 처음 뜬다</div>
+          <div class="card-desc">Tomcat 위에 Servlet 한 개를 올리고, 브라우저로 첫 응답을 받아본다. 우리 프로젝트의 v0 시작점.</div>
+          <div class="card-links">
+            <a href="slides/web-hello-servlet.html" class="btn-slide">슬라이드</a>
+            <a href="examples/web-hello-servlet.html" class="btn-example">예제</a>
+            <a href="labs/web-hello-servlet.html" class="btn-lab">실습</a>
+            <a href="handouts/web-hello-servlet.html" class="btn-handout">핸드아웃</a>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ====================== PART 2: Java와 Spring의 철학 ====================== -->
+    <section class="part part-2">
+      <div class="part-header">
+        <span class="part-badge">PART · SPRING</span>
+        <h2>Java와 Spring의 철학</h2>
+        <span class="part-tagline">JVM · 객체 지향 · IoC / DI</span>
+      </div>
+      <div class="sessions">
+
+        <div class="card">
+          <div class="card-glyph"><span class="glyph-concept">◇</span> JVM 한눈에</div>
+          <div class="card-title">컴파일·로더·실행엔진·GC</div>
+          <div class="card-desc">자바가 어떻게 OS 위에서 돌아가는지를 한 번에. 깊이 들어가지 않고 그림으로.</div>
+          <div class="card-links">
+            <a href="slides/spring-jvm.html" class="btn-slide">슬라이드</a>
+            <a href="examples/spring-jvm.html" class="btn-example">예제</a>
+            <a href="labs/spring-jvm.html" class="btn-lab">실습</a>
+            <a href="handouts/spring-jvm.html" class="btn-handout">핸드아웃</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-glyph"><span class="glyph-concept">◇</span> Call by Value</div>
+          <div class="card-title">참조형도 「값」을 복사한다</div>
+          <div class="card-desc">메서드 안에서 객체를 바꿨는데 원본이 안 바뀌는, 또는 그 반대인 경우를 코드로 뜯어본다.</div>
+          <div class="card-links">
+            <a href="slides/spring-call-by-value.html" class="btn-slide">슬라이드</a>
+            <a href="examples/spring-call-by-value.html" class="btn-example">예제</a>
+            <a href="labs/spring-call-by-value.html" class="btn-lab">실습</a>
+            <a href="handouts/spring-call-by-value.html" class="btn-handout">핸드아웃</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-glyph"><span class="glyph-concept">◇</span> 클래스 vs 인스턴스</div>
+          <div class="card-title">객체가 메모리에 만들어지는 방식</div>
+          <div class="card-desc">클래스 한 개로 인스턴스 여러 개가 어떻게 찍혀 나오는지. 각 인스턴스가 가지는 독립된 데이터.</div>
+          <div class="card-links">
+            <a href="slides/spring-class-vs-instance.html" class="btn-slide">슬라이드</a>
+            <a href="examples/spring-class-vs-instance.html" class="btn-example">예제</a>
+            <a href="labs/spring-class-vs-instance.html" class="btn-lab">실습</a>
+            <a href="handouts/spring-class-vs-instance.html" class="btn-handout">핸드아웃</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-glyph"><span class="glyph-turning">◆</span> <code>new</code>의 함정</div>
+          <div class="card-title">강한 결합을 손으로 느껴본다</div>
+          <div class="card-desc">DI 를 배우기 전에, 일부러 <code>new</code> 로 결합한 코드를 써보고 부품 하나 바꿀 때 무엇이 부서지는지 체감.</div>
+          <div class="card-links">
+            <a href="slides/spring-new-trap.html" class="btn-slide">슬라이드</a>
+            <a href="examples/spring-new-trap.html" class="btn-example">예제</a>
+            <a href="labs/spring-new-trap.html" class="btn-lab">실습</a>
+            <a href="handouts/spring-new-trap.html" class="btn-handout">핸드아웃</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-glyph"><span class="glyph-concept">◇</span> IoC — 제어 역전</div>
+          <div class="card-title">제어권은 누구에게 있는가</div>
+          <div class="card-desc">객체 생성·소멸의 권한이 개발자에서 컨테이너로 넘어간다. 그게 왜 좋은지를 코드로 본다.</div>
+          <div class="card-links">
+            <a href="slides/spring-ioc.html" class="btn-slide">슬라이드</a>
+            <a href="examples/spring-ioc.html" class="btn-example">예제</a>
+            <a href="labs/spring-ioc.html" class="btn-lab">실습</a>
+            <a href="handouts/spring-ioc.html" class="btn-handout">핸드아웃</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-glyph"><span class="glyph-turning">◆</span> DI — 의존성 주입과 <code>@Autowired</code></div>
+          <div class="card-title">전 차시의 코드를 다시 쓴다</div>
+          <div class="card-desc">「new 의 함정」에서 짠 코드를 DI 로 다시 짜며 결합도가 어떻게 풀리는지 Before/After 로.</div>
+          <div class="card-links">
+            <a href="slides/spring-di.html" class="btn-slide">슬라이드</a>
+            <a href="examples/spring-di.html" class="btn-example">예제</a>
+            <a href="labs/spring-di.html" class="btn-lab">실습</a>
+            <a href="handouts/spring-di.html" class="btn-handout">핸드아웃</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-glyph"><span class="glyph-concept">◇</span> Spring vs Spring Boot</div>
+          <div class="card-title">우리는 왜 Legacy 로 시작하는가</div>
+          <div class="card-desc">자동 설정과 내장 서버를 제공하는 Boot 의 편리함과, 우리가 굳이 XML 부터 보는 이유.</div>
+          <div class="card-links">
+            <a href="slides/spring-vs-springboot.html" class="btn-slide">슬라이드</a>
+            <a href="examples/spring-vs-springboot.html" class="btn-example">예제</a>
+            <a href="labs/spring-vs-springboot.html" class="btn-lab">실습</a>
+            <a href="handouts/spring-vs-springboot.html" class="btn-handout">핸드아웃</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-glyph"><span class="glyph-concept">◇</span> Maven & <code>pom.xml</code></div>
+          <div class="card-title">의존성 관리의 작동 원리</div>
+          <div class="card-desc">의존성 한 줄을 추가하면 어디에 무엇이 다운로드되는지. Maven Update 누락의 함정.</div>
+          <div class="card-links">
+            <a href="slides/spring-maven-pom.html" class="btn-slide">슬라이드</a>
+            <a href="examples/spring-maven-pom.html" class="btn-example">예제</a>
+            <a href="labs/spring-maven-pom.html" class="btn-lab">실습</a>
+            <a href="handouts/spring-maven-pom.html" class="btn-handout">핸드아웃</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-glyph"><span class="glyph-handson">▣</span> 개발 환경 구축</div>
+          <div class="card-title">Eclipse + STS + Tomcat 연동</div>
+          <div class="card-desc">실제로 손가락이 움직이는 환경 만들기. 끝까지 따라가면 첫 빨간 줄이 사라진다.</div>
+          <div class="card-links">
+            <a href="slides/spring-eclipse-tomcat.html" class="btn-slide">슬라이드</a>
+            <a href="examples/spring-eclipse-tomcat.html" class="btn-example">예제</a>
+            <a href="labs/spring-eclipse-tomcat.html" class="btn-lab">실습</a>
+            <a href="handouts/spring-eclipse-tomcat.html" class="btn-handout">핸드아웃</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-glyph"><span class="glyph-handson">▣</span> 첫 Spring 프로젝트 + Bean 주입</div>
+          <div class="card-title">흐름도에 첫 박스를 그린다</div>
+          <div class="card-desc">Spring Legacy Project 를 만들고, Bean 한 개를 컨테이너에 등록한 뒤 주입받아본다.</div>
+          <div class="card-links">
+            <a href="slides/spring-first-project.html" class="btn-slide">슬라이드</a>
+            <a href="examples/spring-first-project.html" class="btn-example">예제</a>
+            <a href="labs/spring-first-project.html" class="btn-lab">실습</a>
+            <a href="handouts/spring-first-project.html" class="btn-handout">핸드아웃</a>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ====================== PART 3: Spring MVC 아키텍처 ====================== -->
+    <section class="part part-3">
+      <div class="part-header">
+        <span class="part-badge">PART · MVC</span>
+        <h2>Spring MVC 아키텍처</h2>
+        <span class="part-tagline">계층 분리 · DispatcherServlet · 설정 파일</span>
+      </div>
+      <div class="sessions">
+
+        <div class="card">
+          <div class="card-glyph"><span class="glyph-concept">◇</span> MVC — 왜 분업하나</div>
+          <div class="card-title">역할 분리가 만드는 유연성</div>
+          <div class="card-desc">분리된 역할이 왜 유연성을 만드는지. 한 덩어리 코드와의 비교.</div>
+          <div class="card-links">
+            <a href="slides/mvc-why-separation.html" class="btn-slide">슬라이드</a>
+            <a href="examples/mvc-why-separation.html" class="btn-example">예제</a>
+            <a href="labs/mvc-why-separation.html" class="btn-lab">실습</a>
+            <a href="handouts/mvc-why-separation.html" class="btn-handout">핸드아웃</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-glyph"><span class="glyph-concept">◇</span> 6개 계층 한눈에</div>
+          <div class="card-title">DispatcherServlet ~ View 한 번에</div>
+          <div class="card-desc">요청 진입점부터 응답 화면까지 6개 계층의 책임을 한 그림으로 정리한다.</div>
+          <div class="card-links">
+            <a href="slides/mvc-six-layers.html" class="btn-slide">슬라이드</a>
+            <a href="examples/mvc-six-layers.html" class="btn-example">예제</a>
+            <a href="labs/mvc-six-layers.html" class="btn-lab">실습</a>
+            <a href="handouts/mvc-six-layers.html" class="btn-handout">핸드아웃</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-glyph"><span class="glyph-concept">◇</span> DispatcherServlet 깊이 보기</div>
+          <div class="card-title">URL 분배 로직</div>
+          <div class="card-desc">URL 을 받아 어떻게 적절한 Controller 에게 넘기는지 — HandlerMapping 까지 살짝.</div>
+          <div class="card-links">
+            <a href="slides/mvc-dispatcher-servlet.html" class="btn-slide">슬라이드</a>
+            <a href="examples/mvc-dispatcher-servlet.html" class="btn-example">예제</a>
+            <a href="labs/mvc-dispatcher-servlet.html" class="btn-lab">실습</a>
+            <a href="handouts/mvc-dispatcher-servlet.html" class="btn-handout">핸드아웃</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-glyph"><span class="glyph-handson">▣</span> Controller 해부</div>
+          <div class="card-title"><code>@RequestMapping</code> · 파라미터 · Model</div>
+          <div class="card-desc">컨트롤러 메서드 한 개를 라인별로 뜯어보며 파라미터가 어떻게 들어오고 모델이 어떻게 나가는지.</div>
+          <div class="card-links">
+            <a href="slides/mvc-controller-anatomy.html" class="btn-slide">슬라이드</a>
+            <a href="examples/mvc-controller-anatomy.html" class="btn-example">예제</a>
+            <a href="labs/mvc-controller-anatomy.html" class="btn-lab">실습</a>
+            <a href="handouts/mvc-controller-anatomy.html" class="btn-handout">핸드아웃</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-glyph"><span class="glyph-concept">◇</span> Service 계층</div>
+          <div class="card-title">비즈니스 로직과 트랜잭션 자리</div>
+          <div class="card-desc">왜 컨트롤러에 SQL 을 쓰면 안 되는가. 셰프의 조리법이 사는 곳.</div>
+          <div class="card-links">
+            <a href="slides/mvc-service-layer.html" class="btn-slide">슬라이드</a>
+            <a href="examples/mvc-service-layer.html" class="btn-example">예제</a>
+            <a href="labs/mvc-service-layer.html" class="btn-lab">실습</a>
+            <a href="handouts/mvc-service-layer.html" class="btn-handout">핸드아웃</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-glyph"><span class="glyph-concept">◇</span> DAO / Repository</div>
+          <div class="card-title">SQL 만 책임지는 계층</div>
+          <div class="card-desc">창고 관리자의 일은 식재료를 꺼내는 것뿐. 데이터 접근의 책임을 한곳에 몰아둔다.</div>
+          <div class="card-links">
+            <a href="slides/mvc-dao-repository.html" class="btn-slide">슬라이드</a>
+            <a href="examples/mvc-dao-repository.html" class="btn-example">예제</a>
+            <a href="labs/mvc-dao-repository.html" class="btn-lab">실습</a>
+            <a href="handouts/mvc-dao-repository.html" class="btn-handout">핸드아웃</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-glyph"><span class="glyph-concept">◇</span> DTO · VO · Model</div>
+          <div class="card-title">세 객체의 역할과 차이</div>
+          <div class="card-desc">셋이 비슷해 보이지만 어디에서 어디로 데이터를 옮기는지가 다르다. 실제 코드로 비교.</div>
+          <div class="card-links">
+            <a href="slides/mvc-dto-vo-model.html" class="btn-slide">슬라이드</a>
+            <a href="examples/mvc-dto-vo-model.html" class="btn-example">예제</a>
+            <a href="labs/mvc-dto-vo-model.html" class="btn-lab">실습</a>
+            <a href="handouts/mvc-dto-vo-model.html" class="btn-handout">핸드아웃</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-glyph"><span class="glyph-concept">◇</span> View · ViewResolver</div>
+          <div class="card-title">JSP 가 어디 있는지 어떻게 알까</div>
+          <div class="card-desc">컨트롤러가 반환한 문자열이 어떻게 진짜 JSP 파일로 매핑되는지.</div>
+          <div class="card-links">
+            <a href="slides/mvc-view-resolver.html" class="btn-slide">슬라이드</a>
+            <a href="examples/mvc-view-resolver.html" class="btn-example">예제</a>
+            <a href="labs/mvc-view-resolver.html" class="btn-lab">실습</a>
+            <a href="handouts/mvc-view-resolver.html" class="btn-handout">핸드아웃</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-glyph"><span class="glyph-turning">◆</span> 설정 파일 3종 해부</div>
+          <div class="card-title">XML 공포증 해소 차시</div>
+          <div class="card-desc"><code>web.xml</code> · <code>root-context.xml</code> · <code>servlet-context.xml</code> 을 한 줄씩 읽으며 무엇이 무엇에 영향을 주는지.</div>
+          <div class="card-links">
+            <a href="slides/mvc-config-files.html" class="btn-slide">슬라이드</a>
+            <a href="examples/mvc-config-files.html" class="btn-example">예제</a>
+            <a href="labs/mvc-config-files.html" class="btn-lab">실습</a>
+            <a href="handouts/mvc-config-files.html" class="btn-handout">핸드아웃</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-glyph"><span class="glyph-handson">▣</span> 한글 깨짐 필터</div>
+          <div class="card-title">학생이 가장 먼저 만나는 「??? 글자」</div>
+          <div class="card-desc">CharacterEncodingFilter 한 줄이 어떻게 깨진 글자를 살리는지.</div>
+          <div class="card-links">
+            <a href="slides/mvc-encoding-filter.html" class="btn-slide">슬라이드</a>
+            <a href="examples/mvc-encoding-filter.html" class="btn-example">예제</a>
+            <a href="labs/mvc-encoding-filter.html" class="btn-lab">실습</a>
+            <a href="handouts/mvc-encoding-filter.html" class="btn-handout">핸드아웃</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-glyph"><span class="glyph-milestone">★</span> 첫 종단간 흐름 <span class="card-version">v0.5</span></div>
+          <div class="card-title">DB 없이 끝까지 데이터를 흘려본다</div>
+          <div class="card-desc">폼 → Controller → Service → (하드코딩 데이터) → JSP. 흐름도가 처음 한 줄로 이어진다.</div>
+          <div class="card-links">
+            <a href="slides/mvc-end-to-end-no-db.html" class="btn-slide">슬라이드</a>
+            <a href="examples/mvc-end-to-end-no-db.html" class="btn-example">예제</a>
+            <a href="labs/mvc-end-to-end-no-db.html" class="btn-lab">실습</a>
+            <a href="handouts/mvc-end-to-end-no-db.html" class="btn-handout">핸드아웃</a>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ====================== PART 4: 데이터와 MyBatis ====================== -->
+    <section class="part part-4">
+      <div class="part-header">
+        <span class="part-badge">PART · DB</span>
+        <h2>데이터와 MyBatis</h2>
+        <span class="part-tagline">SQL · MyBatis · 트랜잭션</span>
+      </div>
+      <div class="sessions">
+
+        <div class="card">
+          <div class="card-glyph"><span class="glyph-concept">◇</span> DB 기초</div>
+          <div class="card-title">테이블 · 행 · 열 · PK · FK</div>
+          <div class="card-desc">DB 는 친숙한 「엑셀 시트」다. 가장 적은 단어로 가장 많은 그림을 그린다.</div>
+          <div class="card-links">
+            <a href="slides/db-basics.html" class="btn-slide">슬라이드</a>
+            <a href="examples/db-basics.html" class="btn-example">예제</a>
+            <a href="labs/db-basics.html" class="btn-lab">실습</a>
+            <a href="handouts/db-basics.html" class="btn-handout">핸드아웃</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-glyph"><span class="glyph-handson">▣</span> SQL 핵심 4종</div>
+          <div class="card-title">SELECT · INSERT · UPDATE · DELETE</div>
+          <div class="card-desc">실무의 80% 를 차지하는 네 가지 쿼리만 끝까지. 그 외는 필요할 때 검색해도 늦지 않다.</div>
+          <div class="card-links">
+            <a href="slides/db-sql-basics.html" class="btn-slide">슬라이드</a>
+            <a href="examples/db-sql-basics.html" class="btn-example">예제</a>
+            <a href="labs/db-sql-basics.html" class="btn-lab">실습</a>
+            <a href="handouts/db-sql-basics.html" class="btn-handout">핸드아웃</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-glyph"><span class="glyph-handson">▣</span> MySQL 설치 + 테이블 만들기</div>
+          <div class="card-title">회원·게시판 테이블 직접 작성</div>
+          <div class="card-desc">DDL 을 손으로 쳐서 테이블을 만든다. 이 테이블이 과정 끝까지 우리와 함께 간다.</div>
+          <div class="card-links">
+            <a href="slides/db-mysql-tables.html" class="btn-slide">슬라이드</a>
+            <a href="examples/db-mysql-tables.html" class="btn-example">예제</a>
+            <a href="labs/db-mysql-tables.html" class="btn-lab">실습</a>
+            <a href="handouts/db-mysql-tables.html" class="btn-handout">핸드아웃</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-glyph"><span class="glyph-turning">◆</span> JDBC → MyBatis</div>
+          <div class="card-title">Before / After 코드를 나란히</div>
+          <div class="card-desc">JDBC 의 길고 반복적인 코드를 MyBatis 가 어떻게 줄여주는지. 학생이 「이래서 쓰는구나」를 납득한다.</div>
+          <div class="card-links">
+            <a href="slides/db-jdbc-vs-mybatis.html" class="btn-slide">슬라이드</a>
+            <a href="examples/db-jdbc-vs-mybatis.html" class="btn-example">예제</a>
+            <a href="labs/db-jdbc-vs-mybatis.html" class="btn-lab">실습</a>
+            <a href="handouts/db-jdbc-vs-mybatis.html" class="btn-handout">핸드아웃</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-glyph"><span class="glyph-turning">◆</span> DB 붙이려면 어디를 손대나</div>
+          <div class="card-title">5단계 설정 변경 지도</div>
+          <div class="card-desc">① pom.xml ② root-context.xml ③ mybatis-config.xml ④ Mapper(인터페이스+XML) ⑤ Service 주입. 디버깅 첫 점검표.</div>
+          <div class="card-links">
+            <a href="slides/db-setup-checklist.html" class="btn-slide">슬라이드</a>
+            <a href="examples/db-setup-checklist.html" class="btn-example">예제</a>
+            <a href="labs/db-setup-checklist.html" class="btn-lab">실습</a>
+            <a href="handouts/db-setup-checklist.html" class="btn-handout">핸드아웃</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-glyph"><span class="glyph-concept">◇</span> HikariCP 커넥션 풀</div>
+          <div class="card-title">왜 풀(Pool)이 필요한가</div>
+          <div class="card-desc">매번 새 DB 연결을 만들지 않고 미리 만들어둔 연결을 꺼내 쓰는 이유와 효과.</div>
+          <div class="card-links">
+            <a href="slides/db-hikari-pool.html" class="btn-slide">슬라이드</a>
+            <a href="examples/db-hikari-pool.html" class="btn-example">예제</a>
+            <a href="labs/db-hikari-pool.html" class="btn-lab">실습</a>
+            <a href="handouts/db-hikari-pool.html" class="btn-handout">핸드아웃</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-glyph"><span class="glyph-handson">▣</span> Mapper 인터페이스 ↔ XML</div>
+          <div class="card-title">두 파일이 어떻게 짝지어지는가</div>
+          <div class="card-desc">namespace 와 id 가 만나는 순간을 직접 확인. 이름 한 글자 틀리면 무엇이 일어나는지.</div>
+          <div class="card-links">
+            <a href="slides/db-mapper-xml.html" class="btn-slide">슬라이드</a>
+            <a href="examples/db-mapper-xml.html" class="btn-example">예제</a>
+            <a href="labs/db-mapper-xml.html" class="btn-lab">실습</a>
+            <a href="handouts/db-mapper-xml.html" class="btn-handout">핸드아웃</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-glyph"><span class="glyph-turning">◆</span> 카멜 ↔ 스네이크 함정</div>
+          <div class="card-title">데이터가 null 이 되는 가장 흔한 이유</div>
+          <div class="card-desc"><code>userId</code> vs <code>user_id</code>. 일부러 깨뜨려보고 두 가지 해법으로 고친다.</div>
+          <div class="card-links">
+            <a href="slides/db-camel-snake-trap.html" class="btn-slide">슬라이드</a>
+            <a href="examples/db-camel-snake-trap.html" class="btn-example">예제</a>
+            <a href="labs/db-camel-snake-trap.html" class="btn-lab">실습</a>
+            <a href="handouts/db-camel-snake-trap.html" class="btn-handout">핸드아웃</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-glyph"><span class="glyph-turning">◆</span> SQL 인젝션 직접 시연</div>
+          <div class="card-title"><code>#{}</code> vs <code>${}</code></div>
+          <div class="card-desc">위험한 코드를 일부러 만들어 공격해보고, 안전한 코드로 다시 쓴다.</div>
+          <div class="card-links">
+            <a href="slides/db-sql-injection.html" class="btn-slide">슬라이드</a>
+            <a href="examples/db-sql-injection.html" class="btn-example">예제</a>
+            <a href="labs/db-sql-injection.html" class="btn-lab">실습</a>
+            <a href="handouts/db-sql-injection.html" class="btn-handout">핸드아웃</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-glyph"><span class="glyph-concept">◇</span> <code>@Transactional</code> 기본</div>
+          <div class="card-title">전부 성공하거나 전부 취소</div>
+          <div class="card-desc">트랜잭션이 무엇을 약속하는지. 깊이 들어가지 않고 「하나라도 실패하면 되돌린다」는 감각만.</div>
+          <div class="card-links">
+            <a href="slides/db-transactional.html" class="btn-slide">슬라이드</a>
+            <a href="examples/db-transactional.html" class="btn-example">예제</a>
+            <a href="labs/db-transactional.html" class="btn-lab">실습</a>
+            <a href="handouts/db-transactional.html" class="btn-handout">핸드아웃</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-glyph"><span class="glyph-milestone">★</span> 첫 DB 종단간 <span class="card-version">v1</span></div>
+          <div class="card-title">회원 한 줄을 DB 에서 꺼내 화면으로</div>
+          <div class="card-desc">v0.5 의 하드코딩 자리에 DB 를 끼워 넣는다. 흐름도가 처음 끝에서 끝까지 연결된다.</div>
+          <div class="card-links">
+            <a href="slides/db-first-end-to-end.html" class="btn-slide">슬라이드</a>
+            <a href="examples/db-first-end-to-end.html" class="btn-example">예제</a>
+            <a href="labs/db-first-end-to-end.html" class="btn-lab">실습</a>
+            <a href="handouts/db-first-end-to-end.html" class="btn-handout">핸드아웃</a>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ====================== PART 5: 회원과 게시판 ====================== -->
+    <section class="part part-5">
+      <div class="part-header">
+        <span class="part-badge">PART · BOARD</span>
+        <h2>회원과 게시판</h2>
+        <span class="part-tagline">인증 · 세션 · CRUD · 인가</span>
+      </div>
+      <div class="sessions">
+
+        <div class="card">
+          <div class="card-glyph"><span class="glyph-handson">▣</span> 회원가입 폼 — name 속성과 VO 필드 매칭</div>
+          <div class="card-title">JSP 폼이 서버 객체로 자동 바인딩되는 원리</div>
+          <div class="card-desc">`&lt;input name="id"&gt;` 의 name 속성이 Member VO 의 필드명과 일치하면 — Spring 이 알아서 `Member.setId(...)` 를 호출. 이 매칭이 어긋나면 어떻게 되는지도 직접 확인.</div>
+          <div class="card-links">
+            <a href="slides/auth-signup-form.html" class="btn-slide">슬라이드</a>
+            <a href="examples/auth-signup-form.html" class="btn-example">예제</a>
+            <a href="labs/auth-signup-form.html" class="btn-lab">실습</a>
+            <a href="handouts/auth-signup-form.html" class="btn-handout">핸드아웃</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-glyph"><span class="glyph-milestone">★</span> 원시적인 회원가입/로그인 <span class="card-version">v2</span></div>
+          <div class="card-title">평문 저장 + 세션 없음 (일부러)</div>
+          <div class="card-desc">의도적으로 안전하지 않게 만들어보고 「페이지 이동하면 로그인이 풀리네?」를 직접 체감한다.</div>
+          <div class="card-links">
+            <a href="slides/auth-v2-raw.html" class="btn-slide">슬라이드</a>
+            <a href="examples/auth-v2-raw.html" class="btn-example">예제</a>
+            <a href="labs/auth-v2-raw.html" class="btn-lab">실습</a>
+            <a href="handouts/auth-v2-raw.html" class="btn-handout">핸드아웃</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-glyph"><span class="glyph-concept">◇</span> 쿠키 깊이 보기</div>
+          <div class="card-title">브라우저 쪽에 저장됨</div>
+          <div class="card-desc">F12 Application 탭에서 직접 본다. 만료 · 도메인 · HttpOnly 옵션이 무엇인지.</div>
+          <div class="card-links">
+            <a href="slides/cookie-deep.html" class="btn-slide">슬라이드</a>
+            <a href="examples/cookie-deep.html" class="btn-example">예제</a>
+            <a href="labs/cookie-deep.html" class="btn-lab">실습</a>
+            <a href="handouts/cookie-deep.html" class="btn-handout">핸드아웃</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-glyph"><span class="glyph-concept">◇</span> 세션 깊이 보기</div>
+          <div class="card-title">서버 쪽에 저장됨 + JSESSIONID</div>
+          <div class="card-desc">세션 저장소가 어디에 있고, 무엇이 매개하는지. 「손목 도장」의 진짜 정체.</div>
+          <div class="card-links">
+            <a href="slides/session-deep.html" class="btn-slide">슬라이드</a>
+            <a href="examples/session-deep.html" class="btn-example">예제</a>
+            <a href="labs/session-deep.html" class="btn-lab">실습</a>
+            <a href="handouts/session-deep.html" class="btn-handout">핸드아웃</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-glyph"><span class="glyph-turning">◆</span> 쿠키 vs 세션</div>
+          <div class="card-title">무엇을 어디에 저장할 것인가</div>
+          <div class="card-desc">두 도구의 저장 위치 차이를 의사결정 기준으로 정리. 비밀번호는 어디에 저장하면 안 되는가.</div>
+          <div class="card-links">
+            <a href="slides/cookie-vs-session.html" class="btn-slide">슬라이드</a>
+            <a href="examples/cookie-vs-session.html" class="btn-example">예제</a>
+            <a href="labs/cookie-vs-session.html" class="btn-lab">실습</a>
+            <a href="handouts/cookie-vs-session.html" class="btn-handout">핸드아웃</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-glyph"><span class="glyph-milestone">★</span> 안전한 회원가입/로그인 <span class="card-version">v3</span></div>
+          <div class="card-title">BCrypt + 세션 도입</div>
+          <div class="card-desc">v2 의 두 가지 문제(평문 / 무상태)를 해결. v2 와 코드 차이를 한 줄씩 비교한다.</div>
+          <div class="card-links">
+            <a href="slides/auth-v3-secure.html" class="btn-slide">슬라이드</a>
+            <a href="examples/auth-v3-secure.html" class="btn-example">예제</a>
+            <a href="labs/auth-v3-secure.html" class="btn-lab">실습</a>
+            <a href="handouts/auth-v3-secure.html" class="btn-handout">핸드아웃</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-glyph"><span class="glyph-milestone">★</span> 깔끔한 로그인 <span class="card-version">v4</span></div>
+          <div class="card-title">인터셉터 + 공통 레이아웃</div>
+          <div class="card-desc">v3 컨트롤러에 박혀있던 <code>if(session==null)</code> 들이 사라진다. 헤더에서 로그인 상태를 표시.</div>
+          <div class="card-links">
+            <a href="slides/auth-v4-clean.html" class="btn-slide">슬라이드</a>
+            <a href="examples/auth-v4-clean.html" class="btn-example">예제</a>
+            <a href="labs/auth-v4-clean.html" class="btn-lab">실습</a>
+            <a href="handouts/auth-v4-clean.html" class="btn-handout">핸드아웃</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-glyph"><span class="glyph-milestone">★</span> 최소 게시판 <span class="card-version">v5</span></div>
+          <div class="card-title">Create + Read 만 (인가 없음)</div>
+          <div class="card-desc">「누구나 남의 글을 수정할 수 있는 위험한 게시판」으로 의도적으로 둠. 다음 차시의 동기.</div>
+          <div class="card-links">
+            <a href="slides/board-v5-minimal.html" class="btn-slide">슬라이드</a>
+            <a href="examples/board-v5-minimal.html" class="btn-example">예제</a>
+            <a href="labs/board-v5-minimal.html" class="btn-lab">실습</a>
+            <a href="handouts/board-v5-minimal.html" class="btn-handout">핸드아웃</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-glyph"><span class="glyph-milestone">★</span> 안전한 게시판 <span class="card-version">v6</span></div>
+          <div class="card-title">Update / Delete + 본인 확인</div>
+          <div class="card-desc">v5 의 인가 부재를 해결. 작성자 = 세션 사용자 비교 한 줄이 어디에 들어가는지.</div>
+          <div class="card-links">
+            <a href="slides/board-v6-secure.html" class="btn-slide">슬라이드</a>
+            <a href="examples/board-v6-secure.html" class="btn-example">예제</a>
+            <a href="labs/board-v6-secure.html" class="btn-lab">실습</a>
+            <a href="handouts/board-v6-secure.html" class="btn-handout">핸드아웃</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-glyph"><span class="glyph-milestone">★</span> 페이징 게시판 <span class="card-version">v7</span></div>
+          <div class="card-title">대용량 대비 (보강)</div>
+          <div class="card-desc">글 100개를 INSERT 한 뒤 화면이 망가지는 걸 직접 보고, 페이징으로 해결한다.</div>
+          <div class="card-links">
+            <a href="slides/board-v7-paging.html" class="btn-slide">슬라이드</a>
+            <a href="examples/board-v7-paging.html" class="btn-example">예제</a>
+            <a href="labs/board-v7-paging.html" class="btn-lab">실습</a>
+            <a href="handouts/board-v7-paging.html" class="btn-handout">핸드아웃</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-glyph"><span class="glyph-turning">◆</span> 팀 분업 시뮬레이션</div>
+          <div class="card-title">같은 데이터 이름으로 만나는 세 트랙</div>
+          <div class="card-desc">팀 프로젝트의 출발선. View · Controller · Mapper 트랙이 같은 필드명을 약속하고 합류하는 과정을 모의 진행한다.</div>
+          <div class="card-links">
+            <a href="slides/team-collaboration.html" class="btn-slide">슬라이드</a>
+            <a href="examples/team-collaboration.html" class="btn-example">예제</a>
+            <a href="labs/team-collaboration.html" class="btn-lab">실습</a>
+            <a href="handouts/team-collaboration.html" class="btn-handout">핸드아웃</a>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ====================== PART 6: REST API와 마무리 ====================== -->
+    <section class="part part-6">
+      <div class="part-header">
+        <span class="part-badge">PART · REST</span>
+        <h2>REST API와 마무리</h2>
+        <span class="part-tagline">비동기 통신 · JSON · 디버깅</span>
+      </div>
+      <div class="sessions">
+
+        <div class="card">
+          <div class="card-glyph"><span class="glyph-concept">◇</span> 비동기 통신이 푼 문제</div>
+          <div class="card-title">전체 새로고침 vs 부분 통신</div>
+          <div class="card-desc">댓글 하나 달 때마다 전체 페이지가 깜빡이던 시절을 시연. Ajax 가 무엇을 풀어주는지.</div>
+          <div class="card-links">
+            <a href="slides/rest-async-need.html" class="btn-slide">슬라이드</a>
+            <a href="examples/rest-async-need.html" class="btn-example">예제</a>
+            <a href="labs/rest-async-need.html" class="btn-lab">실습</a>
+            <a href="handouts/rest-async-need.html" class="btn-handout">핸드아웃</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-glyph"><span class="glyph-concept">◇</span> JSON 형식 깊이</div>
+          <div class="card-title">그릇(DTO)이 JSON 으로 변환되는 순간</div>
+          <div class="card-desc">자바 객체와 JSON 문자열이 어디서 어떻게 만나는지. Jackson 의 자동 변환을 보면서.</div>
+          <div class="card-links">
+            <a href="slides/rest-json.html" class="btn-slide">슬라이드</a>
+            <a href="examples/rest-json.html" class="btn-example">예제</a>
+            <a href="labs/rest-json.html" class="btn-lab">실습</a>
+            <a href="handouts/rest-json.html" class="btn-handout">핸드아웃</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-glyph"><span class="glyph-turning">◆</span> <code>@RestController</code></div>
+          <div class="card-title">View 가 빠진 흐름도</div>
+          <div class="card-desc"><code>@Controller</code> 와 무엇이 다른가. 흐름도에서 「식탁」 박스가 사라지고 JSON 화살표가 등장.</div>
+          <div class="card-links">
+            <a href="slides/rest-controller.html" class="btn-slide">슬라이드</a>
+            <a href="examples/rest-controller.html" class="btn-example">예제</a>
+            <a href="labs/rest-controller.html" class="btn-lab">실습</a>
+            <a href="handouts/rest-controller.html" class="btn-handout">핸드아웃</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-glyph"><span class="glyph-concept">◇</span> HTTP 메서드 어노테이션</div>
+          <div class="card-title">Get / Post / Put / Delete Mapping</div>
+          <div class="card-desc">URL 하나에 동작을 어떻게 분기시키는지. RESTful 한 URL 디자인의 첫걸음.</div>
+          <div class="card-links">
+            <a href="slides/rest-http-methods.html" class="btn-slide">슬라이드</a>
+            <a href="examples/rest-http-methods.html" class="btn-example">예제</a>
+            <a href="labs/rest-http-methods.html" class="btn-lab">실습</a>
+            <a href="handouts/rest-http-methods.html" class="btn-handout">핸드아웃</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-glyph"><span class="glyph-milestone">★</span> REST 컨트롤러로 변환 <span class="card-version">v8</span></div>
+          <div class="card-title">v6 컨트롤러를 RestController 로</div>
+          <div class="card-desc">통째로 복사해서 옮겨쓰며 무엇이 사라지고 무엇이 남는지 확인. 첫 REST 게시판 등장.</div>
+          <div class="card-links">
+            <a href="slides/rest-v8-conversion.html" class="btn-slide">슬라이드</a>
+            <a href="examples/rest-v8-conversion.html" class="btn-example">예제</a>
+            <a href="labs/rest-v8-conversion.html" class="btn-lab">실습</a>
+            <a href="handouts/rest-v8-conversion.html" class="btn-handout">핸드아웃</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-glyph"><span class="glyph-milestone">★</span> 비동기 댓글 <span class="card-version">v9</span></div>
+          <div class="card-title">새로고침이 사라진다</div>
+          <div class="card-desc"><code>fetch</code> 로 댓글을 작성하고, JSON 응답을 받아 DOM 에 직접 그려넣는다.</div>
+          <div class="card-links">
+            <a href="slides/rest-v9-async-comment.html" class="btn-slide">슬라이드</a>
+            <a href="examples/rest-v9-async-comment.html" class="btn-example">예제</a>
+            <a href="labs/rest-v9-async-comment.html" class="btn-lab">실습</a>
+            <a href="handouts/rest-v9-async-comment.html" class="btn-handout">핸드아웃</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-glyph"><span class="glyph-milestone">★</span> 자잘한 비동기 + 첨부파일 <span class="card-version">v10</span></div>
+          <div class="card-title">조회수 즉시 증가 / MultipartResolver</div>
+          <div class="card-desc">v9 패턴을 응용하며 게시판을 풍성하게. 파일 업로드와 다운로드까지 마무리.</div>
+          <div class="card-links">
+            <a href="slides/rest-v10-extras.html" class="btn-slide">슬라이드</a>
+            <a href="examples/rest-v10-extras.html" class="btn-example">예제</a>
+            <a href="labs/rest-v10-extras.html" class="btn-lab">실습</a>
+            <a href="handouts/rest-v10-extras.html" class="btn-handout">핸드아웃</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-glyph"><span class="glyph-milestone">★</span> 데이터 흐름 디버깅 워크숍 <span class="card-version">v∞</span></div>
+          <div class="card-title">흐름도를 거꾸로 거슬러 올라간다</div>
+          <div class="card-desc">실제 버그 시나리오 5개를 ① F12 → ② 콘솔 → ③ Mapper SQL 로그 → ④ DB → ⑤ 응답 순서로 추적. 4주 학습의 마무리.</div>
+          <div class="card-links">
+            <a href="slides/rest-debug-workshop.html" class="btn-slide">슬라이드</a>
+            <a href="examples/rest-debug-workshop.html" class="btn-example">예제</a>
+            <a href="labs/rest-debug-workshop.html" class="btn-lab">실습</a>
+            <a href="handouts/rest-debug-workshop.html" class="btn-handout">핸드아웃</a>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <section style="margin-top: 4rem; padding-top: 2rem; border-top: 1px dashed rgba(255,255,255,0.15);">
+      <p style="font-size: 0.78rem; opacity: 0.5; letter-spacing: 0.05em; margin-bottom: 0.6rem;">▼ TEST · 다음 과정 미리보기</p>
+      <div style="display: inline-flex; gap: 0.5rem; align-items: center; padding: 0.7rem 1rem; border: 1px dashed rgba(255,255,255,0.2); border-radius: 8px; opacity: 0.75;">
+        <span style="opacity: 0.7;">◇</span>
+        <a href="slides/boot-overview.html" style="color: inherit; text-decoration: none; font-size: 0.92rem;">SpringBoot 개요</a>
+        <span style="font-size: 0.7rem; opacity: 0.5;">— 테스트 링크</span>
+      </div>
+    </section>
+
+  </div>
+
+  <footer>
+    <p>Spring 기초</p>
+    <p style="font-size: 11px; opacity: 0.7;">마무리 산출물: REST API + Ajax 게시판</p>
+    <p style="font-size: 11px; opacity: 0.6; margin-top: 0.8em;">
+      <a href="../index.html" style="color: var(--text-muted); text-decoration: none; border-bottom: 1px dotted currentColor;">↑ course-template 메인</a>
+      <span style="opacity: 0.4; margin: 0 0.4em;">·</span>
+      <a href="../for-instructors.html" style="color: var(--text-muted); text-decoration: none; border-bottom: 1px dotted currentColor;">강사용 메뉴얼</a>
+      <span style="opacity: 0.4; margin: 0 0.4em;">·</span>
+      <a href="../behind-the-scenes.html" style="color: var(--text-muted); text-decoration: none; border-bottom: 1px dotted currentColor;">이 사이트가 만들어진 과정</a>
+    </p>
+  </footer>
+
+</body>
+</html>

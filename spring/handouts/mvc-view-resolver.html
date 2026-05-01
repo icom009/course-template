@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>View · ViewResolver — 핸드아웃</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/print.css"></head><body>
+<div class="container">
+
+<div class="header">
+<div class="header-left"><div class="session-num">◇ PART · MVC</div>
+<h1>View · ViewResolver</h1></div>
+<div class="header-right">Spring 기초<br>SMHRD</div></div>
+
+<div class="objectives"><h3>학습 목표</h3>
+<ul><li>View · ViewResolver 의 핵심 개념을 안다</li><li>ViewResolver — 이름을 경로로 의 동작을 안다</li><li>ViewResolver 의 prefix/suffix 작동 방식을 안다.</li></ul></div>
+
+<h2>1. 문제</h2>
+<p>컨트롤러가 "home" 만 반환했는데 어떻게 home.jsp 를 찾아낼까?</p>
+
+<h2>2. 새 도구</h2>
+<div class="note"><strong>ViewResolver — 이름을 경로로:</strong> 컨트롤러가 반환한 ViewName(예: "home") 을 실제 JSP 파일 경로(/WEB-INF/views/home.jsp) 로 변환.</div>
+
+<h2>3. 코드</h2>
+<div class="diagram">&lt;!-- servlet-context.xml --&gt;
+&lt;beans:bean class="...InternalResourceViewResolver"&gt;
+    &lt;beans:property name="prefix" value="/WEB-INF/views/" /&gt;
+    &lt;beans:property name="suffix" value=".jsp" /&gt;
+&lt;/beans:bean&gt;
+
+// Controller 에서
+return "home";   // → /WEB-INF/views/home.jsp</div>
+
+<h2>4. 정리</h2>
+<ul><li>컨트롤러는 ViewName 만 반환</li>
+<li>ViewResolver 가 prefix + name + suffix 로 실제 경로 조립</li>
+<li>경로 규칙은 servlet-context.xml 설정</li></ul>
+
+<h2>5. Before / After</h2>
+<div class="before-after">
+<div class="before"><div class="label">전 차시</div><p>컨트롤러가 "home" 만 반환했는데 어떻게 home.jsp 를 찾아낼까?</p></div>
+<div class="after"><div class="label">이번 차시</div><p>ViewResolver 의 prefix/suffix 작동 방식을 안다.</p></div>
+</div>
+
+<div class="checklist"><h3>학습 확인 체크리스트</h3>
+<ul><li>컨트롤러는 ViewName 만 반환</li>
+<li>ViewResolver 가 prefix + name + suffix 로 실제 경로 조립</li>
+<li>경로 규칙은 servlet-context.xml 설정</li></ul></div>
+
+<div class="nav"><a href="mvc-dto-vo-model.html">&larr; 이전</a><a href="../index.html">메인으로</a><a href="mvc-config-files.html">다음 &rarr;</a></div>
+</div></body></html>

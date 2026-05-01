@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JSON 형식 깊이 | Spring 기초</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/night.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/custom.css"></head><body>
+<div class="reveal"><div class="slides">
+
+<section><div class="session-title">
+<span class="session-glyph">◇ PART · REST</span>
+<h1>JSON 형식 깊이</h1>
+<p class="subtitle">자바 객체 ↔ JSON 변환의 마법</p>
+</div></section>
+
+<section><h2>학습 목표</h2><div class="objectives"><ul>
+<li class="fragment fade-up"><span class="keyword">JSON</span> 의 문법을 안다</li>
+<li class="fragment fade-up">자바 객체와 JSON 의 매핑 규칙을 안다</li>
+<li class="fragment fade-up"><span class="keyword">Jackson</span> 의 자동 변환 동작을 안다</li>
+<li class="fragment fade-up">자주 만나는 JSON 함정 (날짜·null·순환 참조)</li>
+</ul></div></section>
+
+<section><h2>🛠️ JSON — 데이터의 공용어</h2>
+<div class="new-tool">
+<div class="tool-title">JavaScript Object Notation</div>
+<p>JS 객체 표기법에서 출발한 <strong>가벼운 텍스트 데이터 형식</strong>. 모든 언어가 읽고 쓸 수 있어 — 시스템 사이의 「공용어」.</p>
+</div>
+</section>
+
+<section><h2>JSON 의 6 가지 자료형</h2>
+<table style="font-size:0.75em; width:100%; border-collapse:collapse;">
+<thead><tr style="background:rgba(255,255,255,0.05);">
+<th style="padding:6px;">타입</th><th>예시</th></tr></thead>
+<tbody>
+<tr><td style="padding:5px;">문자열</td><td><code>"홍길동"</code></td></tr>
+<tr><td style="padding:5px;">숫자</td><td><code>42</code>, <code>3.14</code></td></tr>
+<tr><td style="padding:5px;">불린</td><td><code>true</code>, <code>false</code></td></tr>
+<tr><td style="padding:5px;">null</td><td><code>null</code></td></tr>
+<tr><td style="padding:5px;">배열</td><td><code>[1, 2, "a"]</code></td></tr>
+<tr><td style="padding:5px;">객체</td><td><code>{"key": "value"}</code></td></tr>
+</tbody></table>
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 6 가지가 끝. 단순함이 강점.
+</p>
+</section>
+
+<section><h2>JSON 예시 — 게시글</h2>
+<pre><code class="language-json" data-trim>
+{
+    "num": 3,
+    "title": "첫 글입니다",
+    "content": "안녕하세요",
+    "writer": "hong",
+    "viewCount": 0,
+    "createdAt": "2024-08-15T10:30:00",
+    "tags": ["spring", "java"],
+    "replies": [
+        {"num": 1, "content": "환영합니다"},
+        {"num": 2, "content": "잘 보고 갑니다"}
+    ]
+}
+</code></pre>
+
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 객체 안에 배열·중첩 객체 — 자유롭게 조합 가능.
+</p>
+</section>
+
+<section><h2>자바 ↔ JSON 매핑</h2>
+<table style="font-size:0.75em; width:100%; border-collapse:collapse;">
+<thead><tr style="background:rgba(255,255,255,0.05);">
+<th style="padding:6px;">자바</th><th>JSON</th></tr></thead>
+<tbody>
+<tr><td style="padding:5px;">String</td><td>"문자열"</td></tr>
+<tr><td style="padding:5px;">int / long / double</td><td>숫자</td></tr>
+<tr><td style="padding:5px;">boolean</td><td>true / false</td></tr>
+<tr><td style="padding:5px;">null</td><td>null</td></tr>
+<tr><td style="padding:5px;">List · 배열</td><td>[ ... ]</td></tr>
+<tr><td style="padding:5px;">Map · 객체</td><td>{ "key": value }</td></tr>
+<tr><td style="padding:5px;">LocalDateTime</td><td>"2024-08-15T10:30:00" (ISO 8601)</td></tr>
+<tr><td style="padding:5px;">LocalDate</td><td>"2024-08-15"</td></tr>
+</tbody></table>
+</section>
+
+<section><h2>Jackson — Spring 의 기본 JSON 라이브러리</h2>
+<div class="info-box">
+<p><strong>Jackson</strong> = 자바 진영의 표준 JSON 라이브러리. Spring MVC 의 기본 의존성에 자동 포함.</p>
+<ul style="font-size:0.85em;">
+<li>객체 → JSON 자동 변환 (Serialize)</li>
+<li>JSON → 객체 자동 변환 (Deserialize)</li>
+<li>중첩 / List / Map 모두 처리</li>
+<li>날짜 형식·null 처리 등 옵션 가능</li>
+</ul>
+</div>
+</section>
+
+<section><h2>자동 변환 — 내부 동작</h2>
+<div class="diagram">
+   자바 객체 → JSON
+   ──────────────────
+   public class Board {
+       private int num;
+       private String title;
+   }
+        ↓ Jackson 이:
+   - 모든 getter 호출 (getNum, getTitle)
+   - 메서드명에서 「get」 제거 + 첫 글자 소문자
+   - 결과를 JSON 객체로 조립
+        ↓
+   {"num": 3, "title": "첫 글"}
+
+   JSON → 자바 객체
+   ──────────────────
+   {"num": 3, "title": "첫 글"}
+        ↓ Jackson 이:
+   - 기본 생성자로 새 Board 객체 생성
+   - 각 키마다 setter 호출 (setNum, setTitle)
+        ↓
+   Board { num=3, title="첫 글" }
+</div>
+</section>
+
+<section><h2>날짜·시간 처리</h2>
+<pre><code class="language-java" data-trim>
+public class Board {
+    private LocalDateTime createdAt;
+}
+
+// JSON 출력:
+{"createdAt": "2024-08-15T10:30:00"}
+
+// 한국어 형식 원하면 — @JsonFormat
+@JsonFormat(pattern = "yyyy-MM-dd HH:mm")
+private LocalDateTime createdAt;
+
+// → "2024-08-15 10:30"
+</code></pre>
+
+<div class="warning-box" style="margin-top:0.4em;">
+<div class="box-title">옛 Date 클래스</div>
+<p style="font-size:0.85em;"><code>java.util.Date</code> 는 타임존 처리가 까다로움. 가능하면 <code>LocalDateTime</code> · <code>Instant</code> 사용.</p>
+</div>
+</section>
+
+<section><h2>민감 정보 제외 — @JsonIgnore</h2>
+<pre><code class="language-java" data-trim>
+public class Member {
+    private String id;
+    private String nick;
+
+    @JsonIgnore           // ⭐ 응답에 포함 안 함
+    private String pwd;
+}
+
+// 응답 JSON:
+{"id": "hong", "nick": "홍길동"}
+// pwd 없음
+</code></pre>
+
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 비밀번호 같은 민감 정보가 실수로 응답에 포함되는 것을 방지.
+</p>
+</section>
+
+<section><h2>순환 참조 함정</h2>
+<div class="warning-box">
+<div class="box-title">⚠️ Board ↔ Reply 양방향 참조</div>
+<pre><code data-trim>
+public class Board {
+    private List&lt;Reply&gt; replies;  // 게시글이 댓글들을
+}
+
+public class Reply {
+    private Board board;          // 댓글이 게시글을
+}
+</code></pre>
+<p style="font-size:0.85em;">Jackson 이 변환 시 — Board → replies → Board → replies → ... 무한 루프 → StackOverflow.</p>
+<p style="font-size:0.85em; margin-top:0.3em;">해결: <code>@JsonManagedReference</code> + <code>@JsonBackReference</code>, 또는 <strong>응답 전용 DTO</strong> 분리.</p>
+</div>
+</section>
+
+<section><h2>응답 DTO 패턴 — DTO 클래스</h2>
+<pre><code class="language-java" data-trim>
+// 도메인 객체 (DB 매핑)
+public class Board { ... }
+
+// 응답 전용 DTO (REST API 응답)
+public class BoardResponse {
+    private int num;
+    private String title;
+    private String writer;
+    // pwd 없음, 민감 필드 없음
+
+    public static BoardResponse from(Board b) {
+        BoardResponse r = new BoardResponse();
+        r.num = b.getNum();
+        r.title = b.getTitle();
+        r.writer = b.getWriter();
+        return r;
+    }
+}
+</code></pre>
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 응답 전용 클래스를 따로 두면 노출 필드를 명시적으로 통제할 수 있습니다.
+</p>
+</section>
+
+<section><h2>응답 DTO 패턴 — Controller 사용</h2>
+<pre><code class="language-java" data-trim>
+// Controller
+@GetMapping
+public List&lt;BoardResponse&gt; list() {
+    return service.selectList().stream()
+        .map(BoardResponse::from)
+        .toList();
+}
+</code></pre>
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 도메인 객체를 그대로 노출하지 않고, 응답 DTO 로 한번 변환해서 내보냅니다.
+</p>
+</section>
+
+<section><h2>JS 측 처리</h2>
+<pre><code class="language-javascript" data-trim>
+// 받기 — JSON → 객체
+const res = await fetch('/api/boards/3');
+const board = await res.json();
+console.log(board.title);   // myboard.num=3 의 제목
+
+// 보내기 — 객체 → JSON
+await fetch('/api/boards', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+        title: '새 글',
+        content: '안녕하세요'
+    })
+});
+</code></pre>
+</section>
+
+<section><h2>실수 모음</h2>
+<table style="font-size:0.7em; width:100%; border-collapse:collapse;">
+<thead><tr style="background:rgba(255,255,255,0.05);">
+<th style="padding:6px;">증상</th><th>원인</th></tr></thead>
+<tbody>
+<tr><td style="padding:5px;">"Cannot construct instance"</td><td>VO 에 기본 생성자 없음</td></tr>
+<tr><td style="padding:5px;">필드값이 null</td><td>setter 없음 또는 이름 불일치</td></tr>
+<tr><td style="padding:5px;">StackOverflowError</td><td>순환 참조</td></tr>
+<tr><td style="padding:5px;">날짜 형식 이상</td><td>@JsonFormat 미설정</td></tr>
+<tr><td style="padding:5px;">비밀번호 응답에 포함</td><td>@JsonIgnore 누락</td></tr>
+</tbody></table>
+</section>
+
+<section><h2>🔄 Before / After</h2><div class="before-after">
+<div class="before"><div class="label">전 차시 끝</div>
+<p style="font-size:0.85em;">JSON 이 「데이터 표기법」 정도라는 것만 안다.</p>
+</div>
+<div class="arrow">→</div>
+<div class="after"><div class="label">이번 차시 끝</div>
+<p style="font-size:0.85em;">JSON ↔ 자바 매핑 규칙을 알고 흔한 함정을 안다.</p>
+</div>
+</div></section>
+
+<section><h2>정리</h2><div class="summary"><h3>오늘 들고 가는 것</h3><ul>
+<li>JSON 6 자료형 (문자·숫자·불린·null·배열·객체)</li>
+<li>Jackson 의 자동 매핑 (getter/setter 활용)</li>
+<li>@JsonIgnore = 민감 필드 제외</li>
+<li>순환 참조 — DTO 분리로 해결</li>
+<li>@JsonFormat = 날짜 형식</li>
+</ul></div>
+</section>
+
+</div></div>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"></script>
+<script>Reveal.initialize({hash:true,slideNumber:'c/t',width:1280,height:720,margin:0.06,transition:'slide',plugins:[RevealHighlight,RevealNotes]});</script>
+<script src="../js/infographics.js?v=2"></script>
+<script src="../js/screenshot.js?v=2"></script></body></html>

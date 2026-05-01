@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>세션 깊이 보기 | Spring 기초</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/night.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/custom.css"></head><body>
+<div class="reveal"><div class="slides">
+
+<section><div class="session-title">
+<span class="session-glyph">◇ PART · BOARD</span>
+<h1>세션 깊이 보기</h1>
+<p class="subtitle">서버 쪽에 저장됨 + JSESSIONID</p>
+</div></section>
+
+<section><h2>학습 목표</h2><div class="objectives"><ul>
+<li class="fragment fade-up">세션이 <span class="keyword">어디에·어떻게</span> 저장되는지 안다</li>
+<li class="fragment fade-up"><span class="keyword">JSESSIONID</span> 쿠키가 어떻게 매개하는지 안다</li>
+<li class="fragment fade-up">HttpSession 의 메서드를 안다</li>
+</ul></div></section>
+
+<section><h2>⚠️ 「세션」 의 모호함</h2>
+<div class="pain-point">
+<div class="pain-title">학생들의 혼란</div>
+<p>"세션은 어디 있는 거예요? 쿠키랑 같이 쓰이는데 뭐가 다른지..."</p>
+</div>
+</section>
+
+<section><h2>🛠️ 세션 = 서버 쪽 보관함</h2>
+<div class="new-tool">
+<div class="tool-title">JSESSIONID 가 「열쇠」</div>
+<p>세션 정보는 <strong>서버 메모리</strong> 에 저장. 사용자에게는 「JSESSIONID」 라는 짧은 식별자만 쿠키로 발급. 다음 요청 시 그 ID 로 보관함을 찾아 정보 꺼냄.</p>
+</div>
+</section>
+
+<section><h2>흐름 — 세션 동작</h2>
+<div class="diagram">
+   ① 첫 방문 (또는 로그인)
+      서버: 새 세션 보관함 생성 → ID 부여 (예: abc123)
+      서버: 보관함 안에 정보 저장
+            ┌──────────────────────────┐
+            │ JSESSIONID=abc123        │
+            │ ├─ loginUser: Member(...)│
+            │ └─ cart: [item1, item2]  │
+            └──────────────────────────┘
+      서버 → 브라우저:
+         Set-Cookie: JSESSIONID=abc123
+
+   ② 다음 요청
+      브라우저 → 서버:
+         Cookie: JSESSIONID=abc123 (자동 동봉)
+      서버: abc123 보관함에서 정보 꺼냄
+      → "환영합니다 OO님"
+</div>
+</section>
+
+<section><h2>HttpSession — Spring 에서 사용</h2>
+<pre><code class="language-java" data-trim>
+@PostMapping("/login")
+public String login(String userId, String password,
+                     HttpSession session) {       // ← 매개변수
+    Member m = service.login(userId, password);
+    if (m != null) {
+        session.setAttribute("loginUser", m);     // 보관함에 저장
+        return "redirect:/";
+    }
+    return "redirect:/login?error";
+}
+
+@GetMapping("/mypage")
+public String mypage(HttpSession session, Model model) {
+    Member u = (Member) session.getAttribute("loginUser");  // 꺼내기
+    if (u == null) return "redirect:/login";
+    model.addAttribute("user", u);
+    return "mypage";
+}
+</code></pre>
+</section>
+
+<section><h2>HttpSession 의 주요 메서드</h2>
+<table style="font-size:0.75em; width:100%; border-collapse:collapse;">
+<thead><tr style="background:rgba(255,255,255,0.05);">
+<th style="padding:6px;">메서드</th><th>역할</th></tr></thead>
+<tbody>
+<tr><td style="padding:5px;"><code>setAttribute(name, value)</code></td><td>보관함에 데이터 저장</td></tr>
+<tr><td style="padding:5px;"><code>getAttribute(name)</code></td><td>데이터 꺼냄 (없으면 null)</td></tr>
+<tr><td style="padding:5px;"><code>removeAttribute(name)</code></td><td>특정 데이터 삭제</td></tr>
+<tr><td style="padding:5px;"><code>invalidate()</code></td><td>세션 폐기 (로그아웃)</td></tr>
+<tr><td style="padding:5px;"><code>getId()</code></td><td>JSESSIONID 값</td></tr>
+<tr><td style="padding:5px;"><code>setMaxInactiveInterval(초)</code></td><td>유효 시간 설정</td></tr>
+</tbody></table>
+</section>
+
+<section><h2>세션 만료</h2>
+<div class="info-box">
+<p>기본 만료 시간: <strong>30 분</strong> (Tomcat 기본). 사용자가 30 분간 요청 안 보내면 세션 자동 삭제.</p>
+<pre><code data-trim>
+&lt;!-- web.xml --&gt;
+&lt;session-config&gt;
+    &lt;session-timeout&gt;60&lt;/session-timeout&gt;  &lt;!-- 60 분 --&gt;
+&lt;/session-config&gt;
+</code></pre>
+<p style="font-size:0.85em;">또는 코드에서:</p>
+<pre><code data-trim>
+session.setMaxInactiveInterval(60 * 60);  // 60 분 (초 단위)
+</code></pre>
+</div>
+</section>
+
+<section><h2>JSESSIONID 도 사실 쿠키</h2>
+<div class="info-box">
+<p>F12 → Application → Cookies 에서 <strong>JSESSIONID</strong> 항목 확인.</p>
+<ul style="font-size:0.85em;">
+<li>Tomcat 이 자동으로 발급하는 쿠키</li>
+<li>HttpOnly 자동 적용 (JS 접근 차단)</li>
+<li>이름은 <code>JSESSIONID</code> (자바 표준)</li>
+<li>값은 무작위 문자열 (예: <code>F4E2A91B...</code>)</li>
+</ul>
+</div>
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 즉 「쿠키 vs 세션」 에서 세션도 쿠키를 쓴다. 차이는 「<strong>무엇이 보관함에 저장되느냐</strong>」.
+</p>
+</section>
+
+<section><h2>JSP 에서 세션 접근</h2>
+<pre><code class="language-jsp" data-trim>
+&lt;%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %&gt;
+
+&lt;c:if test="${not empty sessionScope.loginUser}"&gt;
+    &lt;span&gt;${sessionScope.loginUser.name}님&lt;/span&gt;
+&lt;/c:if&gt;
+</code></pre>
+
+<p style="font-size:0.85em; margin-top:0.4em;">
+👉 EL 의 <code>sessionScope</code> 로 직접 접근. <code>${sessionScope.loginUser}</code> = <code>session.getAttribute("loginUser")</code>.
+</p>
+</section>
+
+<section><h2>로그아웃 — invalidate()</h2>
+<pre><code class="language-java" data-trim>
+@GetMapping("/logout")
+public String logout(HttpSession session) {
+    session.invalidate();
+    return "redirect:/";
+}
+</code></pre>
+
+<div class="diagram">
+   invalidate() 의 효과:
+   - 서버 메모리의 보관함 삭제
+   - 보관함 안의 모든 attribute 삭제
+   - 다음 요청은 새 세션을 받게 됨
+   - 브라우저 쿠키의 JSESSIONID 도 의미 잃음
+</div>
+</section>
+
+<section><h2>세션의 한계</h2>
+<div class="warning-box">
+<div class="box-title">대규모 환경에서</div>
+<ul style="font-size:0.85em;">
+<li><strong>서버가 여러 대</strong> — A 서버에 만든 세션을 B 서버는 모름. Sticky Session 또는 세션 클러스터링(Redis) 필요</li>
+<li><strong>메모리 부담</strong> — 동시 사용자 10 만 명 = 10 만 보관함. 메모리 압박</li>
+<li><strong>서버 재시작 시 사라짐</strong> — 모든 사용자 강제 로그아웃</li>
+</ul>
+<p style="margin-top:0.4em;">대안: 외부 캐시(Redis), JWT 토큰 등. 본 과정은 단일 서버 가정.</p>
+</div>
+</section>
+
+<section><h2>실험 — 세션 직접 보기</h2>
+<ol style="font-size:0.9em;">
+<li class="fragment">로그인</li>
+<li class="fragment">F12 Application → Cookies → <strong>JSESSIONID</strong> 값 확인</li>
+<li class="fragment">JSESSIONID 값을 임의로 변경 (인스펙터에서 편집)</li>
+<li class="fragment">새로고침 → 로그인 풀림 (세션 키 매칭 실패)</li>
+<li class="fragment">정상 JSESSIONID 로 복원 → 다시 로그인 상태</li>
+</ol>
+</section>
+
+<section><h2>🔄 Before / After</h2><div class="before-after">
+<div class="before"><div class="label">전 차시 끝</div>
+<p style="font-size:0.85em;">세션은 서버에 있다는 정도만 안다.</p>
+</div>
+<div class="arrow">→</div>
+<div class="after"><div class="label">이번 차시 끝</div>
+<p style="font-size:0.85em;">JSESSIONID 가 「열쇠」 임을 안다. HttpSession 메서드를 코드로 사용 가능.</p>
+</div>
+</div></section>
+
+<section><h2>정리</h2><div class="summary"><h3>오늘 들고 가는 것</h3><ul>
+<li>세션 = 서버 메모리의 보관함</li>
+<li>JSESSIONID = 보관함의 「열쇠」 (자동 발급 쿠키)</li>
+<li>setAttribute / getAttribute / invalidate</li>
+<li>JSP 의 sessionScope</li>
+<li>기본 만료 30 분</li>
+</ul></div>
+</section>
+
+</div></div>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"></script>
+<script>Reveal.initialize({hash:true,slideNumber:'c/t',width:1280,height:720,margin:0.06,transition:'slide',plugins:[RevealHighlight,RevealNotes]});</script>
+<script src="../js/infographics.js?v=2"></script>
+<script src="../js/screenshot.js?v=2"></script></body></html>

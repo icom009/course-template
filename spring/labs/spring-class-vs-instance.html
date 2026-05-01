@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>클래스 vs 인스턴스 — 실습</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/lab.css"></head><body>
+<div class="container">
+<div class="header"><div class="badge">▣ LAB · SPRING</div><h1>인스턴스 여러 개 만들어보기</h1><p class="subtitle">클래스 vs 인스턴스 — 실습 / 약 10분</p></div>
+
+<div class="minimap"><div class="minimap-title">📍 지금 어디를 만지고 있나요?</div><div class="flow">
+<div class="box">브라우저</div><span class="arrow">→</span><div class="box">Tomcat</div><span class="arrow">→</span>
+<div class="box active">JVM 메모리</div><span class="arrow">→</span><div class="box">Controller</div><span class="arrow">→</span><div class="box">DB</div></div></div>
+
+<div class="prerequisites"><h3>사전 준비</h3><ul><li>JDK 설치 + 커맨드라인 자바 실행 가능</li></ul></div>
+
+<div class="step"><div class="step-header"><div class="step-num">1</div><div class="step-title">User 클래스 작성</div></div>
+<pre><code>class User {
+    String name;
+    int age;
+    User(String name, int age) {
+        this.name = name;
+        this.age = age;
+    }
+}
+
+public class TestInstance {
+    public static void main(String[] args) {
+        User u1 = new User("Alice", 25);
+        User u2 = new User("Bob", 30);
+
+        System.out.println(u1.name + ", " + u1.age);
+        System.out.println(u2.name + ", " + u2.age);
+
+        u1.age = 26;  // u1 만 변경
+        System.out.println("---");
+        System.out.println(u1.age);  // 26
+        System.out.println(u2.age);  // 30 (변경 안 됨)
+    }
+}</code></pre>
+</div>
+
+<div class="step"><div class="step-header"><div class="step-num">2</div><div class="step-title">컴파일·실행</div></div>
+<pre><code>$ javac TestInstance.java
+$ java TestInstance
+Alice, 25
+Bob, 30
+---
+26
+30</code></pre>
+<div class="checkpoint"><div class="check-title">CHECKPOINT</div><ul>
+<li>u1 의 age 만 바꿨는데 u2 가 영향 안 받는 이유는? (정답: 각자 독립된 인스턴스)</li>
+<li>한 클래스에서 인스턴스 수십 개를 만들 수 있을까요? (정답: 가능. 메모리만 충분하면)</li>
+</ul></div></div>
+
+<div class="step"><div class="step-header"><div class="step-num">3</div><div class="step-title">인스턴스 비교 — <code>==</code> 함정</div></div>
+<pre><code>User u3 = new User("Alice", 25);
+User u4 = new User("Alice", 25);
+System.out.println(u3 == u4);   // false! (다른 객체)
+System.out.println(u3.name == u4.name);  // 보통 true (String 풀)</code></pre>
+<div class="box box-warn"><div class="box-title">미리 알아둘 것</div>
+<p>객체 비교는 <code>==</code> 가 아니라 <code>.equals()</code> 를 씁니다 — 다음 단계 학습에서 자세히. 지금은 「<code>==</code> 는 같은 인스턴스인지를 본다」 정도만.</p></div></div>
+
+<div class="checklist"><h3>실습 완료 체크리스트</h3>
+<div class="check-item"><input type="checkbox"> 인스턴스 두 개를 만들고 각자 다른 데이터를 가짐을 확인</div>
+<div class="check-item"><input type="checkbox"> 한 인스턴스의 필드 변경이 다른 인스턴스에 영향 없음을 확인</div>
+<div class="check-item"><input type="checkbox"> 같은 데이터로 만들어도 인스턴스는 다르다는 사실을 안다</div>
+</div>
+
+<div class="nav"><a href="spring-call-by-value.html">&larr; 이전</a><a href="../index.html">메인으로</a><a href="spring-new-trap.html">다음: ◆ new 의 함정 &rarr;</a></div>
+</div><script src="../js/screenshot.js?v=2"></script></body></html>

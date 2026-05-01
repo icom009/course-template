@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MySQL 설치 + 테이블 만들기 — 핸드아웃</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/print.css"></head><body>
+<div class="container">
+
+<div class="header">
+<div class="header-left"><div class="session-num">▣ PART · DB</div>
+<h1>MySQL 설치 + 테이블 만들기</h1></div>
+<div class="header-right">Spring 기초<br>SMHRD</div></div>
+
+<div class="objectives"><h3>학습 목표</h3>
+<ul><li>MySQL 설치 + 테이블 만들기 의 핵심 개념을 안다</li><li>MySQL 8 + Workbench 의 동작을 안다</li><li>본 과정 마지막까지 사용할 두 테이블이 준비됐다.</li></ul></div>
+
+<h2>1. 문제</h2>
+<p>DB 도구 설치가 어렵게 느껴진다.</p>
+
+<h2>2. 새 도구</h2>
+<div class="note"><strong>MySQL 8 + Workbench:</strong> MySQL 서버 설치 후 Workbench 또는 DBeaver 같은 GUI 로 접속. 회원·게시판 테이블 DDL 실행.</div>
+
+<h2>3. 코드</h2>
+<div class="diagram">-- 회원 테이블 (v2 최소형)
+CREATE TABLE mymember (
+    id   VARCHAR(50)  PRIMARY KEY,
+    pwd  VARCHAR(20)  NOT NULL
+);
+
+-- 게시판 테이블 (v5 최소형)
+CREATE TABLE myboard (
+    num     INT          PRIMARY KEY AUTO_INCREMENT,
+    title   VARCHAR(100) NOT NULL,
+    writer  VARCHAR(50)  NOT NULL,
+    content TEXT         NOT NULL
+);</div>
+
+<p style="font-size:0.9em;">처음에는 일부러 <strong>최소 컬럼</strong>으로 시작합니다. 작성 시각·조회수·첨부 같은 컬럼은 후속 차시에서 <code>ALTER TABLE</code> 로 추가합니다.</p>
+
+<h2>4. 정리</h2>
+<ul><li><code>mymember</code> — 로그인 ID 와 비밀번호 두 칸</li>
+<li><code>myboard</code> — 글번호 / 제목 / 작성자 / 본문 네 칸</li>
+<li>차시가 진행되며 두 테이블에 ALTER 가 차곡차곡 쌓인다</li></ul>
+
+<h2>5. Before / After</h2>
+<div class="before-after">
+<div class="before"><div class="label">전 차시</div><p>DB 도구 설치가 어렵게 느껴진다.</p></div>
+<div class="after"><div class="label">이번 차시</div><p><code>mymember</code>·<code>myboard</code> 최소 골격이 준비됐다. 차시가 진행되며 ALTER 로 자라난다.</p></div>
+</div>
+
+<div class="checklist"><h3>학습 확인 체크리스트</h3>
+<ul><li><code>mymember</code> 테이블 — id, pwd 두 컬럼</li>
+<li><code>myboard</code> 테이블 — num, title, writer, content 네 컬럼</li>
+<li>SELECT 로 두 테이블 데이터 확인 가능</li></ul></div>
+
+<div class="nav"><a href="db-sql-basics.html">&larr; 이전</a><a href="../index.html">메인으로</a><a href="db-jdbc-vs-mybatis.html">다음 &rarr;</a></div>
+</div></body></html>

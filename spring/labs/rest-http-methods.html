@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HTTP 메서드 어노테이션 — 실습</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/lab.css"></head><body>
+<div class="container">
+
+<div class="header"><div class="badge">◇ LAB · REST</div>
+<h1>HTTP 메서드 어노테이션</h1><p class="subtitle">REST API와 마무리 — 실습</p></div>
+
+<div class="minimap"><div class="minimap-title">📍 지금 어디를 만지고 있나요?</div><div class="flow">
+<div class="box">브라우저</div><span class="arrow">→</span>
+<div class="box active">REST API와 마무리</div><span class="arrow">→</span>
+<div class="box">DB</div></div></div>
+
+<div class="prerequisites"><h3>사전 준비</h3>
+<ul><li>전 차시 완료</li><li>Eclipse + Tomcat 동작 환경</li></ul></div>
+
+<div class="box box-info"><div class="box-title">이번 실습의 목표</div>
+<p>각 HTTP 메서드를 별도 어노테이션으로. RESTful URL 디자인의 첫걸음.</p></div>
+
+<div class="step"><div class="step-header"><div class="step-num">1</div><div class="step-title">코드 작성</div></div>
+<pre><code>@RestController
+@RequestMapping("/api/boards")
+public class BoardApiController {       // com.smhrd.controller
+
+    @GetMapping              // GET /api/boards
+    public List&lt;Board&gt; list() {
+        return service.selectList();
+    }
+
+    @GetMapping("/{num}")    // GET /api/boards/3
+    public Board view(@PathVariable int num) {
+        return service.selectOne(num);
+    }
+
+    @PostMapping             // POST /api/boards
+    public Board create(@RequestBody Board b) {
+        service.insert(b);
+        return b;
+    }
+
+    @PutMapping("/{num}")    // PUT /api/boards/3
+    public Board update(@PathVariable int num, @RequestBody Board b) {
+        b.setNum(num);
+        return service.update(b);
+    }
+
+    @DeleteMapping("/{num}") // DELETE /api/boards/3
+    public void delete(@PathVariable int num) {
+        service.delete(num);
+    }
+}</code></pre>
+<div class="checkpoint"><div class="check-title">CHECKPOINT</div>
+<ul><li>코드를 작성한 뒤 빨간 줄(컴파일 오류)이 없는가?</li></ul></div></div>
+
+<div class="step"><div class="step-header"><div class="step-num">2</div><div class="step-title">실행 + 결과 확인</div></div>
+<p>Run on Server 또는 javac+java 로 실행하고 결과를 확인합니다.</p>
+<div class="checkpoint"><div class="check-title">CHECKPOINT</div>
+<ul><li>예상한 동작이 일어났는가?</li><li>안 됐다면 F12 / 콘솔 / 로그 어디서 단서가 보이는가?</li></ul></div></div>
+
+<div class="checklist"><h3>실습 완료 체크리스트</h3>
+<div class="check-item"><input type="checkbox"> GET = 조회</div>
+<div class="check-item"><input type="checkbox"> POST = 생성</div>
+<div class="check-item"><input type="checkbox"> PUT = 수정</div>
+<div class="check-item"><input type="checkbox"> DELETE = 삭제</div>
+<div class="check-item"><input type="checkbox"> 같은 URL 에 동사로 분기</div></div>
+
+<div class="nav"><a href="rest-controller.html">&larr; 이전</a><a href="../index.html">메인으로</a><a href="rest-v8-conversion.html">다음 &rarr;</a></div>
+</div><script src="../js/screenshot.js?v=2"></script></body></html>

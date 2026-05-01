@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HikariCP 커넥션 풀 — 읽기 자료</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/css/jetbrains-mono.css">
+<link rel="stylesheet" href="css/example.css"></head><body>
+<div class="container">
+
+<div class="header"><div class="session-num">◇ PART · DB</div>
+<h1>HikariCP 커넥션 풀</h1><p class="subtitle">데이터와 MyBatis — 읽기 자료</p></div>
+
+<div class="minimap"><div class="minimap-title">📍 지금 어디를 만지고 있나요?</div><div class="flow">
+<div class="box">브라우저</div><span class="arrow">→</span>
+<div class="box active">데이터와 MyBatis</div><span class="arrow">→</span>
+<div class="box">DB</div></div></div>
+
+<div class="terms"><h3>핵심 용어</h3><div class="term-item"><span class="term-name">Connection Pool</span><span class="term-desc">미리 만들어둔 DB 연결을 재사용하는 패턴.</span></div>
+<div class="term-item"><span class="term-name">HikariCP</span><span class="term-desc">가장 빠른 자바 커넥션 풀 라이브러리.</span></div></div>
+
+<h2>1. 문제</h2>
+<div class="pain-point"><div class="pain-title">전 차시까지의 답답함</div><p>DB 연결을 매 요청마다 새로 만들면 너무 느리다. 응답 시간이 0.1초 → 1초.</p></div>
+
+<h2>2. 새 도구</h2>
+<div class="new-tool"><div class="tool-title">HikariCP — 미리 깎아둔 칼통</div><p>주방에서 쓰는 칼을 매번 새로 깎지 않고, 미리 깎아둔 칼들을 칼통에 두고 꺼내 쓴다.</p></div>
+
+<h2>3. 코드</h2>
+<pre><code>&lt;!-- root-context.xml --&gt;
+&lt;bean id="hikariConfig" class="com.zaxxer.hikari.HikariConfig"&gt;
+    &lt;property name="driverClassName" value="com.mysql.cj.jdbc.Driver"/&gt;
+    &lt;property name="jdbcUrl" value="jdbc:mysql://localhost:3306/spring_db"/&gt;
+    &lt;property name="username" value="root"/&gt;
+    &lt;property name="password" value="1234"/&gt;
+    &lt;property name="maximumPoolSize" value="10"/&gt;
+&lt;/bean&gt;
+&lt;bean id="dataSource" class="com.zaxxer.hikari.HikariDataSource"
+      destroy-method="close"&gt;
+    &lt;constructor-arg ref="hikariConfig"/&gt;
+&lt;/bean&gt;</code></pre>
+
+<h2>4. 정리</h2>
+<ul><li>커넥션 풀 = 미리 만들어둔 DB 연결의 묶음</li>
+<li>HikariCP = 가장 빠른 자바 풀</li>
+<li>maximumPoolSize 는 동시 연결 한계</li></ul>
+
+<h2>5. Before / After</h2>
+<div class="before-after">
+<div class="before"><div class="label">전 차시 끝</div><p>DB 연결을 매 요청마다 새로 만들면 너무 느리다. 응답 시간이 0.1초 → 1초.</p></div>
+<div class="arrow">→</div>
+<div class="after"><div class="label">이번 차시 끝</div><p>커넥션 풀의 효과를 안다. maximumPoolSize 가 무엇을 의미하는지.</p></div>
+</div>
+
+<div class="nav"><a href="db-setup-checklist.html">&larr; 이전</a><a href="../index.html">메인으로</a><a href="db-mapper-xml.html">다음 &rarr;</a></div>
+</div><script src="../js/screenshot.js?v=2"></script></body></html>
