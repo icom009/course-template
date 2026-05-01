@@ -1,5 +1,12 @@
 # course-template
 
+[![Live Site](https://img.shields.io/badge/live-icom009.github.io%2Fcourse--template-f59e0b?style=flat-square)](https://icom009.github.io/course-template/)
+[![Made with Claude Code](https://img.shields.io/badge/made%20with-Claude%20Code-d97757?style=flat-square)](https://docs.anthropic.com/en/docs/claude-code/overview)
+[![Korean](https://img.shields.io/badge/lang-한국어-blue?style=flat-square)]()
+[![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)]()
+
+🌐 **사이트 보기 →** https://icom009.github.io/course-template/
+
 Claude Code 와 함께 **강의용 정적 웹사이트**를 만드는 작업 흐름과, 그 흐름의 결과로 만들어진 한 가지 예시(`spring/` — Spring 기초 과정) 가 들어 있는 저장소입니다.
 
 ## 무엇이 들어 있나
