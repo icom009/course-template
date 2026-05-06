@@ -249,6 +249,10 @@
 <body>
   <main class="page">
 
+    <p style="margin-bottom: 1.2rem;">
+      <a href="index.html" style="display: inline-block; padding: 0.45rem 0.9rem; border: 1px solid var(--border); border-radius: 4px; color: var(--text-muted); text-decoration: none; font-size: 0.88em;">← making 메인으로</a>
+    </p>
+
     <div class="meta-top">막 뒤의 기록 · Behind the Scenes</div>
     <h1>이 사이트가 어떻게 만들어졌는지의 <em>솔직한 회고</em></h1>
     <p class="lede">
@@ -263,7 +267,7 @@
     </p>
 
     <p>
-      처음 5 시간 (12:26 ~ 17:36) 동안 56 차시 × 4 종 자료 = 224 개의 학습 페이지가 만들어졌습니다. 이후 며칠에 걸쳐 보강이 더해졌습니다 — 슬라이드 분할, 코드 표준화, 협업 차시 신설, 영구 에이전트 등록. 현재 저장소는 약 1.4 MB / 240+ 파일입니다. 누적으로 약 1,400,000 토큰을 썼습니다.
+      처음 5 시간 (12:26 ~ 17:36) 동안 56 차시 × 4 종 자료 = 224 개의 학습 페이지가 만들어졌습니다. 이후 며칠에 걸쳐 보강이 더해졌습니다 — 슬라이드 분할, 코드 표준화, 협업 차시 신설, 영구 에이전트 등록. 현재 저장소는 약 1.4 MB / 240+ 파일입니다. 누적으로 약 1,400,000 토큰, 비용 예시* 로 환산하면 <strong>약 USD 38 (5만원 안팎)</strong> 을 썼습니다.
     </p>
 
     <!-- ============================================================ -->
@@ -280,22 +284,33 @@
           <th>어떤 작업</th>
           <th class="num">사용 토큰</th>
           <th class="num">누적</th>
+          <th class="num">비용 예시* (USD)</th>
         </tr>
       </thead>
       <tbody>
-        <tr><td>1차</td><td>TOC 협상, 디자인 토큰, 첫 차시 4종</td><td class="num">~200K</td><td class="num">200K</td></tr>
-        <tr><td>2차</td><td>전체 224 파일 양산 (Python 생성기)</td><td class="num">~250K</td><td class="num">450K</td></tr>
-        <tr><td>3차</td><td>마일스톤·전환점 9 개 슬라이드 재작성</td><td class="num">~150K</td><td class="num">600K</td></tr>
-        <tr><td>4차</td><td>SVG 인포그래픽 12 개 + admin mode</td><td class="num">~150K</td><td class="num">750K</td></tr>
-        <tr><td>5차</td><td>실제 이미지 도입 + 기록 정비</td><td class="num">~100K</td><td class="num">850K</td></tr>
-        <tr><td>6차</td><td>슬라이드 분할 + Layout Verifier</td><td class="num">~150K</td><td class="num">1,000K</td></tr>
-        <tr><td>7차</td><td>CODE-STANDARD 도입 + 108 파일 통일</td><td class="num">~250K</td><td class="num">1,250K</td></tr>
-        <tr><td>8차</td><td>team-collaboration 보강 + 충돌 복구</td><td class="num">~150K</td><td class="num">1,400K</td></tr>
+        <tr><td>1차</td><td>TOC 협상, 디자인 토큰, 첫 차시 4종</td><td class="num">~200K</td><td class="num">200K</td><td class="num">~$5</td></tr>
+        <tr><td>2차</td><td>전체 224 파일 양산 (Python 생성기)</td><td class="num">~250K</td><td class="num">450K</td><td class="num">~$7</td></tr>
+        <tr><td>3차</td><td>마일스톤·전환점 9 개 슬라이드 재작성</td><td class="num">~150K</td><td class="num">600K</td><td class="num">~$4</td></tr>
+        <tr><td>4차</td><td>SVG 인포그래픽 12 개 + admin mode</td><td class="num">~150K</td><td class="num">750K</td><td class="num">~$4</td></tr>
+        <tr><td>5차</td><td>실제 이미지 도입 + 기록 정비</td><td class="num">~100K</td><td class="num">850K</td><td class="num">~$3</td></tr>
+        <tr><td>6차</td><td>슬라이드 분할 + Layout Verifier</td><td class="num">~150K</td><td class="num">1,000K</td><td class="num">~$4</td></tr>
+        <tr><td>7차</td><td>CODE-STANDARD 도입 + 108 파일 통일</td><td class="num">~250K</td><td class="num">1,250K</td><td class="num">~$7</td></tr>
+        <tr><td>8차</td><td>team-collaboration 보강 + 충돌 복구</td><td class="num">~150K</td><td class="num">1,400K</td><td class="num">~$4</td></tr>
+        <tr style="border-top: 2px solid var(--border);"><td colspan="2"><strong>합계</strong></td><td class="num"><strong>~1,400K</strong></td><td class="num">—</td><td class="num"><strong>~$38</strong></td></tr>
       </tbody>
     </table>
 
     <p class="muted">
       가장 비용 효율적이었던 단계는 2 차 양산입니다 (파일당 약 1,100 토큰 — 같은 템플릿을 다른 데이터로 채우는 일이라 토큰 단가가 매우 낮음). 가장 토큰을 많이 쓴 단계는 4 차 시각화 시스템 도입과 7 차 코드 표준화 입니다 (둘 다 100 개 단위 파일을 동시에 만지는 작업).
+    </p>
+
+    <p class="muted" style="font-size: 0.85em; padding: 0.9rem 1rem; border-left: 3px solid var(--accent); background: var(--surface);">
+      <strong>* 비용 예시 — 가정:</strong> Anthropic 공식 단가 기준 추정값.
+      입력 <code>$15 / 1M tok</code>, 출력 <code>$75 / 1M tok</code> (Claude Opus 4 표준 단가),
+      입출력 비율 <code>80 : 20</code> 가정 → 유효 평균 약 <code>$27 / 1M tok</code>.
+      <strong>prompt cache 적중·1M 컨텍스트 프리미엄·배치 할인은 미반영</strong>.
+      실제 청구액은 사용 패턴(캐시 적중률·재작성 빈도·세션 길이)에 따라 ±50% 수준에서 달라질 수 있습니다.
+      한 마디로: "이 정도 규모의 사이트를 한 명이 만든다면 커피 몇 잔 값 ~ 한 끼 식사값 사이" 라는 감을 잡기 위한 숫자입니다.
     </p>
 
     <!-- ============================================================ -->
@@ -474,7 +489,12 @@
     </p>
 
     <div class="outro">
-      <p>
+      <p style="font-size: 1.05em;">
+        <strong>이 회고가 다룬 사이트의 실제 운영 버전 →</strong>
+        <a class="next-link" href="https://mp.smhrd.or.kr/edu/spring/" style="display: inline-block; margin-top: 0.4rem;">mp.smhrd.or.kr/edu/spring</a>
+      </p>
+
+      <p style="margin-top: 1.4rem;">
         다음으로 이 저장소를 보고 싶다면:
       </p>
       <a class="next-link" href="for-instructors.html">→ 강사용 메뉴얼 보기 (for-instructors.html)</a>

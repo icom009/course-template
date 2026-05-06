@@ -230,6 +230,10 @@
 
   <div class="wrap">
 
+    <p style="margin-bottom: 1.2rem;">
+      <a href="index.html" style="display: inline-block; padding: 0.45rem 0.9rem; border: 1px solid var(--border); border-radius: 4px; color: var(--text-muted); text-decoration: none; font-size: 0.88em;">← making 메인으로</a>
+    </p>
+
     <h1>강사용 메뉴얼 — 이 사이트를 어떻게 만들었나</h1>
     <p class="lede">
       이 페이지는 본인 강의용으로 비슷한 사이트를 직접 만들어보려는 강사를 위한 작업 기록입니다. 광고가 아니라 작업 순서입니다.
@@ -277,12 +281,22 @@ $ claude</code></pre>
 
     <p>
       이 사이트에서 사용한 시작용 파일을 그대로 받아서 본인 주제로 수정하세요.
+      이 저장소는 <strong>public</strong> 입니다 — 강사 누구나 GitHub 에서 클론해 본인 강의 사이트를 만들 수 있도록 준비됐습니다.
     </p>
 
     <div class="files">
-      <h4>▶ 전체 받기 (zip)</h4>
+      <h4>▶ GitHub 에서 받기 (권장)</h4>
+<pre><code>git clone https://github.com/icom009/course-template.git
+cd course-template
+cp -r starter/ ~/my-course/
+cd ~/my-course</code></pre>
+      <p style="color: var(--text-muted); font-size: 0.9em;">받은 그 자리에 이미 6 개 에이전트가 박혀 있습니다. <code>claude</code> 한 번 실행하고 <em>"커리큘럼 짜줘"</em> 한 마디면 시작됩니다.</p>
+    </div>
+
+    <div class="files">
+      <h4>▶ 전체 받기 (zip 대안)</h4>
       <ul>
-        <li><a href="#">GitHub Releases — starter-kit.zip</a> <span style="color:var(--text-muted)">(링크 자리 — 추후 채움)</span></li>
+        <li><a href="https://github.com/icom009/course-template/archive/refs/heads/main.zip">main 브랜치 zip 바로 받기</a></li>
       </ul>
     </div>
 
@@ -433,6 +447,13 @@ $ claude</code></pre>
       Part 분할은 <code>CLAUDE.md</code> 의 <code>Part 약어 표</code> 에 기록합니다. 본인 강의에 맞춰 약어와 색상을 바꾸세요. 이 표가 곧 <code>index.html</code> 의 카드 색상이 됩니다.
     </p>
 
+    <div class="aside-link" style="border-left: 3px solid var(--accent);">
+      <p>
+        <strong>중간 점검 — 6단계로 넘어가기 전</strong>: 본인 코스의 <strong>1~2 차시</strong> 가 만들어진 시점에 <a href="spring/index.html"><code>making/spring/</code></a> 의 같은 위치 (예: Part 1 의 첫 차시 4종 자료 — 슬라이드·예제·실습·핸드아웃) 를 한 번 열어 톤·구조·흐름도를 비교하세요.
+      </p>
+      <p class="small">"같은 4단계 구조가 내 코스에서도 잘 흐르는가?" 만 확인하고 전체 차시를 이어가면 후반부 재작업이 크게 줄어듭니다.</p>
+    </div>
+
     <h2 id="step6"><span class="step-num">⑥</span>코드·이미지 정리</h2>
 
     <h3>CODE-STANDARD.md 작성</h3>
@@ -454,6 +475,12 @@ $ claude</code></pre>
 - 함수명: camelCase</code></pre>
 
     <h3>인포그래픽·이미지</h3>
+
+    <p style="border-left: 3px solid var(--accent); padding-left: 1rem; background: rgba(245, 158, 11, 0.06);">
+      <strong>슬라이드 안의 빈 블록은 누락이 아닙니다</strong> — 슬라이드 템플릿(<code>starter/slides/template.html</code>) 안에 보이는 <code>&lt;div data-infographic="..."&gt;</code> 빈 블록은 본문 작성 단계에서는 의도적으로 비워 둔 자리입니다.
+      content-author 가 본문을 채운 뒤 <strong>visual-designer 에이전트</strong> 가 이 자리를 인포그래픽 SVG 또는 실사 이미지로 자동으로 채워 넣습니다 (<code>js/infographics.js</code> 에 등록).
+      "내용이 빠졌나?" 싶은 칸이 보이면 거의 다 이 자리표시입니다.
+    </p>
 
     <p>
       슬라이드와 예제에 들어갈 다이어그램은 가능하면 <strong>HTML/CSS 로 그리는 텍스트 다이어그램</strong> 으로 처리하는 게 안전합니다 — 외부 이미지를 쓰면 라이선스·해상도·다크모드 호환을 매번 확인해야 합니다.
@@ -483,7 +510,7 @@ $ claude</code></pre>
 
     <footer>
       <p>이 메뉴얼과 starter 파일은 자유롭게 복제·수정 가능합니다.</p>
-      <p>GitHub: <a href="#">저장소 링크 자리</a> — 이슈로 질문 주셔도 됩니다.</p>
+      <p>GitHub: <a href="https://github.com/icom009/course-template">github.com/icom009/course-template</a> — 이슈로 질문 주셔도 됩니다.</p>
     </footer>
 
   </div>
