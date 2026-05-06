@@ -2,8 +2,9 @@
 
 [![Live Site](https://img.shields.io/badge/live-icom009.github.io%2Fcourse--template-f59e0b?style=flat-square)](https://icom009.github.io/course-template/)
 [![Made with Claude Code](https://img.shields.io/badge/made%20with-Claude%20Code-d97757?style=flat-square)](https://docs.anthropic.com/en/docs/claude-code/overview)
-[![Korean](https://img.shields.io/badge/lang-한국어-blue?style=flat-square)]()
-[![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)]()
+[![Use this template](https://img.shields.io/badge/use%20this-template-2ea44f?style=flat-square&logo=github)](https://github.com/icom009/course-template/generate)
+![Korean](https://img.shields.io/badge/lang-한국어-blue?style=flat-square)
+[![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](#라이선스)
 
 🌐 **사이트 보기 →** https://icom009.github.io/course-template/
 
@@ -36,35 +37,81 @@ course-template/
    └─ ...
 ```
 
-## 빠른 시작
+## 받는 방법 (5 가지 길)
 
-### 새 코스를 만들고 싶다면
+본인 환경에 맞춰 골라 받으세요. 강의 사이트로 키울 거면 **E (권장)** 또는 **C** — 자기 GitHub 계정에 자기 repo 가 생기므로 그대로 push 해서 본인 강의 사이트로 발전시킬 수 있습니다.
+
+### ⭐ E. Use this template — 가장 매끄러움
+
+GitHub 페이지의 초록색 **["Use this template"](https://github.com/icom009/course-template/generate)** 버튼 → 본인 계정에 깨끗한 새 repo 생성 (history 분리됨).
 
 ```bash
-# 1. 이 저장소 클론
-git clone https://github.com/<USERNAME>/course-template.git
-cd course-template
+git clone https://github.com/<본인>/<새-repo-이름>.git
+cd <새-repo-이름>
+```
 
-# 2. starter 키트를 새 디렉토리로 복제
+### C. Fork → clone — 자기 GitHub 으로 가져가기
+
+GitHub 페이지의 **Fork** 버튼 → 본인 계정에 fork (upstream 으로 연결됨).
+
+```bash
+git clone https://github.com/<본인>/course-template.git
+cd course-template
+```
+
+> **E vs C** — E 는 깨끗한 분리(완전히 새 강의), C 는 upstream 연결(본 repo 에 PR 보내고 싶을 때).
+
+### A. 표준 git clone — 로컬에서만 둘러보기
+
+```bash
+git clone https://github.com/icom009/course-template.git
+cd course-template
+```
+
+자기 GitHub 계정이 없거나 push 할 곳이 따로 있을 때.
+
+### B. Shallow clone — 더 빠르고 가볍게
+
+```bash
+git clone --depth 1 https://github.com/icom009/course-template.git
+cd course-template
+```
+
+A 와 동일하지만 커밋 히스토리 없이 받음 (용량 절약).
+
+### D. ZIP 다운로드 — git 없이
+
+[![main.zip](https://img.shields.io/badge/⬇-main.zip-blue?style=flat-square)](https://github.com/icom009/course-template/archive/refs/heads/main.zip)
+
+```
+https://github.com/icom009/course-template/archive/refs/heads/main.zip
+```
+
+git 안 깔린 환경. 압축 풀면 `course-template-main/` 폴더 — `.git` 없으니 나중에 push 하려면 `git init` 다시 필요.
+
+## 받은 다음 (5 가지 모두 공통)
+
+```bash
+# 1. starter 키트를 새 디렉토리로 복제
 cp -r starter/ ~/my-course/
 cd ~/my-course
 
-# 3. CLAUDE.md, CODE-STANDARD.md, index.html 의 TODO 마커 채우기
+# 2. CLAUDE.md, CODE-STANDARD.md, index.html 의 TODO 마커 채우기
 
-# 4. 로컬 미리보기
+# 3. 로컬 미리보기
 python3 -m http.server 8000
 # → http://localhost:8000
 
-# 5. Claude Code 켜기
+# 4. Claude Code 켜기
 claude
 # → 이후는 for-instructors.html 의 4~6단계 따라가기
 ```
 
 ### 결과물만 둘러보고 싶다면
 
+위 A·B·D 중 하나로 받은 뒤:
+
 ```bash
-git clone https://github.com/<USERNAME>/course-template.git
-cd course-template
 python3 -m http.server 8000
 # → http://localhost:8000/spring/
 ```

@@ -284,21 +284,62 @@ $ claude</code></pre>
       이 저장소는 <strong>public</strong> 입니다 — 강사 누구나 GitHub 에서 클론해 본인 강의 사이트를 만들 수 있도록 준비됐습니다.
     </p>
 
+    <p>
+      받는 방법은 5 가지 — 본인 환경과 의도에 맞춰 고르세요. 강의 사이트로 발전시킬 거면 <strong>E (권장)</strong> 또는 <strong>C</strong> 가 자연스럽습니다 (자기 GitHub 계정에 자기 repo 가 생기므로 받은 그대로 push 해서 본인 강의 사이트로 키울 수 있음).
+    </p>
+
     <div class="files">
-      <h4>▶ GitHub 에서 받기 (권장)</h4>
+      <h4>▶ ⭐ E. Use this template (가장 매끄러움 · 강의 사이트 시작용 권장)</h4>
+      <p>
+        GitHub 페이지에서 초록 <a href="https://github.com/icom009/course-template/generate"><strong>"Use this template"</strong></a> 버튼 → "Create a new repository" → 본인 계정에 <strong>깨끗한 히스토리의 새 repo</strong> 가 생성됩니다 (이 저장소와 connection 없는 분리된 새 repo).
+      </p>
+<pre><code>git clone https://github.com/&lt;본인&gt;/&lt;새-repo-이름&gt;.git
+cd &lt;새-repo-이름&gt;
+cp -r starter/ ~/my-course/
+cd ~/my-course</code></pre>
+    </div>
+
+    <div class="files">
+      <h4>▶ C. Fork → clone (자기 GitHub 으로 가져가기)</h4>
+      <p>
+        GitHub 페이지의 <strong>Fork</strong> 버튼 → 본인 계정에 fork 됨 (이 저장소와 upstream 연결).
+      </p>
+<pre><code>git clone https://github.com/&lt;본인&gt;/course-template.git
+cd course-template
+cp -r starter/ ~/my-course/
+cd ~/my-course</code></pre>
+      <p style="color: var(--text-muted); font-size: 0.9em;"><strong>E 와 C 의 차이</strong> — E 는 완전히 분리된 새 repo (강의 사이트 시작용), C 는 upstream 으로 묶인 fork (본 저장소에 개선 PR 보내고 싶을 때).</p>
+    </div>
+
+    <div class="files">
+      <h4>▶ A. 표준 git clone (로컬에서만 둘러보기)</h4>
 <pre><code>git clone https://github.com/icom009/course-template.git
 cd course-template
 cp -r starter/ ~/my-course/
 cd ~/my-course</code></pre>
-      <p style="color: var(--text-muted); font-size: 0.9em;">받은 그 자리에 이미 6 개 에이전트가 박혀 있습니다. <code>claude</code> 한 번 실행하고 <em>"커리큘럼 짜줘"</em> 한 마디면 시작됩니다.</p>
+      <p style="color: var(--text-muted); font-size: 0.9em;">자기 GitHub 계정이 없거나 push 할 곳이 따로 있을 때.</p>
     </div>
 
     <div class="files">
-      <h4>▶ 전체 받기 (zip 대안)</h4>
+      <h4>▶ B. Shallow clone (더 빠르고 가볍게)</h4>
+<pre><code>git clone --depth 1 https://github.com/icom009/course-template.git
+cd course-template
+cp -r starter/ ~/my-course/
+cd ~/my-course</code></pre>
+      <p style="color: var(--text-muted); font-size: 0.9em;">A 와 동일하지만 커밋 히스토리 없이 받음 (용량 절약, 첫 시도에 가장 빠름).</p>
+    </div>
+
+    <div class="files">
+      <h4>▶ D. ZIP 다운로드 (git 없이)</h4>
       <ul>
         <li><a href="https://github.com/icom009/course-template/archive/refs/heads/main.zip">main 브랜치 zip 바로 받기</a></li>
       </ul>
+      <p style="color: var(--text-muted); font-size: 0.9em;">git 안 깔린 환경. 압축 풀면 <code>course-template-main/</code> 폴더 생성 — <code>.git</code> 디렉토리 없으니 나중에 push 하려면 <code>git init</code> 다시 필요.</p>
     </div>
+
+    <p style="color: var(--text-muted); font-size: 0.9em; margin-top: 1.2rem;">
+      받은 그 자리에 이미 6 개 에이전트가 박혀 있습니다. <code>cd ~/my-course</code> 한 뒤 <code>claude</code> 한 번 실행하고 <em>"커리큘럼 짜줘"</em> 한 마디면 시작됩니다.
+    </p>
 
     <div class="files">
       <h4>▶ 개별 파일</h4>
