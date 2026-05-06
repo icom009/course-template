@@ -12,6 +12,14 @@
 
   <style>
     :root {
+      /* ─────────────────────────────────────────────────────────────
+         코스 시그니처 컬러 (코스마다 갈아끼우는 자리)
+         --accent       : 코스의 1차 색 (브랜드 메인)
+         --accent-light : --accent 의 밝은 변종 (배지·강조 텍스트용)
+         --red          : 코스의 2차 색 (히어로 그라디언트의 끝점, 마일스톤 뱃지)
+         예) Java        : --accent #0074BD / --red #EA2D2E
+         예) Spring      : --accent #6DB33F / --red #F58220
+         ───────────────────────────────────────────────────────────── */
       --bg: #0f172a;
       --surface: #1e293b;
       --surface-2: #273449;
@@ -46,6 +54,14 @@
         linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
       text-align: center;
       border-bottom: 1px solid var(--border);
+    }
+    /* 코스 로고 (히어로 위쪽 자리) — images/logo.svg */
+    .course-logo {
+      width: 96px;
+      height: 96px;
+      margin: 0 auto 1rem;
+      display: block;
+      filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3));
     }
     .hero-badge {
       display: inline-block;
@@ -254,6 +270,59 @@
     .btn-lab      { background: var(--green); }
     .btn-handout  { background: var(--purple); }
 
+    /* ============== 차시 단계별 공개 (admin/locked) ==============
+       카드에 data-status="locked" 면 흐리게 + 자물쇠 + 클릭 비활성.
+       ?admin=smhrd URL + 비번 입력 시 body.admin 클래스 부착 → 모두 보임.
+       강사가 차시 끝나면 HTML 의 data-status 를 released 로 바꾸고 push.
+    */
+    .card[data-status="locked"] {
+      opacity: 0.45;
+      pointer-events: none;
+      position: relative;
+    }
+    .card[data-status="locked"]::before {
+      content: "🔒 공개 전";
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(15,23,42,0.85);
+      color: var(--text);
+      padding: 6px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      pointer-events: none;
+      z-index: 2;
+    }
+    body.admin .card[data-status="locked"] {
+      opacity: 1;
+      pointer-events: auto;
+      outline: 2px dashed var(--red);
+      outline-offset: -4px;
+    }
+    body.admin .card[data-status="locked"]::before {
+      content: "🔒 미공개 (admin)";
+      top: 8px; left: 8px;
+      transform: none;
+      font-size: 11px;
+    }
+    body.admin::after {
+      content: "🔧 admin";
+      position: fixed;
+      top: 16px; right: 18px;
+      background: var(--red);
+      color: white;
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      z-index: 9999;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+
     /* ============== Footer ============== */
     footer {
       text-align: center;
@@ -280,6 +349,8 @@
 
   <!-- ============== HERO ============== -->
   <section class="hero">
+    <!-- TODO: 코스 로고 — images/logo.svg 자리. 코스마다 자기 로고 박음. -->
+    <img class="course-logo" src="images/logo.svg" alt="[코스 로고]">
     <!-- TODO: hero-badge — 학원/기관/주관 표시 -->
     <div class="hero-badge">[기관 · 코스 분류]</div>
     <!-- TODO: 코스 이름 -->
@@ -313,7 +384,7 @@
       <div class="sessions">
         <!-- 카드 자리. 차시마다 한 장씩 추가.
              템플릿:
-             <div class="card">
+             <div class="card" data-status="locked">          <!-- locked|released -->
                <div class="card-glyph"><span class="glyph-concept">◇</span> 카드 글리프</div>
                <div class="card-title">키워드 제목 (비유 없이)</div>
                <div class="card-desc">한 줄 설명.</div>
@@ -324,6 +395,11 @@
                  <a href="handouts/<part약어>-<키워드>.html" class="btn-handout">핸드아웃</a>
                </div>
              </div>
+
+             ▶ data-status:
+                "locked"   = 학생에게는 흐리게 + 자물쇠 + 클릭 비활성 (기본)
+                "released" = 정상 노출 (차시 진행 끝나면 강사가 이걸로 바꿔 push)
+             ▶ admin 모드: URL 에 ?admin=smhrd 붙이고 비번 입력 → 잠긴 카드도 보임
 
              마일스톤 카드는 glyph-milestone + card-version 추가:
              <div class="card-glyph">
@@ -402,5 +478,34 @@
     <p>[코스 이름] · [강사명] · [기관]</p>
   </footer>
 
+  <!-- ============== ADMIN MODE (차시 단계별 공개) ==============
+       동작:
+         1) URL ?admin=smhrd → window.prompt 로 비번 확인 (smhrd)
+         2) 인증되면 sessionStorage 에 저장 (탭 닫으면 사라짐)
+         3) body.admin 클래스 부착 → CSS 가 잠긴 카드 노출
+       비번을 바꾸려면 ADMIN_PW 변수만 갈아끼우세요.
+  -->
+  <script>
+  (function () {
+    const ADMIN_PW = 'smhrd';
+    const params = new URLSearchParams(location.search);
+    const SS_KEY = 'course_admin_authed';
+
+    function activateAdmin() {
+      document.body.classList.add('admin');
+      console.log('[admin] 활성화됨 — 잠긴 카드도 보입니다.');
+    }
+
+    if (sessionStorage.getItem(SS_KEY) === '1') {
+      activateAdmin();
+    } else if (params.has('admin')) {
+      const input = window.prompt('관리자 비밀번호:');
+      if (input === ADMIN_PW) {
+        sessionStorage.setItem(SS_KEY, '1');
+        activateAdmin();
+      }
+    }
+  })();
+  </script>
 </body>
 </html>
