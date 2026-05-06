@@ -224,6 +224,99 @@
     .toc ol { margin: 0.4rem 0 0; padding-left: 1.2rem; }
     .toc a { border-bottom: none; color: var(--text); }
     .toc a:hover { color: var(--accent); }
+
+    /* ── Path tabs (5 ways to receive files) ─────────────────────── */
+    .path-tabs {
+      margin: 1rem 0 1.4rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: rgba(30,41,59,0.3);
+      overflow: hidden;
+      position: relative;
+    }
+    .path-tabs > input[type="radio"] {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+    .path-tabs .tab-bar {
+      display: flex;
+      flex-wrap: wrap;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+    }
+    .path-tabs .tab-bar label {
+      flex: 1 1 auto;
+      padding: 0.7rem 1rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-right: 1px solid var(--border);
+      border-bottom: 2px solid transparent;
+      transition: color 0.15s, border-color 0.15s, background 0.15s;
+      user-select: none;
+      text-align: center;
+      white-space: nowrap;
+    }
+    .path-tabs .tab-bar label:last-of-type { border-right: none; }
+    .path-tabs .tab-bar label:hover {
+      color: var(--text);
+      background: var(--surface-2);
+    }
+    .path-tabs .tab-content {
+      display: none;
+      padding: 1.1rem 1.2rem 1.3rem;
+    }
+    .path-tabs .tab-content > h4 {
+      margin: 0 0 0.5rem;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .path-tabs .tab-content > p:first-of-type { margin-top: 0; }
+    .path-tabs .tab-content pre { margin: 0.6rem 0 0.6rem; }
+    .path-tabs .tab-content .small {
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      margin-top: 0.6rem;
+    }
+
+    /* checked state — highlight active tab + reveal its content */
+    #tab-e:checked ~ .tab-bar label[for="tab-e"],
+    #tab-c:checked ~ .tab-bar label[for="tab-c"],
+    #tab-a:checked ~ .tab-bar label[for="tab-a"],
+    #tab-b:checked ~ .tab-bar label[for="tab-b"],
+    #tab-d:checked ~ .tab-bar label[for="tab-d"] {
+      color: var(--accent);
+      background: var(--bg);
+      border-bottom-color: var(--accent);
+    }
+    #tab-e:checked ~ .tab-content[data-for="tab-e"],
+    #tab-c:checked ~ .tab-content[data-for="tab-c"],
+    #tab-a:checked ~ .tab-content[data-for="tab-a"],
+    #tab-b:checked ~ .tab-content[data-for="tab-b"],
+    #tab-d:checked ~ .tab-content[data-for="tab-d"] {
+      display: block;
+    }
+
+    /* keyboard focus indicator */
+    #tab-e:focus-visible ~ .tab-bar label[for="tab-e"],
+    #tab-c:focus-visible ~ .tab-bar label[for="tab-c"],
+    #tab-a:focus-visible ~ .tab-bar label[for="tab-a"],
+    #tab-b:focus-visible ~ .tab-bar label[for="tab-b"],
+    #tab-d:focus-visible ~ .tab-bar label[for="tab-d"] {
+      outline: 2px solid var(--accent);
+      outline-offset: -2px;
+    }
+
+    @media (max-width: 600px) {
+      .path-tabs .tab-bar label {
+        flex-basis: 50%;
+        font-size: 0.85rem;
+        padding: 0.55rem 0.6rem;
+      }
+    }
   </style>
 </head>
 <body>
@@ -285,60 +378,67 @@ $ claude</code></pre>
     </p>
 
     <p>
-      받는 방법은 5 가지 — 본인 환경과 의도에 맞춰 고르세요. 강의 사이트로 발전시킬 거면 <strong>E (권장)</strong> 또는 <strong>C</strong> 가 자연스럽습니다 (자기 GitHub 계정에 자기 repo 가 생기므로 받은 그대로 push 해서 본인 강의 사이트로 키울 수 있음).
+      받는 방법은 5 가지 — 모두 같은 파일을 받아오는 다른 경로일 뿐입니다. 본인 환경과 의도에 맞는 탭을 골라 그 명령만 따라하세요. 강의 사이트로 발전시킬 거면 <strong>E (권장)</strong> 또는 <strong>C</strong> 가 자연스럽습니다 — 자기 GitHub 계정에 자기 repo 가 생기므로 받은 그대로 push 해서 본인 강의 사이트로 키울 수 있습니다.
     </p>
 
-    <div class="files">
-      <h4>▶ ⭐ E. Use this template (가장 매끄러움 · 강의 사이트 시작용 권장)</h4>
-      <p>
-        GitHub 페이지에서 초록 <a href="https://github.com/icom009/course-template/generate"><strong>"Use this template"</strong></a> 버튼 → "Create a new repository" → 본인 계정에 <strong>깨끗한 히스토리의 새 repo</strong> 가 생성됩니다 (이 저장소와 connection 없는 분리된 새 repo).
-      </p>
+    <div class="path-tabs">
+      <input type="radio" id="tab-e" name="path-tab" checked>
+      <input type="radio" id="tab-c" name="path-tab">
+      <input type="radio" id="tab-a" name="path-tab">
+      <input type="radio" id="tab-b" name="path-tab">
+      <input type="radio" id="tab-d" name="path-tab">
+
+      <div class="tab-bar" role="tablist">
+        <label for="tab-e" role="tab">⭐ E. Use template</label>
+        <label for="tab-c" role="tab">C. Fork</label>
+        <label for="tab-a" role="tab">A. clone</label>
+        <label for="tab-b" role="tab">B. shallow</label>
+        <label for="tab-d" role="tab">D. ZIP</label>
+      </div>
+
+      <div class="tab-content" data-for="tab-e" role="tabpanel">
+        <h4>⭐ Use this template — 가장 매끄러움 (강의 사이트 시작용 권장)</h4>
+        <p>GitHub 페이지에서 초록색 <a href="https://github.com/icom009/course-template/generate"><strong>"Use this template"</strong></a> 버튼 → "Create a new repository" → 본인 계정에 <strong>깨끗한 히스토리의 새 repo</strong> 가 생성됩니다 (이 저장소와 connection 없는 분리된 새 repo).</p>
 <pre><code>git clone https://github.com/&lt;본인&gt;/&lt;새-repo-이름&gt;.git
-cd &lt;새-repo-이름&gt;
-cp -r starter/ ~/my-course/
-cd ~/my-course</code></pre>
-    </div>
+cd &lt;새-repo-이름&gt;</code></pre>
+      </div>
 
-    <div class="files">
-      <h4>▶ C. Fork → clone (자기 GitHub 으로 가져가기)</h4>
-      <p>
-        GitHub 페이지의 <strong>Fork</strong> 버튼 → 본인 계정에 fork 됨 (이 저장소와 upstream 연결).
-      </p>
+      <div class="tab-content" data-for="tab-c" role="tabpanel">
+        <h4>C. Fork → clone — 자기 GitHub 으로 가져가기</h4>
+        <p>GitHub 페이지의 <strong>Fork</strong> 버튼 → 본인 계정에 fork (이 저장소와 upstream 연결).</p>
 <pre><code>git clone https://github.com/&lt;본인&gt;/course-template.git
-cd course-template
-cp -r starter/ ~/my-course/
-cd ~/my-course</code></pre>
-      <p style="color: var(--text-muted); font-size: 0.9em;"><strong>E 와 C 의 차이</strong> — E 는 완전히 분리된 새 repo (강의 사이트 시작용), C 는 upstream 으로 묶인 fork (본 저장소에 개선 PR 보내고 싶을 때).</p>
-    </div>
+cd course-template</code></pre>
+        <p class="small"><strong>E 와의 차이</strong> — E 는 완전히 분리된 새 repo (강의 사이트 시작용), C 는 upstream 으로 묶인 fork (본 저장소에 개선 PR 보내고 싶을 때).</p>
+      </div>
 
-    <div class="files">
-      <h4>▶ A. 표준 git clone (로컬에서만 둘러보기)</h4>
+      <div class="tab-content" data-for="tab-a" role="tabpanel">
+        <h4>A. 표준 git clone — 로컬에서만 둘러보기</h4>
 <pre><code>git clone https://github.com/icom009/course-template.git
-cd course-template
-cp -r starter/ ~/my-course/
-cd ~/my-course</code></pre>
-      <p style="color: var(--text-muted); font-size: 0.9em;">자기 GitHub 계정이 없거나 push 할 곳이 따로 있을 때.</p>
-    </div>
+cd course-template</code></pre>
+        <p class="small">자기 GitHub 계정이 없거나 push 할 곳이 따로 있을 때.</p>
+      </div>
 
-    <div class="files">
-      <h4>▶ B. Shallow clone (더 빠르고 가볍게)</h4>
+      <div class="tab-content" data-for="tab-b" role="tabpanel">
+        <h4>B. Shallow clone — 더 빠르고 가볍게</h4>
 <pre><code>git clone --depth 1 https://github.com/icom009/course-template.git
-cd course-template
-cp -r starter/ ~/my-course/
+cd course-template</code></pre>
+        <p class="small">A 와 동일하지만 커밋 히스토리 없이 받음 (용량 절약, 첫 시도에 가장 빠름).</p>
+      </div>
+
+      <div class="tab-content" data-for="tab-d" role="tabpanel">
+        <h4>D. ZIP 다운로드 — git 없이</h4>
+        <p><a href="https://github.com/icom009/course-template/archive/refs/heads/main.zip">main 브랜치 zip 바로 받기 ⬇</a></p>
+        <p class="small">git 안 깔린 환경용. 압축 풀면 <code>course-template-main/</code> 폴더 생성 — <code>.git</code> 디렉토리 없으니 나중에 push 하려면 <code>git init</code> 다시 필요.</p>
+      </div>
+    </div>
+
+    <p style="margin-top: 1.4rem;">
+      <strong>받은 다음 (5 가지 모두 공통)</strong> — starter 키트를 본인 코스 디렉토리로 복제:
+    </p>
+<pre><code>cp -r starter/ ~/my-course/
 cd ~/my-course</code></pre>
-      <p style="color: var(--text-muted); font-size: 0.9em;">A 와 동일하지만 커밋 히스토리 없이 받음 (용량 절약, 첫 시도에 가장 빠름).</p>
-    </div>
-
-    <div class="files">
-      <h4>▶ D. ZIP 다운로드 (git 없이)</h4>
-      <ul>
-        <li><a href="https://github.com/icom009/course-template/archive/refs/heads/main.zip">main 브랜치 zip 바로 받기</a></li>
-      </ul>
-      <p style="color: var(--text-muted); font-size: 0.9em;">git 안 깔린 환경. 압축 풀면 <code>course-template-main/</code> 폴더 생성 — <code>.git</code> 디렉토리 없으니 나중에 push 하려면 <code>git init</code> 다시 필요.</p>
-    </div>
-
-    <p style="color: var(--text-muted); font-size: 0.9em; margin-top: 1.2rem;">
-      받은 그 자리에 이미 6 개 에이전트가 박혀 있습니다. <code>cd ~/my-course</code> 한 뒤 <code>claude</code> 한 번 실행하고 <em>"커리큘럼 짜줘"</em> 한 마디면 시작됩니다.
+    <p style="color: var(--text-muted); font-size: 0.9em;">
+      받은 그 자리에 이미 6 개 에이전트가 박혀 있습니다. <code>claude</code> 한 번 실행하고 <em>"커리큘럼 짜줘"</em> 한 마디면 시작됩니다.
     </p>
 
     <div class="files">
