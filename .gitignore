@@ -32,3 +32,10 @@ build/
 # Backup files
 *.bak
 *.orig
+
+# share-tools 생성물 · 글꼴 — 저장소에는 도구 코드와 spec 만
+share-tools/release/
+share-tools/out/
+share-tools/cache/
+share-tools/fonts/
+__pycache__/

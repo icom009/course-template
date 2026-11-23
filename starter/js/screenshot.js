@@ -56,17 +56,17 @@
       left: 14px;
       z-index: 100000;
       padding: 9px 18px;
-      background: rgba(245, 158, 11, 0.95);
+      background: color-mix(in srgb, var(--accent, var(--accent-orange, #f59e0b)) 95%, transparent);
       color: #0f172a;
       text-decoration: none;
       font-size: 14px;
       font-weight: 700;
       letter-spacing: 0.02em;
       border-radius: 999px;
-      border: 1px solid rgba(245, 158, 11, 1);
+      border: 1px solid var(--accent, var(--accent-orange, #f59e0b));
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
-      box-shadow: 0 6px 16px rgba(245, 158, 11, 0.35), 0 0 0 3px rgba(15, 23, 42, 0.4);
+      box-shadow: 0 6px 16px color-mix(in srgb, var(--accent, var(--accent-orange, #f59e0b)) 35%, transparent), 0 0 0 3px rgba(15, 23, 42, 0.4);
       transition: all 0.2s;
       font-family: 'Pretendard', system-ui, sans-serif;
     `;
@@ -76,7 +76,7 @@
       btn.style.transform = 'translateY(-1px) scale(1.03)';
     });
     btn.addEventListener('mouseout', () => {
-      btn.style.background = 'rgba(245, 158, 11, 0.95)';
+      btn.style.background = 'color-mix(in srgb, var(--accent, var(--accent-orange, #f59e0b)) 95%, transparent)';
       btn.style.color = '#0f172a';
       btn.style.transform = 'translateY(0) scale(1)';
     });
@@ -102,11 +102,11 @@
       <a href="../index.html" style="
         display: inline-flex; align-items: center; gap: 0.5em;
         padding: 12px 28px;
-        background: linear-gradient(135deg, #f59e0b, #ef4444);
+        background: linear-gradient(135deg, var(--accent, var(--accent-orange, #f59e0b)), #ef4444);
         color: white; text-decoration: none;
         font-size: 0.85em; font-weight: 700;
         border-radius: 999px;
-        box-shadow: 0 8px 20px rgba(245, 158, 11, 0.35);
+        box-shadow: 0 8px 20px color-mix(in srgb, var(--accent, var(--accent-orange, #f59e0b)) 35%, transparent);
         transition: transform 0.2s;
       "
       onmouseover="this.style.transform='translateY(-2px) scale(1.03)'"
@@ -130,10 +130,10 @@
     banner.style.cssText = `
       position: fixed; top: 16px; right: 18px; z-index: 9999;
       padding: 7px 14px;
-      background: linear-gradient(135deg, #f59e0b, #ef4444);
+      background: linear-gradient(135deg, var(--accent, var(--accent-orange, #f59e0b)), #ef4444);
       color: white; font-size: 13px; font-weight: 700;
       letter-spacing: 0.02em; border-radius: 999px;
-      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+      box-shadow: 0 4px 12px color-mix(in srgb, var(--accent, var(--accent-orange, #f59e0b)) 40%, transparent);
       font-family: 'Pretendard', system-ui, sans-serif;
     `;
     banner.textContent = '🔧 관리자';
@@ -210,13 +210,13 @@
       padding: 14px 18px;
       background: rgba(15, 23, 42, 0.95);
       color: #e2e8f0; font-size: 12px;
-      border: 1px solid rgba(245, 158, 11, 0.5);
+      border: 1px solid color-mix(in srgb, var(--accent, var(--accent-orange, #f59e0b)) 50%, transparent);
       border-radius: 10px;
       box-shadow: 0 6px 18px rgba(0,0,0,0.4);
       font-family: 'Pretendard', system-ui, sans-serif;
     `;
     toast.innerHTML = `
-      <div style="font-weight:700; color:#f59e0b; margin-bottom:4px;">
+      <div style="font-weight:700; color:var(--accent, var(--accent-orange, #f59e0b)); margin-bottom:4px;">
         ✓ 이미지 자리 추가됨 (이 세션 한정)
       </div>
       <div style="font-size:11px; margin-bottom:8px; color:#94a3b8;">
@@ -318,11 +318,11 @@
   function renderAdminPlaceholder(el, desc, imageName, imageUrl) {
     el.innerHTML = '';
     el.style.cssText = `
-      border: 2px dashed rgba(245, 158, 11, 0.6);
+      border: 2px dashed color-mix(in srgb, var(--accent, var(--accent-orange, #f59e0b)) 60%, transparent);
       border-radius: 10px;
       padding: 1rem;
       text-align: center;
-      background: rgba(245, 158, 11, 0.06);
+      background: color-mix(in srgb, var(--accent, var(--accent-orange, #f59e0b)) 6%, transparent);
       margin: 1rem 0;
       cursor: pointer;
       transition: all 0.15s;
@@ -332,7 +332,7 @@
 
     const filenameLabel = document.createElement('div');
     filenameLabel.style.cssText =
-      'font-family:"JetBrains Mono", monospace; font-size:12px; color:#f59e0b; font-weight:700;';
+      'font-family:"JetBrains Mono", monospace; font-size:12px; color:var(--accent, var(--accent-orange, #f59e0b)); font-weight:700;';
     filenameLabel.textContent = `📁 images/${imageName}`;
 
     const descLabel = document.createElement('div');
@@ -387,17 +387,17 @@
 
     el.addEventListener('dragover', (e) => {
       e.preventDefault();
-      el.style.background = 'rgba(245, 158, 11, 0.18)';
-      el.style.borderColor = '#f59e0b';
+      el.style.background = 'color-mix(in srgb, var(--accent, var(--accent-orange, #f59e0b)) 18%, transparent)';
+      el.style.borderColor = 'var(--accent, var(--accent-orange, #f59e0b))';
     });
     el.addEventListener('dragleave', () => {
-      el.style.background = 'rgba(245, 158, 11, 0.06)';
-      el.style.borderColor = 'rgba(245, 158, 11, 0.6)';
+      el.style.background = 'color-mix(in srgb, var(--accent, var(--accent-orange, #f59e0b)) 6%, transparent)';
+      el.style.borderColor = 'color-mix(in srgb, var(--accent, var(--accent-orange, #f59e0b)) 60%, transparent)';
     });
     el.addEventListener('drop', (e) => {
       e.preventDefault();
-      el.style.background = 'rgba(245, 158, 11, 0.06)';
-      el.style.borderColor = 'rgba(245, 158, 11, 0.6)';
+      el.style.background = 'color-mix(in srgb, var(--accent, var(--accent-orange, #f59e0b)) 6%, transparent)';
+      el.style.borderColor = 'color-mix(in srgb, var(--accent, var(--accent-orange, #f59e0b)) 60%, transparent)';
       const file = e.dataTransfer.files[0];
       if (file && file.type.startsWith('image/')) {
         handleFile(file, dropArea, imageName);
@@ -433,7 +433,7 @@
 
       const hint = document.createElement('div');
       hint.style.cssText = 'font-size:11px; color:#94a3b8; margin-top:0.5rem;';
-      hint.innerHTML = `다운로드 후 <code style="color:#f59e0b;">images/</code> 폴더에 저장 → 새로고침`;
+      hint.innerHTML = `다운로드 후 <code style="color:var(--accent, var(--accent-orange, #f59e0b));">images/</code> 폴더에 저장 → 새로고침`;
       dropArea.appendChild(hint);
     };
     reader.readAsDataURL(file);

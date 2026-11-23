@@ -15,14 +15,16 @@ starter/
 ├─ .claude/agents/            # 6개 에이전트 정의 (Claude Code 가 자동 인식)
 ├─ slides/
 │  ├─ template.html           # 4단계 구조 빈 슬라이드
-│  └─ css/custom.css          # reveal.js night 덮어쓰기 (그대로)
-├─ examples/css/example.css   # 읽기 자료 다크 테마 (그대로)
-├─ labs/css/lab.css           # 실습 다크 테마 (그대로)
-├─ handouts/css/print.css     # 인쇄용 라이트 테마 (그대로)
+│  └─ css/custom.css          # reveal.js night 골격 — :root 색상은 코스마다 새로 정한다
+├─ examples/css/example.css   # 읽기 자료 다크 테마 — 위와 동일
+├─ labs/css/lab.css           # 실습 다크 테마 — 위와 동일
+├─ handouts/css/print.css     # 인쇄용 라이트 테마 — 위와 동일
 └─ js/
    ├─ screenshot.js           # 메인 버튼 + 스크린샷 런타임 (그대로)
-   └─ infographics.js         # PALETTE + REGISTRY 만 — 인포그래픽은 직접 추가
+   └─ infographics.js         # PALETTE + REGISTRY 만 — 인포그래픽은 직접 추가, PALETTE도 코스 전용으로 갱신
 ```
+
+> **레이아웃(그리드·타이포 크기·반응형)은 그대로 두되, 색·질감(`:root` 변수, `PALETTE`)은 코스마다 새로 정하는 게 기본값입니다.** 자세한 이유와 절차는 아래 「사용 법」③단계와 `CLAUDE.md` §코스 식별 참고.
 
 ## 사용 법
 
@@ -36,7 +38,12 @@ cd ~/my-course
 #    - CODE-STANDARD.md : 코스 도메인 (예: 게시판 / 쇼핑몰 / 일정 관리)
 #    - index.html    : Hero 카피 + 각 Part 카드
 
-# 3) 로컬 미리보기
+# 3) 비유 사전이 채워지면, 거기서 이 코스 전용 팔레트를 뽑아
+#    slides/css, examples/css, labs/css, handouts/css 의 :root 를 갈아끼운다.
+#    (다크 베이스 색까지 포함 — accent 하나만 바꾸고 끝내지 않는다.
+#     자세한 절차는 CLAUDE.md §코스 식별 「비주얼 아이덴티티」 참고.)
+
+# 4) 로컬 미리보기
 python3 -m http.server 8000
 # → http://localhost:8000
 ```
@@ -68,5 +75,9 @@ grep -rn "TODO" .
 - **데이터 흐름 3종** — 흐름도 슬라이드 / 미니맵 / Checkpoint
 - **비유는 본문 안에서만** — 코스명·Part·카드·섹션 제목·학습 목표 사용 금지
 - **자료 4종 형제 디렉토리** — slides / examples / labs / handouts
+
+## 코스마다 달라지는 것 (보존하지 않는다)
+
+- **비주얼 아이덴티티** — 배경 톤·accent·카드 형태는 코스마다 새로 설계합니다. starter의 CSS 값은 "빈 골격의 기본값"일 뿐, 완성된 코스가 그대로 쓰면 안 되는 자리입니다. 절차는 `CLAUDE.md` §코스 식별 참고.
 
 자세한 규약은 `CLAUDE.md` 참고.
